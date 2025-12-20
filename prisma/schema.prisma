@@ -1,0 +1,255 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Roles
+enum UserRole {
+  ADMIN_UTAMA
+  ADMIN_PPDB
+  ADMIN_BKK
+  GURU
+  SISWA_AKTIF
+  CALON_SISWA
+  ALUMNI
+  PERUSAHAAN
+  PENGUNJUNG
+}
+
+// PPDB Status
+enum PPDBStatus {
+  PENDING_VERIFIKASI
+  VERIFIKASI_LANJUT
+  LULUS
+  CADANGAN
+  DITOLAK
+}
+
+// Jurusan
+model Jurusan {
+  id        String   @id @default(cuid())
+  nama      String   @unique
+  deskripsi String
+  kode      String   @unique
+  icon      String   @default("🎯")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  ppdbEntries PPDBEntry[]
+  aiResults   AIRecommendationResult[]
+  tracerStudy TracerStudy[]
+  jobPostings JobPosting[]
+}
+
+// Users
+model User {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  email         String   @unique
+  password      String
+  fullName      String
+  role          UserRole
+  phone         String?
+  address       String?
+  photoUrl      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  ppdbEntry     PPDBEntry?
+  aiResults     AIRecommendationResult[]
+  tracerStudy   TracerStudy?
+  jobApplications JobApplication[]
+  jobPostings   JobPosting[]
+}
+
+// PPDB Entry
+model PPDBEntry {
+  id              String      @id @default(cuid())
+  registrationNo  String      @unique @default(cuid())
+  userId          String      @unique
+  jurusanId1      String
+  jurusanId2      String?
+  jurusanId3      String?
+  status          PPDBStatus  @default(PENDING_VERIFIKASI)
+  score           Float?
+  nisn            String
+  nik             String
+  birthDate       DateTime
+  birthPlace      String
+  parentName      String
+  parentPhone     String
+  parentAddress   String
+  
+  // Documents
+  kkFile          String?
+  aktaFile        String?
+  raportFile      String?
+  ijazahFile      String?
+  fotoCalonFile   String?
+  
+  // Additional Info
+  previousSchool  String
+  averageScore    Float
+  notes           String?
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jurusan1        Jurusan     @relation(fields: [jurusanId1], references: [id])
+}
+
+// AI Recommendation Result
+model AIRecommendationResult {
+  id        String   @id @default(cuid())
+  userId    String
+  quizScore Float
+  
+  // Quiz Answers
+  minat          String[] // Array of interests
+  kemampuanAkademik Float
+  gayaBelajar    String
+  citaCitaKarier String
+  preferensiKerja String
+  
+  // Recommendations
+  recommendation1 String
+  score1         Float
+  reasoning1     String
+  
+  recommendation2 String?
+  score2         Float?
+  reasoning2     String?
+  
+  recommendation3 String?
+  score3         Float?
+  reasoning3     String?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jurusan        Jurusan  @relation(fields: [recommendation1], references: [id])
+}
+
+// Tracer Study
+model TracerStudy {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  jurusanId   String
+  tahunLulus  Int
+  status      String   // "Bekerja", "Kuliah", "Wirausaha"
+  namaPerusahaan String?
+  jabatan     String?
+  gaji        Float?
+  relevansi   String?  // "Relevan", "Tidak Relevan"
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jurusan     Jurusan  @relation(fields: [jurusanId], references: [id])
+}
+
+// Job Posting
+model JobPosting {
+  id              String   @id @default(cuid())
+  perusahaanId    String
+  jurusanId       String
+  posisi          String
+  deskripsi       String
+  requirements    String[] // Array of requirements
+  salary          Float?
+  lokasi          String
+  tipePekerjaan   String   // "Full-time", "Part-time", "Internship"
+  deadline        DateTime
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  perusahaan      User     @relation(fields: [perusahaanId], references: [id], onDelete: Cascade)
+  jurusan         Jurusan  @relation(fields: [jurusanId], references: [id])
+  applications    JobApplication[]
+}
+
+// Job Application
+model JobApplication {
+  id            String   @id @default(cuid())
+  jobPostingId  String
+  userId        String
+  cvFile        String
+  coverLetter   String?
+  status        String   @default("Pending") // "Pending", "Ditinjau", "Shortlist", "Interview", "Accepted", "Rejected"
+  notes         String?
+  appliedAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  jobPosting    JobPosting @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([jobPostingId, userId])
+}
+
+// News/Berita
+model News {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  slug      String   @unique
+  thumbnail String?
+  featured  Boolean  @default(false)
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// School Profile
+model SchoolProfile {
+  id              String   @id @default(cuid())
+  sejarah         String
+  visi            String
+  misi            String
+  tujuan          String
+  fasilitas       String[]
+  guruJumlah      Int
+  siswaJumlah     Int
+  photoGaleri     String[]
+  phoneNumber     String
+  emailSchool     String
+  address         String
+  
+  // Hero Section Fields
+  heroTitle       String?   @default("Wujudkan Masa Depan Digitalmu")
+  heroSubtitle    String?   @default("Bersama SMK Unggulan")
+  heroDescription String?   @default("Persiapkan diri untuk era industri 4.0")
+  heroStatistics  String?   // JSON string dengan stats
+  
+  // Statistics Fields
+  siswaAktif      String?   @default("1,200+")
+  mitraIndustri   String?   @default("150+")
+  serapanKerja    String?   @default("95%")
+  prestasi        String?   @default("50+")
+  deskripsiSiswa  String?   @default("Dari berbagai daerah")
+  deskripsiMitra  String?   @default("Perusahaan ternama")
+  deskripsiSerapan String?   @default("Alumni tersebar industri")
+  deskripsiPrestasi String?   @default("Tingkat nasional & internasional")
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

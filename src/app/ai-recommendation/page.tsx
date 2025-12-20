@@ -1,0 +1,335 @@
+'use client';
+
+import Navbar from '@/components/common/Navbar';
+import { useState } from 'react';
+import { toast } from '@/lib/toast';
+
+export default function AIRecommendationPage() {
+  const [formData, setFormData] = useState({
+    nilaiAkademik: 75,
+    nilaiPeminatan: 75,
+    nilaiBakat: 75,
+    minatTeknologi: false,
+    minatBisnis: false,
+    minatDesain: false,
+    minatKesehatan: false,
+    minatOtomotif: false,
+    kemampuanLogika: false,
+    kemampuanKreativitas: false,
+    kemampuanKomunikasi: false,
+    kemampuanKepemimpinan: false,
+    gajaBelajar: 'visual',
+    citaCita: 'berwirausaha',
+    preferensi: 'praktik',
+    catatan: '',
+  });
+
+  const [results, setResults] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: (e.target as HTMLInputElement).checked
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'number' ? parseInt(value) : value
+      }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/ai-recommendation/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        console.error('API Error:', data);
+        toast.error('Gagal: ' + (data.error || 'Error tidak diketahui'));
+        return;
+      }
+      
+      if (data.recommendations) {
+        setResults(data.recommendations);
+      } else {
+        toast.info('Tidak ada data rekomendasi yang diterima');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Gagal mendapatkan rekomendasi: ' + (error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (results) {
+    return (
+      <>
+        <Navbar />
+        <main className="container mx-auto py-12 px-4">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-3xl font-bold mb-8 text-center">Rekomendasi Jurusan Anda</h1>
+            <div className="grid md:grid-cols-3 gap-6">
+              {results.map((result: any, idx: number) => (
+                <div key={idx} className="bg-white p-6 rounded shadow hover:shadow-lg">
+                  <h3 className="text-xl font-bold mb-2">{result.jurusan}</h3>
+                  <p className="text-blue-600 font-bold text-2xl mb-4">{result.score}%</p>
+                  <p className="text-gray-600 text-sm mb-4">{result.alasan}</p>
+                  <button 
+                    onClick={() => {
+                      setResults(null);
+                      setFormData({
+                        nilaiAkademik: 75,
+                        nilaiPeminatan: 75,
+                        nilaiBakat: 75,
+                        minatTeknologi: false,
+                        minatBisnis: false,
+                        minatDesain: false,
+                        minatKesehatan: false,
+                        minatOtomotif: false,
+                        kemampuanLogika: false,
+                        kemampuanKreativitas: false,
+                        kemampuanKomunikasi: false,
+                        kemampuanKepemimpinan: false,
+                        gajaBelajar: 'visual',
+                        citaCita: 'berwirausaha',
+                        preferensi: 'praktik',
+                        catatan: '',
+                      });
+                    }}
+                    className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    Uji Lagi
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+        {/* Header */}
+        <div className="text-center py-12 px-4">
+          <div className="text-4xl mb-4">🤖</div>
+          <h1 className="text-4xl font-bold mb-4">AI Saran Jurusan SMK</h1>
+          <p className="text-blue-100 max-w-2xl mx-auto">
+            Temukan jurusan yang cocok dengan minat, bakat, dan kemampuan Anda menggunakan teknologi kecerdasan buatan
+          </p>
+        </div>
+
+        {/* Form Container */}
+        <div className="container mx-auto px-4 pb-12">
+          <div className="max-w-3xl mx-auto bg-white text-gray-800 rounded-lg shadow-2xl p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Nilai Input Section */}
+              <div>
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                  <span>📊</span> Formulir Analisis Jurusan
+                </h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Nilai Akademik (0-100)</label>
+                    <input
+                      type="number"
+                      name="nilaiAkademik"
+                      min="0"
+                      max="100"
+                      value={formData.nilaiAkademik}
+                      onChange={handleInputChange}
+                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Nilai Peminatan (0-100)</label>
+                    <input
+                      type="number"
+                      name="nilaiPeminatan"
+                      min="0"
+                      max="100"
+                      value={formData.nilaiPeminatan}
+                      onChange={handleInputChange}
+                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Nilai Bakat (0-100)</label>
+                    <input
+                      type="number"
+                      name="nilaiBakat"
+                      min="0"
+                      max="100"
+                      value={formData.nilaiBakat}
+                      onChange={handleInputChange}
+                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Minat Section */}
+              <div>
+                <h3 className="font-bold mb-3">📌 Pilih Minat Anda (Boleh Lebih Dari Satu)</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { key: 'minatTeknologi', label: 'Teknologi & IT' },
+                    { key: 'minatBisnis', label: 'Bisnis & Akuntansi' },
+                    { key: 'minatDesain', label: 'Desain Grafis' },
+                    { key: 'minatKesehatan', label: 'Kesehatan' },
+                    { key: 'minatOtomotif', label: 'Teknik Otomotif' },
+                  ].map(item => (
+                    <label key={item.key} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name={item.key}
+                        checked={(formData as any)[item.key]}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-sm">{item.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Kemampuan Section */}
+              <div>
+                <h3 className="font-bold mb-3">💪 Kemampuan Utama Anda</h3>
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                  {[
+                    { key: 'kemampuanLogika', label: 'Logika & Analisis' },
+                    { key: 'kemampuanKreativitas', label: 'Kreativitas' },
+                    { key: 'kemampuanKomunikasi', label: 'Komunikasi' },
+                    { key: 'kemampuanKepemimpinan', label: 'Kepemimpinan' },
+                  ].map(item => (
+                    <label key={item.key} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name={item.key}
+                        checked={(formData as any)[item.key]}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-sm">{item.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Gaya Belajar */}
+              <div>
+                <h3 className="font-bold mb-3">🎓 Gaya Belajar Anda</h3>
+                <div className="space-y-2">
+                  {[
+                    { value: 'visual', label: 'Visual (Belajar Lewat Gambar/Video)' },
+                    { value: 'auditori', label: 'Auditori (Belajar Lewat Mendengar)' },
+                    { value: 'kinestetik', label: 'Kinestetik (Belajar Lewat Praktik)' },
+                  ].map(opt => (
+                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="gajaBelajar"
+                        value={opt.value}
+                        checked={formData.gajaBelajar === opt.value}
+                        onChange={handleInputChange}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cita-cita Karier */}
+              <div>
+                <h3 className="font-bold mb-3">💼 Cita-Cita Karier</h3>
+                <div className="space-y-2">
+                  {[
+                    { value: 'berwirausaha', label: 'Berwirausaha' },
+                    { value: 'pegawainegeri', label: 'Pegawai Negeri/BUMN' },
+                    { value: 'swasta', label: 'Pekerja Swasta' },
+                    { value: 'lanjutkuliah', label: 'Lanjut Kuliah' },
+                  ].map(opt => (
+                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="citaCita"
+                        value={opt.value}
+                        checked={formData.citaCita === opt.value}
+                        onChange={handleInputChange}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preferensi Kerja */}
+              <div>
+                <h3 className="font-bold mb-3">🏢 Preferensi Jenis Pekerjaan</h3>
+                <div className="space-y-2">
+                  {[
+                    { value: 'praktik', label: 'Praktik Langsung (Hands-on)' },
+                    { value: 'teori', label: 'Teori & Riset' },
+                    { value: 'campuran', label: 'Campuran' },
+                  ].map(opt => (
+                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="preferensi"
+                        value={opt.value}
+                        checked={formData.preferensi === opt.value}
+                        onChange={handleInputChange}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <h3 className="font-bold mb-3">📝 Catatan Tambahan</h3>
+                <textarea
+                  name="catatan"
+                  value={formData.catatan}
+                  onChange={handleInputChange}
+                  placeholder="Tulis catatan atau informasi tambahan lainnya..."
+                  rows={4}
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                />
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-blue-600 text-white py-3 rounded font-bold hover:bg-blue-700 disabled:bg-gray-400 transition duration-200 flex items-center justify-center gap-2"
+              >
+                {isLoading ? '⏳ Memproses...' : '🤖 Lihat Rekomendasi Jurusan'}
+              </button>
+            </form>
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
