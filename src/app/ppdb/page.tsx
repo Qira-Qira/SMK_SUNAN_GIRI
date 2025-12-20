@@ -2,6 +2,7 @@
 
 import Navbar from '@/components/common/Navbar';
 import { useState } from 'react';
+import { CheckCircle, Upload } from 'lucide-react';
 
 interface UploadedFile {
   name: string;
@@ -25,7 +26,7 @@ export default function PPDBPage() {
     majorChoice3: '',
   });
 
-  const [uploadedFiles, setUploadedFiles] = useState<{[key: string]: UploadedFile}>({
+  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: UploadedFile }>({
     kkFile: { name: '', size: 0 },
     aktaFile: { name: '', size: 0 },
     raportFile: { name: '', size: 0 },
@@ -86,7 +87,7 @@ export default function PPDBPage() {
 
       // Buat FormData untuk mengirim file dan form data
       const formDataToSend = new FormData();
-      
+
       // Tambah form fields
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSend.append(key, value as string);
@@ -147,22 +148,24 @@ export default function PPDBPage() {
       <>
         <Navbar />
         <main className="container mx-auto py-12 px-4">
-          <div className="max-w-2xl mx-auto bg-green-50 border border-green-200 p-8 rounded">
-            <h2 className="text-2xl font-bold text-green-700 mb-4">✓ Pendaftaran Berhasil</h2>
-            <p className="mb-4">Terima kasih telah mendaftar di PPDB SMK Sunan Giri</p>
-            <div className="bg-white p-4 rounded mb-4">
-              <p className="mb-2">
+          <div className="max-w-2xl mx-auto bg-lime-50 border border-lime-300 p-8 rounded-lg">
+            <h2 className="text-3xl font-bold text-lime-900 mb-4 flex items-center">
+              <CheckCircle className="w-8 h-8 mr-3 text-lime-600" /> Pendaftaran Berhasil
+            </h2>
+            <p className="text-emerald-900 mb-4 font-medium">Terima kasih telah mendaftar di PPDB SMK Sunan Giri</p>
+            <div className="bg-white p-4 rounded-lg mb-4 border border-lime-200">
+              <p className="mb-2 text-emerald-900">
                 <strong>Nomor Pendaftaran:</strong> {success.registrationNumber}
               </p>
-              <p className="mb-2">
+              <p className="mb-2 text-emerald-900">
                 <strong>Status:</strong> {success.status}
               </p>
-              <p>
+              <p className="text-emerald-900">
                 <strong>Waktu Pendaftaran:</strong>{' '}
                 {new Date(success.createdAt).toLocaleDateString('id-ID')}
               </p>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-emerald-700 font-medium">
               Anda akan menerima notifikasi tentang status verifikasi melalui email terdaftar.
             </p>
           </div>
@@ -175,76 +178,80 @@ export default function PPDBPage() {
     <>
       <Navbar />
       <main className="container mx-auto py-12 px-4">
-        <div className="max-w-4xl mx-auto bg-white p-8 rounded shadow">
-          <h1 className="text-3xl font-bold mb-2">PPDB Online SMK Sunan Giri</h1>
-          <p className="text-gray-600 mb-8">Silakan isi data pribadi dan upload dokumen yang diperlukan</p>
+        <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-emerald-200">
+          <h1 className="text-4xl font-bold mb-2 text-emerald-900">PPDB Online SMK Sunan Giri</h1>
+          <p className="text-emerald-700 mb-8 font-medium">Silakan isi data pribadi dan upload dokumen yang diperlukan</p>
 
-          {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
+          {error && <div className="bg-red-50 text-red-900 p-4 rounded-lg mb-6 border border-red-200 font-medium">{error}</div>}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Biodata Section */}
-            <div className="border-b pb-6">
-              <h2 className="text-xl font-bold mb-4">Biodata Calon Siswa</h2>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Nama Lengkap *</label>
+            <div className="border-b pb-8">
+              <h2 className="text-2xl font-bold mb-6 text-emerald-900">Biodata Calon Siswa</h2>
+
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-emerald-900 mb-3">Nama Lengkap *</label>
                 <input
                   type="text"
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+                  placeholder="Masukkan nama lengkap"
                   required
                 />
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4 mt-4">
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">NISN *</label>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">NISN *</label>
                   <input
                     type="text"
                     name="nisn"
                     value={formData.nisn}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+                    placeholder="Masukkan NISN"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">NIK *</label>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">NIK *</label>
                   <input
                     type="text"
                     name="nik"
                     value={formData.nik}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+                    placeholder="Masukkan NIK"
                     required
                   />
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4 mt-4">
+              <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Tanggal Lahir *</label>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">Tanggal Lahir *</label>
                   <input
                     type="date"
                     name="birthDate"
                     value={formData.birthDate}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Tempat Lahir *</label>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">Tempat Lahir *</label>
                   <input
                     type="text"
                     name="birthPlace"
                     value={formData.birthPlace}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+                    placeholder="Masukkan tempat lahir"
                     required
                   />
                 </div>
@@ -252,66 +259,70 @@ export default function PPDBPage() {
             </div>
 
             {/* Parent Info Section */}
-            <div className="border-b pb-6">
-              <h2 className="text-xl font-bold mb-4">Data Orang Tua/Wali</h2>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Nama Orang Tua/Wali *</label>
+            <div className="border-b pb-8">
+              <h2 className="text-2xl font-bold mb-6 text-emerald-900">Data Orang Tua/Wali</h2>
+
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-emerald-900 mb-3">Nama Orang Tua/Wali *</label>
                 <input
                   type="text"
                   name="parentName"
                   value={formData.parentName}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+                  placeholder="Masukkan nama orang tua/wali"
                   required
                 />
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4 mt-4">
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">No. Telepon Orang Tua *</label>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">No. Telepon Orang Tua *</label>
                   <input
                     type="tel"
                     name="parentPhone"
                     value={formData.parentPhone}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+                    placeholder="Masukkan nomor telepon"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Asal Sekolah *</label>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">Asal Sekolah *</label>
                   <input
                     type="text"
                     name="previousSchool"
                     value={formData.previousSchool}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+                    placeholder="Masukkan asal sekolah"
                     required
                   />
                 </div>
               </div>
 
-              <div className="mt-4">
-                <label className="block text-sm font-medium mb-2">Alamat Orang Tua *</label>
+              <div>
+                <label className="block text-sm font-semibold text-emerald-900 mb-3">Alamat Orang Tua *</label>
                 <input
                   type="text"
                   name="parentAddress"
                   value={formData.parentAddress}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+                  placeholder="Masukkan alamat orang tua"
                   required
                 />
               </div>
             </div>
 
             {/* Academic Section */}
-            <div className="border-b pb-6">
-              <h2 className="text-xl font-bold mb-4">Informasi Akademik</h2>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Rata-Rata Nilai Rapor (0-100) *</label>
+            <div className="border-b pb-8">
+              <h2 className="text-2xl font-bold mb-6 text-emerald-900">Informasi Akademik</h2>
+
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-emerald-900 mb-3">Rata-Rata Nilai Rapor (0-100) *</label>
                 <input
                   type="number"
                   step="0.01"
@@ -320,21 +331,22 @@ export default function PPDBPage() {
                   name="averageScore"
                   value={formData.averageScore}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+                  placeholder="Masukkan rata-rata nilai"
                   required
                 />
               </div>
 
               <div className="mt-6">
-                <h3 className="font-bold mb-4">Pilihan Program Keahlian (Jurusan)</h3>
-                
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Pilihan 1 (Wajib) *</label>
+                <h3 className="text-lg font-bold mb-6 text-emerald-900">Pilihan Program Keahlian (Jurusan)</h3>
+
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">Pilihan 1 (Wajib) *</label>
                   <select
                     name="majorChoice1"
                     value={formData.majorChoice1}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
                     required
                   >
                     <option value="">-- Pilih Jurusan --</option>
@@ -345,14 +357,14 @@ export default function PPDBPage() {
                   </select>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Pilihan 2</label>
+                    <label className="block text-sm font-semibold text-emerald-900 mb-3">Pilihan 2</label>
                     <select
                       name="majorChoice2"
                       value={formData.majorChoice2}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
                     >
                       <option value="">-- Pilih Jurusan --</option>
                       <option value="Teknik Informatika">Teknik Informatika</option>
@@ -363,12 +375,12 @@ export default function PPDBPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Pilihan 3</label>
+                    <label className="block text-sm font-semibold text-emerald-900 mb-3">Pilihan 3</label>
                     <select
                       name="majorChoice3"
                       value={formData.majorChoice3}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
                     >
                       <option value="">-- Pilih Jurusan --</option>
                       <option value="Teknik Informatika">Teknik Informatika</option>
@@ -383,79 +395,89 @@ export default function PPDBPage() {
 
             {/* File Upload Section */}
             <div>
-              <h2 className="text-xl font-bold mb-4">Upload Dokumen</h2>
-              <p className="text-sm text-gray-600 mb-4">Format: PDF, JPG, PNG | Maksimal ukuran: 5MB per file</p>
-              
-              <div className="space-y-4">
+              <h2 className="text-2xl font-bold mb-4 text-emerald-900">Upload Dokumen</h2>
+              <p className="text-sm text-emerald-700 mb-6 font-medium">Format: PDF, JPG, PNG | Maksimal ukuran: 5MB per file</p>
+
+              <div className="space-y-6">
                 {/* Kartu Keluarga */}
-                <div className="border-2 border-dashed rounded p-4">
-                  <label className="block text-sm font-medium mb-2">
-                    Kartu Keluarga (KK) * <span className="text-red-500">Wajib</span>
+                <div className="border-2 border-dashed border-emerald-300 rounded-lg p-6">
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">
+                    Kartu Keluarga (KK) * <span className="text-red-600 font-bold">Wajib</span>
                   </label>
                   <input
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={(e) => handleFileChange(e, 'kkFile')}
-                    className="w-full"
+                    className="w-full text-emerald-900"
                   />
                   {uploadedFiles.kkFile.name && (
-                    <p className="text-sm text-green-600 mt-2">✓ {uploadedFiles.kkFile.name}</p>
+                    <p className="text-sm text-emerald-700 mt-2 font-semibold flex items-center">
+                      <CheckCircle className="w-4 h-4 mr-2" /> {uploadedFiles.kkFile.name}
+                    </p>
                   )}
                 </div>
 
                 {/* Akta Kelahiran */}
-                <div className="border-2 border-dashed rounded p-4">
-                  <label className="block text-sm font-medium mb-2">Akta Kelahiran</label>
+                <div className="border-2 border-dashed border-emerald-300 rounded-lg p-6">
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">Akta Kelahiran</label>
                   <input
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={(e) => handleFileChange(e, 'aktaFile')}
-                    className="w-full"
+                    className="w-full text-emerald-900"
                   />
                   {uploadedFiles.aktaFile.name && (
-                    <p className="text-sm text-green-600 mt-2">✓ {uploadedFiles.aktaFile.name}</p>
+                    <p className="text-sm text-emerald-700 mt-2 font-semibold flex items-center">
+                      <CheckCircle className="w-4 h-4 mr-2" /> {uploadedFiles.aktaFile.name}
+                    </p>
                   )}
                 </div>
 
                 {/* Raport */}
-                <div className="border-2 border-dashed rounded p-4">
-                  <label className="block text-sm font-medium mb-2">Raport Terbaru (Semester Terakhir)</label>
+                <div className="border-2 border-dashed border-emerald-300 rounded-lg p-6">
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">Raport Terbaru (Semester Terakhir)</label>
                   <input
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={(e) => handleFileChange(e, 'raportFile')}
-                    className="w-full"
+                    className="w-full text-emerald-900"
                   />
                   {uploadedFiles.raportFile.name && (
-                    <p className="text-sm text-green-600 mt-2">✓ {uploadedFiles.raportFile.name}</p>
+                    <p className="text-sm text-emerald-700 mt-2 font-semibold flex items-center">
+                      <CheckCircle className="w-4 h-4 mr-2" /> {uploadedFiles.raportFile.name}
+                    </p>
                   )}
                 </div>
 
                 {/* Ijazah */}
-                <div className="border-2 border-dashed rounded p-4">
-                  <label className="block text-sm font-medium mb-2">Ijazah</label>
+                <div className="border-2 border-dashed border-emerald-300 rounded-lg p-6">
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">Ijazah</label>
                   <input
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={(e) => handleFileChange(e, 'ijazahFile')}
-                    className="w-full"
+                    className="w-full text-emerald-900"
                   />
                   {uploadedFiles.ijazahFile.name && (
-                    <p className="text-sm text-green-600 mt-2">✓ {uploadedFiles.ijazahFile.name}</p>
+                    <p className="text-sm text-emerald-700 mt-2 font-semibold flex items-center">
+                      <CheckCircle className="w-4 h-4 mr-2" /> {uploadedFiles.ijazahFile.name}
+                    </p>
                   )}
                 </div>
 
                 {/* Foto Calon Siswa */}
-                <div className="border-2 border-dashed rounded p-4">
-                  <label className="block text-sm font-medium mb-2">Foto Calon Siswa (3x4 atau 4x6)</label>
+                <div className="border-2 border-dashed border-emerald-300 rounded-lg p-6">
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">Foto Calon Siswa (3x4 atau 4x6)</label>
                   <input
                     type="file"
                     accept=".jpg,.jpeg,.png"
                     onChange={(e) => handleFileChange(e, 'fotoCalonFile')}
-                    className="w-full"
+                    className="w-full text-emerald-900"
                   />
                   {uploadedFiles.fotoCalonFile.name && (
-                    <p className="text-sm text-green-600 mt-2">✓ {uploadedFiles.fotoCalonFile.name}</p>
+                    <p className="text-sm text-emerald-700 mt-2 font-semibold flex items-center">
+                      <CheckCircle className="w-4 h-4 mr-2" /> {uploadedFiles.fotoCalonFile.name}
+                    </p>
                   )}
                 </div>
               </div>
@@ -465,9 +487,15 @@ export default function PPDBPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 disabled:bg-gray-400 font-bold text-lg transition"
+              className="w-full bg-lime-500 hover:bg-lime-600 text-emerald-900 py-4 rounded-lg hover:shadow-lg font-bold text-lg transition duration-200 disabled:bg-emerald-400 flex items-center justify-center"
             >
-              {isLoading ? 'Sedang Memproses...' : '✓ Daftar PPDB'}
+              {isLoading ? (
+                'Sedang Memproses...'
+              ) : (
+                <>
+                  <CheckCircle className="w-6 h-6 mr-2" /> Daftar PPDB
+                </>
+              )}
             </button>
           </form>
         </div>

@@ -2,7 +2,53 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  /* White - Fresh Global Background */
+  --foreground: #0c4a6e;
+  /* emerald-900 - Deep Ocean Blue (replaces black) */
+
+  /* Primary Color - Cyan Muda (Kept but integrated) */
+  --color-primary: #06b6d4;
+  /* emerald-500 */
+  --color-primary-dark: #0891b2;
+  /* emerald-600 */
+  --color-primary-darker: #0e7490;
+  /* emerald-700 */
+  --color-primary-light: #e0f2fe;
+  /* emerald-100 - Slightly bluer light */
+
+  /* Secondary Color - Lime Green (Kept as accent) */
+  --color-accent: #84cc16;
+  /* lime-500 */
+  --color-accent-dark: #65a30d;
+  /* lime-600 */
+  --color-accent-darker: #4f7c1f;
+  /* lime-700 */
+  --color-accent-light: #f7fee7;
+  /* lime-50 */
+
+  /* Supporting Colors */
+  --color-success: #10b981;
+  /* emerald-500 */
+  --color-warning: #f59e0b;
+  /* amber-500 */
+  --color-danger: #ef4444;
+  /* red-500 */
+
+  /* Neutrals - Replaced Gray with Sky/Blue tones */
+  --color-emerald-dark: #075985;
+  /* emerald-800 - Deep Blue instead of Dark Gray */
+  --color-emerald-medium: #64748b;
+  /* emerald-500 - Blue-ish Gray */
+  --color-emerald-light: #e0f2fe;
+  /* emerald-100 - Very Light Blue instead of Gray */
+
+  /* Text Colors */
+  --text-primary: #0c4a6e;
+  /* emerald-900 - Deepest Blue */
+  --text-secondary: #0369a1;
+  /* emerald-700 - Medium Deep Blue */
+  --text-light: #f0f9ff;
+  /* emerald-50 */
 }
 
 @theme inline {
@@ -14,13 +60,56 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #e1f1fa;
+    /* emerald-900 - Deep Blue Background */
+    --foreground: #f0f9ff;
+    /* emerald-50 - Light Text */
+
+    /* Adjust text variable for dark mode if they are used directly */
+    --text-primary: #f0f9ff;
+    --text-secondary: #bae6fd;
+    /* emerald-200 */
+    --text-light: #0c4a6e;
+
+    --color-emerald-dark: #f0f9ff;
+    /* Invert for dark mode context if needed */
+    --color-emerald-medium: #94a3b8;
+    --color-emerald-light: #075985;
   }
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
 }

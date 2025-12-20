@@ -65,13 +65,13 @@ export default function TestimonialSection() {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <div className="inline-block bg-black text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
+          <div className="inline-block bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
             Testimoni Alumni
           </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-emerald-900 mb-4">
             Kisah Sukses Alumni Kami
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-emerald-700 max-w-2xl mx-auto">
             Dengarkan cerita inspiratif dari alumni kami yang telah sukses di berbagai industri
           </p>
         </div>
@@ -81,7 +81,7 @@ export default function TestimonialSection() {
           {currentTestimonials.map((testimonial) => (
             <div
               key={testimonial.id}
-              className="bg-gray-50 p-8 rounded-lg shadow-sm hover:shadow-md transition duration-300"
+              className="bg-lime-50 p-8 rounded-lg shadow-sm hover:shadow-md transition duration-300 border-l-4 border-lime-500"
             >
               {/* Header with Avatar and Info */}
               <div className="flex items-start mb-4">
@@ -93,16 +93,16 @@ export default function TestimonialSection() {
                   {getInitials(testimonial.nama)}
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900">{testimonial.nama}</h3>
-                  <p className="text-sm text-gray-600">{testimonial.posisi}</p>
-                  <p className="text-xs text-gray-500">
+                  <h3 className="font-bold text-emerald-900">{testimonial.nama}</h3>
+                  <p className="text-sm text-emerald-700">{testimonial.posisi}</p>
+                  <p className="text-xs text-emerald-600">
                     {testimonial.perusahaan} • {testimonial.tahunLulus}
                   </p>
                 </div>
               </div>
 
               {/* Testimonial Text */}
-              <p className="text-gray-700 italic mb-4 leading-relaxed">
+              <p className="text-emerald-700 italic mb-4 leading-relaxed">
                 "{testimonial.testimoni}"
               </p>
 
@@ -124,7 +124,7 @@ export default function TestimonialSection() {
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="px-4 py-2 rounded-lg border border-emerald-300 text-emerald-700 hover:bg-lime-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
             >
               Sebelumnya
             </button>
@@ -133,11 +133,11 @@ export default function TestimonialSection() {
               <button
                 key={i + 1}
                 onClick={() => setCurrentPage(i + 1)}
-                className={`w-10 h-10 rounded ${
+                className={`w-10 h-10 rounded-lg font-medium transition duration-200 ${
                   currentPage === i + 1
-                    ? 'bg-blue-600 text-white'
-                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                } transition`}
+                    ? 'bg-lime-500 text-white'
+                    : 'border border-emerald-300 text-emerald-700 hover:bg-lime-50'
+                }`}
               >
                 {i + 1}
               </button>
@@ -146,7 +146,7 @@ export default function TestimonialSection() {
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="px-4 py-2 rounded-lg border border-emerald-300 text-emerald-700 hover:bg-lime-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
             >
               Selanjutnya
             </button>

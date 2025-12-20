@@ -38,21 +38,21 @@ export default function NewsDetail() {
     fetchNews();
   }, [slug]);
 
-  if (loading) return <main className="container mx-auto py-12 px-4">Memuat...</main>;
-  if (!news) return <main className="container mx-auto py-12 px-4"><h1 className="text-2xl font-bold">Berita tidak ditemukan</h1></main>;
+  if (loading) return <main className="container mx-auto py-12 px-4 text-emerald-900">Memuat...</main>;
+  if (!news) return <main className="container mx-auto py-12 px-4"><h1 className="text-2xl font-bold text-emerald-900">Berita tidak ditemukan</h1></main>;
 
   return (
     <main className="container mx-auto py-12 px-4">
-      <article className="bg-white rounded-lg shadow p-8">
+      <article className="bg-white rounded-lg shadow p-8 border-l-4 border-lime-500">
         {news.thumbnail && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={news.thumbnail} alt={news.title} className="w-full h-64 object-cover rounded mb-6" />
         )}
-        <h1 className="text-3xl font-bold mb-4">{news.title}</h1>
-        <div className="text-sm text-gray-500 mb-6">{new Date(news.createdAt).toLocaleString()}</div>
-        <div className="prose max-w-none text-gray-800" dangerouslySetInnerHTML={{ __html: news.content }} />
+        <h1 className="text-3xl font-bold mb-4 text-emerald-900">{news.title}</h1>
+        <div className="text-sm text-emerald-9000 mb-6">{new Date(news.createdAt).toLocaleString()}</div>
+        <div className="prose max-w-none text-emerald-800" dangerouslySetInnerHTML={{ __html: news.content }} />
         <div className="mt-6">
-          <a href="/news" className="text-sm text-gray-600 hover:underline">← Kembali ke Berita</a>
+          <a href="/news" className="text-sm text-lime-600 hover:text-lime-700 underline">← Kembali ke Berita</a>
         </div>
       </article>
     </main>

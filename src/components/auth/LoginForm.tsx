@@ -43,31 +43,33 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto bg-white p-6 rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">Login</h2>
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg border border-emerald-200">
+      <h2 className="text-3xl font-bold mb-6 text-emerald-900">Login</h2>
 
-      {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
+      {error && <div className="bg-red-50 text-red-900 p-4 rounded-lg mb-4 border border-red-200 font-medium">{error}</div>}
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Username</label>
+      <div className="mb-6">
+        <label className="block text-sm font-semibold text-emerald-900 mb-3">Username</label>
         <input
           type="text"
           name="username"
           value={formData.username}
           onChange={handleChange}
-          className="w-full px-3 py-2 border rounded"
+          className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+          placeholder="Masukkan username"
           required
         />
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Password</label>
+      <div className="mb-6">
+        <label className="block text-sm font-semibold text-emerald-900 mb-3">Password</label>
         <input
           type="password"
           name="password"
           value={formData.password}
           onChange={handleChange}
-          className="w-full px-3 py-2 border rounded"
+          className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
+          placeholder="Masukkan password"
           required
         />
       </div>
@@ -75,7 +77,7 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
+        className="w-full bg-lime-500 hover:bg-lime-600 text-emerald-900 py-3 rounded-lg font-semibold transition duration-200 disabled:bg-emerald-400"
       >
         {isLoading ? 'Loading...' : 'Login'}
       </button>

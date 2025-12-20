@@ -8,19 +8,31 @@ import FeaturesSection from '@/components/common/FeaturesSection';
 import TestimonialSection from '@/components/common/TestimonialSection';
 import NewsSection from '@/components/common/NewsSection';
 import Footer from '@/components/common/Footer';
+import ScrollAnimation from '@/components/common/ScrollAnimation';
 
 export default function Home() {
   return (
     <>
       <Navbar />
       <HeroSection />
-      <StatsSection />
-      <ProgramsSection />
-      <FeaturesSection />
-      <TestimonialSection />
-      <NewsSection />
-      <Footer />
 
+      <StatsSection />
+
+      <ScrollAnimation animation="fade-up" delay={200}>
+        <ProgramsSection />
+      </ScrollAnimation>
+
+      <FeaturesSection />
+
+      <ScrollAnimation animation="fade-up" delay={200}>
+        <TestimonialSection />
+      </ScrollAnimation>
+
+      <ScrollAnimation animation="fade-up" delay={200}>
+        <NewsSection />
+      </ScrollAnimation>
+
+      <Footer />
     </>
   );
 }

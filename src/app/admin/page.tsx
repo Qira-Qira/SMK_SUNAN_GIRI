@@ -1,9 +1,29 @@
- 'use client';
+'use client';
 
 import Navbar from '@/components/common/Navbar';
 import { useEffect, useState } from 'react';
 import { toast } from '@/lib/toast';
 import { exportToCSV, exportPPDBToCSV, exportJobPostingsToCSV, exportStatisticsReport } from '@/lib/utils/export';
+import {
+  BarChart3,
+  Download,
+  FileText,
+  Mic,
+  Target,
+  LayoutDashboard,
+  Users,
+  Briefcase,
+  GraduationCap,
+  Newspaper,
+  Building2,
+  Plus,
+  Edit,
+  Trash2,
+  Save,
+  X,
+  Trophy
+} from 'lucide-react';
+import CountUp from '@/components/common/CountUp';
 
 type TabType = 'dashboard' | 'ppdb' | 'bkk' | 'alumni' | 'users' | 'content';
 
@@ -19,7 +39,7 @@ export default function AdminDashboard() {
   const [companies, setCompanies] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  
+
   // Content management states
   const [schoolProfile, setSchoolProfile] = useState<any>(null);
   const [news, setNews] = useState<any[]>([]);
@@ -33,12 +53,12 @@ export default function AdminDashboard() {
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [showTestimonialModal, setShowTestimonialModal] = useState(false);
   const [selectedTestimonial, setSelectedTestimonial] = useState<any>(null);
-  
+
   // Form states
   const [profileForm, setProfileForm] = useState({ nama: '', alamat: '', telepon: '', email: '' });
   const [newsForm, setNewsForm] = useState({ title: '', content: '', thumbnail: '', featured: false, published: true });
   const [newsFile, setNewsFile] = useState<File | null>(null);
-  const [jurusanForm, setJurusanForm] = useState({ nama: '', deskripsi: '', kode: '', icon: '🎯' });
+  const [jurusanForm, setJurusanForm] = useState({ nama: '', deskripsi: '', kode: '', icon: '' });
   const [statsForm, setStatsForm] = useState({
     siswaAktif: '1,200+',
     mitraIndustri: '150+',
@@ -309,7 +329,7 @@ export default function AdminDashboard() {
       });
       if (res.ok) {
         setShowJurusanModal(false);
-        setJurusanForm({ nama: '', deskripsi: '', kode: '', icon: '🎯' });
+        setJurusanForm({ nama: '', deskripsi: '', kode: '', icon: '' });
         setRefreshTrigger(prev => prev + 1);
         toast.success('Jurusan berhasil ditambahkan!');
       }
@@ -446,19 +466,18 @@ export default function AdminDashboard() {
     <>
       <Navbar />
       <main className="container mx-auto py-12 px-4">
-        <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-8 text-emerald-900">Admin Dashboard</h1>
 
         {/* Tabs Navigation */}
-        <div className="flex flex-wrap gap-2 mb-8 border-b">
+        <div className="flex flex-wrap gap-2 mb-8 border-b border-emerald-300">
           {['dashboard', 'ppdb', 'bkk', 'alumni', 'users', 'content'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as TabType)}
-              className={`px-4 py-2 font-medium transition ${
-                activeTab === tab
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`px-4 py-2 font-medium transition ${activeTab === tab
+                ? 'border-b-2 border-lime-500 text-lime-600'
+                : 'text-emerald-600 hover:text-emerald-900'
+                }`}
             >
               {tab.toUpperCase()}
             </button>
@@ -471,47 +490,47 @@ export default function AdminDashboard() {
             <div className="mb-6">
               <button
                 onClick={() => exportStatisticsReport(stats)}
-                className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 font-semibold"
+                className="bg-lime-500 text-emerald-900 px-6 py-2 rounded hover:bg-lime-600 font-semibold flex items-center"
               >
-                📊 Export Laporan Statistik
+                <BarChart3 className="w-5 h-5 mr-2" /> Export Laporan Statistik
               </button>
             </div>
-            
+
             <div className="grid md:grid-cols-5 gap-4 mb-8">
-              <div className="bg-blue-500 text-white p-6 rounded shadow">
+              <div className="bg-emerald-600 text-white p-6 rounded shadow">
                 <h3 className="text-lg font-bold mb-2">Total Pendaftar PPDB</h3>
                 <p className="text-3xl font-bold">{stats?.totalStats?.ppdbCount || 0}</p>
               </div>
-              <div className="bg-green-500 text-white p-6 rounded shadow">
+              <div className="bg-lime-500 text-emerald-900 p-6 rounded shadow font-semibold">
                 <h3 className="text-lg font-bold mb-2">Lamaran Kerja</h3>
                 <p className="text-3xl font-bold">{stats?.totalStats?.applicationsCount || 0}</p>
               </div>
-              <div className="bg-yellow-500 text-white p-6 rounded shadow">
+              <div className="bg-amber-500 text-white p-6 rounded shadow">
                 <h3 className="text-lg font-bold mb-2">Alumni</h3>
                 <p className="text-3xl font-bold">{stats?.totalStats?.alumniCount || 0}</p>
               </div>
-              <div className="bg-purple-500 text-white p-6 rounded shadow">
+              <div className="bg-emerald-500 text-white p-6 rounded shadow">
                 <h3 className="text-lg font-bold mb-2">Lowongan Aktif</h3>
                 <p className="text-3xl font-bold">{stats?.totalStats?.jobPostingsCount || 0}</p>
               </div>
-              <div className="bg-indigo-500 text-white p-6 rounded shadow">
+              <div className="bg-emerald-500 text-white p-6 rounded shadow">
                 <h3 className="text-lg font-bold mb-2">Total Pengguna</h3>
                 <p className="text-3xl font-bold">{stats?.totalStats?.usersCount || 0}</p>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded shadow">
-              <h2 className="text-2xl font-bold mb-4">Distribusi Status PPDB</h2>
+            <div className="bg-white p-6 rounded shadow border border-emerald-200">
+              <h2 className="text-2xl font-bold mb-4 text-emerald-900">Distribusi Status PPDB</h2>
               <table className="w-full text-left">
-                <thead className="bg-gray-100">
+                <thead className="bg-emerald-100 border-b border-emerald-300">
                   <tr>
-                    <th className="px-4 py-2">Status</th>
-                    <th className="px-4 py-2">Jumlah</th>
+                    <th className="px-4 py-2 text-emerald-900">Status</th>
+                    <th className="px-4 py-2 text-emerald-900">Jumlah</th>
                   </tr>
                 </thead>
                 <tbody>
                   {stats?.ppdbDistribution?.map((item: any) => (
-                    <tr key={item.status} className="border-t">
+                    <tr key={item.status} className="border-t border-emerald-200 text-emerald-800">
                       <td className="px-4 py-2">{item.status}</td>
                       <td className="px-4 py-2">{item._count}</td>
                     </tr>
@@ -530,21 +549,21 @@ export default function AdminDashboard() {
               <div className="space-x-2">
                 <button
                   onClick={() => exportPPDBToCSV(ppdbEntries)}
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm font-semibold"
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm font-semibold flex items-center"
                 >
-                  📥 Export CSV
+                  <Download className="w-4 h-4 mr-2" /> Export CSV
                 </button>
                 <button
                   onClick={() => exportToCSV(ppdbEntries, 'PPDB_Export')}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm font-semibold"
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm font-semibold flex items-center"
                 >
-                  📋 Export JSON
+                  <FileText className="w-4 h-4 mr-2" /> Export JSON
                 </button>
               </div>
             </div>
             <div className="bg-white rounded shadow overflow-hidden">
               <table className="w-full text-left text-sm">
-                <thead className="bg-gray-100 border-b">
+                <thead className="bg-emerald-100 border-b">
                   <tr>
                     <th className="px-4 py-3">No. Pendaftaran</th>
                     <th className="px-4 py-3">Nama</th>
@@ -557,22 +576,21 @@ export default function AdminDashboard() {
                 <tbody>
                   {ppdbEntries.length > 0 ? (
                     ppdbEntries.map((entry: any) => (
-                      <tr key={entry.id} className="border-t hover:bg-gray-50">
+                      <tr key={entry.id} className="border-t hover:bg-emerald-50">
                         <td className="px-4 py-3">{entry.registrationNumber}</td>
                         <td className="px-4 py-3">{entry.fullName}</td>
                         <td className="px-4 py-3 text-sm">{entry.email}</td>
                         <td className="px-4 py-3">{entry.majorChoice1}</td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            entry.status === 'LULUS' ? 'bg-green-100 text-green-800' :
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${entry.status === 'LULUS' ? 'bg-green-100 text-green-800' :
                             entry.status === 'DITOLAK' ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
                             {entry.status}
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <select 
+                          <select
                             onChange={(e) => updatePPDBStatus(entry.id, e.target.value)}
                             className="px-2 py-1 text-xs border rounded"
                           >
@@ -587,7 +605,7 @@ export default function AdminDashboard() {
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={6} className="px-4 py-3 text-center text-gray-500">Tidak ada data</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-9000">Tidak ada data</td></tr>
                   )}
                 </tbody>
               </table>
@@ -609,21 +627,21 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => exportJobPostingsToCSV(jobPostings)}
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm font-semibold"
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm font-semibold flex items-center"
                 >
-                  📥 Export CSV
+                  <Download className="w-4 h-4 mr-2" /> Export CSV
                 </button>
                 <button
                   onClick={() => exportToCSV(jobPostings, 'JobPostings_Export')}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm font-semibold"
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm font-semibold flex items-center"
                 >
-                  📋 Export JSON
+                  <FileText className="w-4 h-4 mr-2" /> Export JSON
                 </button>
               </div>
             </div>
             <div className="bg-white rounded shadow overflow-hidden">
               <table className="w-full text-left text-sm">
-                <thead className="bg-gray-100 border-b">
+                <thead className="bg-emerald-100 border-b">
                   <tr>
                     <th className="px-4 py-3">Posisi</th>
                     <th className="px-4 py-3">Perusahaan</th>
@@ -636,7 +654,7 @@ export default function AdminDashboard() {
                 <tbody>
                   {jobPostings.length > 0 ? (
                     jobPostings.map((posting: any) => (
-                      <tr key={posting.id} className="border-t hover:bg-gray-50">
+                      <tr key={posting.id} className="border-t hover:bg-emerald-50">
                         <td className="px-4 py-3">{posting.position}</td>
                         <td className="px-4 py-3">{posting.company}</td>
                         <td className="px-4 py-3">{posting.location}</td>
@@ -657,7 +675,7 @@ export default function AdminDashboard() {
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={6} className="px-4 py-3 text-center text-gray-500">Tidak ada data</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-9000">Tidak ada data</td></tr>
                   )}
                 </tbody>
               </table>
@@ -665,21 +683,21 @@ export default function AdminDashboard() {
             {/* Add Job Modal */}
             {showJobModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center">
-                <div onClick={() => setShowJobModal(false)} className="absolute inset-0 bg-black/40"></div>
+                <div onClick={() => setShowJobModal(false)} className="absolute inset-0 bg-emerald-50/40"></div>
                 <form onSubmit={handleSaveJob} className="relative bg-white rounded shadow max-w-2xl w-full p-6 z-50">
                   <h3 className="text-lg font-bold mb-4">Tambah Lowongan Kerja</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium mb-1">Posisi</label>
-                      <input required value={jobForm.posisi} onChange={(e) => setJobForm({...jobForm, posisi: e.target.value})} className="w-full border rounded px-3 py-2" />
+                      <input required value={jobForm.posisi} onChange={(e) => setJobForm({ ...jobForm, posisi: e.target.value })} className="w-full border rounded px-3 py-2" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Lokasi</label>
-                      <input value={jobForm.lokasi} onChange={(e) => setJobForm({...jobForm, lokasi: e.target.value})} placeholder="Contoh: Jakarta" className="w-full border rounded px-3 py-2" />
+                      <input value={jobForm.lokasi} onChange={(e) => setJobForm({ ...jobForm, lokasi: e.target.value })} placeholder="Contoh: Jakarta" className="w-full border rounded px-3 py-2" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Perusahaan (pilih perusahaan jika ingin menugaskan ke perusahaan)</label>
-                      <select value={jobForm.perusahaanId} onChange={(e) => setJobForm({...jobForm, perusahaanId: e.target.value})} className="w-full border rounded px-3 py-2">
+                      <select value={jobForm.perusahaanId} onChange={(e) => setJobForm({ ...jobForm, perusahaanId: e.target.value })} className="w-full border rounded px-3 py-2">
                         <option value="">-- Pilih Perusahaan (opsional) --</option>
                         {companies.map((c: any) => (
                           <option key={c.id} value={c.id}>{c.fullName} — {c.email}</option>
@@ -688,30 +706,30 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Jurusan</label>
-                      <select value={jobForm.jurusanId} onChange={(e) => setJobForm({...jobForm, jurusanId: e.target.value})} className="w-full border rounded px-3 py-2">
+                      <select value={jobForm.jurusanId} onChange={(e) => setJobForm({ ...jobForm, jurusanId: e.target.value })} className="w-full border rounded px-3 py-2">
                         <option value="">Tidak spesifik</option>
                         {jurusan.map((j: any) => <option key={j.id} value={j.id}>{j.nama}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Tipe Pekerjaan</label>
-                      <input value={jobForm.tipePekerjaan} onChange={(e) => setJobForm({...jobForm, tipePekerjaan: e.target.value})} className="w-full border rounded px-3 py-2" />
+                      <input value={jobForm.tipePekerjaan} onChange={(e) => setJobForm({ ...jobForm, tipePekerjaan: e.target.value })} className="w-full border rounded px-3 py-2" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Gaji (opsional)</label>
-                      <input value={jobForm.salary} onChange={(e) => setJobForm({...jobForm, salary: e.target.value})} className="w-full border rounded px-3 py-2" />
+                      <input value={jobForm.salary} onChange={(e) => setJobForm({ ...jobForm, salary: e.target.value })} className="w-full border rounded px-3 py-2" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Deadline</label>
-                      <input type="date" value={jobForm.deadline} onChange={(e) => setJobForm({...jobForm, deadline: e.target.value})} className="w-full border rounded px-3 py-2" />
+                      <input type="date" value={jobForm.deadline} onChange={(e) => setJobForm({ ...jobForm, deadline: e.target.value })} className="w-full border rounded px-3 py-2" />
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium mb-1">Deskripsi</label>
-                      <textarea required value={jobForm.deskripsi} onChange={(e) => setJobForm({...jobForm, deskripsi: e.target.value})} className="w-full border rounded px-3 py-2 h-32"></textarea>
+                      <textarea required value={jobForm.deskripsi} onChange={(e) => setJobForm({ ...jobForm, deskripsi: e.target.value })} className="w-full border rounded px-3 py-2 h-32"></textarea>
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium mb-1">Requirements (pisahkan dengan koma)</label>
-                      <input value={jobForm.requirements} onChange={(e) => setJobForm({...jobForm, requirements: e.target.value})} className="w-full border rounded px-3 py-2" />
+                      <input value={jobForm.requirements} onChange={(e) => setJobForm({ ...jobForm, requirements: e.target.value })} className="w-full border rounded px-3 py-2" />
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end gap-2">
@@ -751,7 +769,7 @@ export default function AdminDashboard() {
                     <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded">{item.count} alumni</span>
                   </div>
                 ))}
-                </div>
+              </div>
             </div>
 
             {/* Testimonial Section */}
@@ -759,8 +777,8 @@ export default function AdminDashboard() {
               <div className="bg-white p-6 rounded shadow">
                 <div className="flex justify-between items-center mb-4">
                   <div>
-                    <h3 className="text-lg font-bold mb-2">🎤 Testimoni Alumni</h3>
-                    <p className="text-gray-600 mb-4">Kelola testimoni alumni yang tampil di halaman utama</p>
+                    <h3 className="text-lg font-bold mb-2 flex items-center"><Mic className="w-5 h-5 mr-2 text-indigo-600" /> Testimoni Alumni</h3>
+                    <p className="text-emerald-600 mb-4">Kelola testimoni alumni yang tampil di halaman utama</p>
                   </div>
                   <button
                     onClick={() => { setSelectedTestimonial(null); setTestimonialForm({ nama: '', posisi: '', perusahaan: '', tahunLulus: '', testimoni: '', rating: 5 }); setShowTestimonialModal(true); }}
@@ -772,13 +790,13 @@ export default function AdminDashboard() {
                 {testimonials.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {testimonials.map((t: any) => (
-                      <div key={t.id} className="bg-gray-50 p-4 rounded border-l-4 border-indigo-500">
+                      <div key={t.id} className="bg-emerald-50 p-4 rounded border-l-4 border-indigo-500">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <h4 className="font-bold">{t.nama}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{t.posisi} at {t.perusahaan}</p>
-                            <p className="text-xs text-gray-500 mt-2">{t.tahunLulus}</p>
-                            <p className="text-gray-700 mt-3">"{(t.testimoni || '').substring(0, 150)}..."</p>
+                            <p className="text-sm text-emerald-600 mt-1">{t.posisi} at {t.perusahaan}</p>
+                            <p className="text-xs text-emerald-9000 mt-2">{t.tahunLulus}</p>
+                            <p className="text-emerald-700 mt-3">"{(t.testimoni || '').substring(0, 150)}..."</p>
                           </div>
                           <div className="flex flex-col gap-2 ml-4">
                             <button onClick={() => { setSelectedTestimonial(t); setTestimonialForm({ nama: t.nama, posisi: t.posisi, perusahaan: t.perusahaan, tahunLulus: t.tahunLulus, testimoni: t.testimoni, rating: t.rating }); setShowTestimonialModal(true); }} className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">Edit</button>
@@ -789,7 +807,7 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-4">Belum ada testimoni</p>
+                  <p className="text-emerald-9000 text-center py-4">Belum ada testimoni</p>
                 )}
               </div>
             </div>
@@ -802,7 +820,7 @@ export default function AdminDashboard() {
             <h2 className="text-2xl font-bold mb-4">Manajemen Pengguna</h2>
             <div className="bg-white rounded shadow overflow-hidden">
               <table className="w-full text-left text-sm">
-                <thead className="bg-gray-100 border-b">
+                <thead className="bg-emerald-100 border-b">
                   <tr>
                     <th className="px-4 py-3">Nama</th>
                     <th className="px-4 py-3">Email</th>
@@ -814,7 +832,7 @@ export default function AdminDashboard() {
                 <tbody>
                   {users.length > 0 ? (
                     users.map((user: any) => (
-                      <tr key={user.id} className="border-t hover:bg-gray-50">
+                      <tr key={user.id} className="border-t hover:bg-emerald-50">
                         <td className="px-4 py-3">{user.name || '-'}</td>
                         <td className="px-4 py-3 text-sm">{user.email}</td>
                         <td className="px-4 py-3">
@@ -831,7 +849,7 @@ export default function AdminDashboard() {
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={5} className="px-4 py-3 text-center text-gray-500">Tidak ada data</td></tr>
+                    <tr><td colSpan={5} className="px-4 py-3 text-center text-emerald-9000">Tidak ada data</td></tr>
                   )}
                 </tbody>
               </table>
@@ -843,16 +861,16 @@ export default function AdminDashboard() {
         {activeTab === 'content' && (
           <div>
             <h2 className="text-2xl font-bold mb-4">Manajemen Konten</h2>
-            
+
             {/* Hero Section */}
             <div className="mb-8">
               <div className="bg-white p-6 rounded shadow">
                 <div className="flex justify-between items-center mb-4">
                   <div>
-                    <h3 className="text-lg font-bold mb-2">🎯 Hero Section</h3>
-                    <p className="text-gray-600 mb-4">Kelola halaman utama (hero section)</p>
+                    <h3 className="text-lg font-bold mb-2 flex items-center"><Target className="w-5 h-5 mr-2 text-indigo-600" /> Hero Section</h3>
+                    <p className="text-emerald-600 mb-4">Kelola halaman utama (hero section)</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => {
                       setProfileForm({
                         nama: schoolProfile?.heroTitle || '',
@@ -866,7 +884,7 @@ export default function AdminDashboard() {
                     Edit Hero
                   </button>
                 </div>
-                <div className="bg-gray-50 p-4 rounded">
+                <div className="bg-emerald-50 p-4 rounded">
                   <p><strong>Judul:</strong> {schoolProfile?.heroTitle || '-'}</p>
                   <p><strong>Subtitle:</strong> {schoolProfile?.heroSubtitle || '-'}</p>
                   <p><strong>Deskripsi:</strong> {schoolProfile?.heroDescription || '-'}</p>
@@ -880,16 +898,16 @@ export default function AdminDashboard() {
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <h3 className="text-lg font-bold mb-2">Profil Sekolah</h3>
-                    <p className="text-gray-600 mb-4">Kelola informasi resmi sekolah</p>
+                    <p className="text-emerald-600 mb-4">Kelola informasi resmi sekolah</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setShowProfileModal(true)}
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                     Edit Profil Sekolah
                   </button>
                 </div>
                 {schoolProfile && (
-                  <div className="bg-gray-50 p-4 rounded">
+                  <div className="bg-emerald-50 p-4 rounded">
                     <p><strong>Nama Sekolah:</strong> {schoolProfile.nama || '-'}</p>
                     <p><strong>Alamat:</strong> {schoolProfile.alamat || '-'}</p>
                     <p><strong>Telepon:</strong> {schoolProfile.telepon || '-'}</p>
@@ -905,24 +923,24 @@ export default function AdminDashboard() {
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <h3 className="text-lg font-bold mb-2">Berita & Pengumuman</h3>
-                    <p className="text-gray-600 mb-4">Publikasikan berita dan pengumuman sekolah</p>
+                    <p className="text-emerald-600 mb-4">Publikasikan berita dan pengumuman sekolah</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => { setSelectedNews(null); setShowNewsModal(true); }}
                     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                     Tambah Berita
                   </button>
                 </div>
-                
+
                 {news.length > 0 ? (
                   <div className="space-y-3">
                     {news.map((item: any) => (
-                      <div key={item.id} className="bg-gray-50 p-4 rounded border-l-4 border-green-500">
+                      <div key={item.id} className="bg-emerald-50 p-4 rounded border-l-4 border-green-500">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <h4 className="font-bold">{item.title}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{(item.content || '').substring(0, 100)}...</p>
-                            <p className="text-xs text-gray-500 mt-2">
+                            <p className="text-sm text-emerald-600 mt-1">{(item.content || '').substring(0, 100)}...</p>
+                            <p className="text-xs text-emerald-9000 mt-2">
                               {new Date(item.createdAt).toLocaleDateString('id-ID')}
                             </p>
                           </div>
@@ -945,7 +963,7 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-4">Belum ada berita</p>
+                  <p className="text-emerald-9000 text-center py-4">Belum ada berita</p>
                 )}
               </div>
             </div>
@@ -956,21 +974,21 @@ export default function AdminDashboard() {
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <h3 className="text-lg font-bold mb-2">Program Keahlian (Jurusan)</h3>
-                    <p className="text-gray-600 mb-4">Kelola daftar jurusan yang tersedia</p>
+                    <p className="text-emerald-600 mb-4">Kelola daftar jurusan yang tersedia</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => { setSelectedJurusan(null); setShowJurusanModal(true); }}
                     className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
                     Tambah Jurusan
                   </button>
                 </div>
-                
+
                 {jurusan.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {jurusan.map((item: any) => (
                       <div key={item.id} className="bg-purple-50 p-4 rounded border-l-4 border-purple-500">
                         <h4 className="font-bold text-purple-900">{item.nama}</h4>
-                        <p className="text-sm text-gray-600 mt-2">{item.deskripsi}</p>
+                        <p className="text-sm text-emerald-600 mt-2">{item.deskripsi}</p>
                         <button
                           onClick={() => handleDeleteJurusan(item.id)}
                           className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 mt-3"
@@ -981,7 +999,7 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-4">Belum ada jurusan</p>
+                  <p className="text-emerald-9000 text-center py-4">Belum ada jurusan</p>
                 )}
               </div>
             </div>
@@ -991,10 +1009,10 @@ export default function AdminDashboard() {
               <div className="bg-white p-6 rounded shadow">
                 <div className="flex justify-between items-center mb-4">
                   <div>
-                    <h3 className="text-lg font-bold mb-2">📊 Statistik Sekolah</h3>
-                    <p className="text-gray-600 mb-4">Kelola statistik yang ditampilkan di halaman utama</p>
+                    <h3 className="text-lg font-bold mb-2 flex items-center"><BarChart3 className="w-5 h-5 mr-2 text-emerald-600" /> Statistik Sekolah</h3>
+                    <p className="text-emerald-600 mb-4">Kelola statistik yang ditampilkan di halaman utama</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setShowStatsModal(true)}
                     className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">
                     Edit Statistik
@@ -1002,20 +1020,52 @@ export default function AdminDashboard() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-orange-50 p-4 rounded">
-                    <p><strong>👤 Siswa Aktif:</strong> {schoolProfile?.siswaAktif || '-'}</p>
-                    <p className="text-sm text-gray-600 mt-1">{schoolProfile?.deskripsiSiswa || '-'}</p>
+                    <p><strong><Users className="w-4 h-4 inline mr-1 text-orange-600" /> Siswa Aktif:</strong> {(() => {
+                      const val = schoolProfile?.siswaAktif || '-';
+                      const match = val.match(/^([0-9,.]+)(.*)$/);
+                      if (match) {
+                        const end = parseInt(match[1].replace(/[^0-9]/g, ''), 10);
+                        return <CountUp end={end} suffix={match[2]} />;
+                      }
+                      return val;
+                    })()}</p>
+                    <p className="text-sm text-emerald-600 mt-1">{schoolProfile?.deskripsiSiswa || '-'}</p>
                   </div>
                   <div className="bg-orange-50 p-4 rounded">
-                    <p><strong>🏢 Mitra Industri:</strong> {schoolProfile?.mitraIndustri || '-'}</p>
-                    <p className="text-sm text-gray-600 mt-1">{schoolProfile?.deskripsiMitra || '-'}</p>
+                    <p><strong><Building2 className="w-4 h-4 inline mr-1 text-orange-600" /> Mitra Industri:</strong> {(() => {
+                      const val = schoolProfile?.mitraIndustri || '-';
+                      const match = val.match(/^([0-9,.]+)(.*)$/);
+                      if (match) {
+                        const end = parseInt(match[1].replace(/[^0-9]/g, ''), 10);
+                        return <CountUp end={end} suffix={match[2]} />;
+                      }
+                      return val;
+                    })()}</p>
+                    <p className="text-sm text-emerald-600 mt-1">{schoolProfile?.deskripsiMitra || '-'}</p>
                   </div>
                   <div className="bg-orange-50 p-4 rounded">
-                    <p><strong>📈 Tingkat Serapan Kerja:</strong> {schoolProfile?.serapanKerja || '-'}</p>
-                    <p className="text-sm text-gray-600 mt-1">{schoolProfile?.deskripsiSerapan || '-'}</p>
+                    <p><strong><Briefcase className="w-4 h-4 inline mr-1 text-orange-600" /> Tingkat Serapan Kerja:</strong> {(() => {
+                      const val = schoolProfile?.serapanKerja || '-';
+                      const match = val.match(/^([0-9,.]+)(.*)$/);
+                      if (match) {
+                        const end = parseInt(match[1].replace(/[^0-9]/g, ''), 10);
+                        return <CountUp end={end} suffix={match[2]} />;
+                      }
+                      return val;
+                    })()}</p>
+                    <p className="text-sm text-emerald-600 mt-1">{schoolProfile?.deskripsiSerapan || '-'}</p>
                   </div>
                   <div className="bg-orange-50 p-4 rounded">
-                    <p><strong>🏆 Prestasi:</strong> {schoolProfile?.prestasi || '-'}</p>
-                    <p className="text-sm text-gray-600 mt-1">{schoolProfile?.deskripsiPrestasi || '-'}</p>
+                    <p><strong><Trophy className="w-4 h-4 inline mr-1 text-orange-600" /> Prestasi:</strong> {(() => {
+                      const val = schoolProfile?.prestasi || '-';
+                      const match = val.match(/^([0-9,.]+)(.*)$/);
+                      if (match) {
+                        const end = parseInt(match[1].replace(/[^0-9]/g, ''), 10);
+                        return <CountUp end={end} suffix={match[2]} />;
+                      }
+                      return val;
+                    })()}</p>
+                    <p className="text-sm text-emerald-600 mt-1">{schoolProfile?.deskripsiPrestasi || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -1026,48 +1076,48 @@ export default function AdminDashboard() {
         {/* Modals */}
         {/* Profile Modal */}
         {showProfileModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-emerald-50 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded shadow max-w-md w-full">
               <h3 className="text-lg font-bold mb-4">Edit Profil Sekolah</h3>
               <form onSubmit={handleSaveProfile}>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Nama Sekolah</label>
-                  <input 
-                    type="text" 
-                    value={profileForm.nama} 
-                    onChange={(e) => setProfileForm({...profileForm, nama: e.target.value})}
-                    className="w-full border rounded px-3 py-2" 
+                  <input
+                    type="text"
+                    value={profileForm.nama}
+                    onChange={(e) => setProfileForm({ ...profileForm, nama: e.target.value })}
+                    className="w-full border rounded px-3 py-2"
                   />
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Alamat</label>
-                  <textarea 
-                    value={profileForm.alamat} 
-                    onChange={(e) => setProfileForm({...profileForm, alamat: e.target.value})}
-                    className="w-full border rounded px-3 py-2" 
+                  <textarea
+                    value={profileForm.alamat}
+                    onChange={(e) => setProfileForm({ ...profileForm, alamat: e.target.value })}
+                    className="w-full border rounded px-3 py-2"
                   />
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Telepon</label>
-                  <input 
-                    type="text" 
-                    value={profileForm.telepon} 
-                    onChange={(e) => setProfileForm({...profileForm, telepon: e.target.value})}
-                    className="w-full border rounded px-3 py-2" 
+                  <input
+                    type="text"
+                    value={profileForm.telepon}
+                    onChange={(e) => setProfileForm({ ...profileForm, telepon: e.target.value })}
+                    className="w-full border rounded px-3 py-2"
                   />
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Email</label>
-                  <input 
-                    type="email" 
-                    value={profileForm.email} 
-                    onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
-                    className="w-full border rounded px-3 py-2" 
+                  <input
+                    type="email"
+                    value={profileForm.email}
+                    onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                    className="w-full border rounded px-3 py-2"
                   />
                 </div>
                 <div className="flex gap-2">
                   <button type="submit" className="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Simpan</button>
-                  <button type="button" onClick={() => setShowProfileModal(false)} className="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Batal</button>
+                  <button type="button" onClick={() => setShowProfileModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
                 </div>
               </form>
             </div>
@@ -1076,28 +1126,28 @@ export default function AdminDashboard() {
 
         {/* News Modal */}
         {showNewsModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-emerald-50 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded shadow max-w-md w-full">
               <h3 className="text-lg font-bold mb-4">Tambah Berita</h3>
               <form onSubmit={handleSaveNews}>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Judul Berita</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={newsForm.title}
-                    onChange={(e) => setNewsForm({...newsForm, title: e.target.value})}
-                    placeholder="Masukkan judul berita" 
-                    className="w-full border rounded px-3 py-2" 
+                    onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })}
+                    placeholder="Masukkan judul berita"
+                    className="w-full border rounded px-3 py-2"
                   />
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Konten</label>
-                  <textarea 
+                  <textarea
                     value={newsForm.content}
-                    onChange={(e) => setNewsForm({...newsForm, content: e.target.value})}
-                    placeholder="Masukkan konten berita" 
-                    rows={4} 
-                    className="w-full border rounded px-3 py-2" 
+                    onChange={(e) => setNewsForm({ ...newsForm, content: e.target.value })}
+                    placeholder="Masukkan konten berita"
+                    rows={4}
+                    className="w-full border rounded px-3 py-2"
                   />
                 </div>
                 <div className="mb-4">
@@ -1105,7 +1155,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={newsForm.thumbnail}
-                    onChange={(e) => setNewsForm({...newsForm, thumbnail: e.target.value})}
+                    onChange={(e) => setNewsForm({ ...newsForm, thumbnail: e.target.value })}
                     placeholder="Masukkan URL gambar atau gunakan upload di bawah"
                     className="w-full border rounded px-3 py-2 mb-2"
                   />
@@ -1121,17 +1171,17 @@ export default function AdminDashboard() {
                 </div>
                 <div className="mb-4 flex items-center gap-4">
                   <label className="flex items-center gap-2">
-                    <input type="checkbox" checked={newsForm.featured} onChange={(e) => setNewsForm({...newsForm, featured: e.target.checked})} />
+                    <input type="checkbox" checked={newsForm.featured} onChange={(e) => setNewsForm({ ...newsForm, featured: e.target.checked })} />
                     <span className="text-sm">Featured</span>
                   </label>
                   <label className="flex items-center gap-2">
-                    <input type="checkbox" checked={newsForm.published} onChange={(e) => setNewsForm({...newsForm, published: e.target.checked})} />
+                    <input type="checkbox" checked={newsForm.published} onChange={(e) => setNewsForm({ ...newsForm, published: e.target.checked })} />
                     <span className="text-sm">Published</span>
                   </label>
                 </div>
                 <div className="flex gap-2">
                   <button type="submit" className="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Simpan</button>
-                  <button type="button" onClick={() => setShowNewsModal(false)} className="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Batal</button>
+                  <button type="button" onClick={() => setShowNewsModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
                 </div>
               </form>
             </div>
@@ -1140,54 +1190,54 @@ export default function AdminDashboard() {
 
         {/* Jurusan Modal */}
         {showJurusanModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-emerald-50 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded shadow max-w-md w-full">
               <h3 className="text-lg font-bold mb-4">Tambah Jurusan</h3>
               <form onSubmit={handleSaveJurusan}>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Nama Jurusan</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={jurusanForm.nama}
-                    onChange={(e) => setJurusanForm({...jurusanForm, nama: e.target.value})}
-                    placeholder="Masukkan nama jurusan" 
-                    className="w-full border rounded px-3 py-2" 
+                    onChange={(e) => setJurusanForm({ ...jurusanForm, nama: e.target.value })}
+                    placeholder="Masukkan nama jurusan"
+                    className="w-full border rounded px-3 py-2"
                   />
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Deskripsi</label>
-                  <textarea 
+                  <textarea
                     value={jurusanForm.deskripsi}
-                    onChange={(e) => setJurusanForm({...jurusanForm, deskripsi: e.target.value})}
-                    placeholder="Masukkan deskripsi jurusan" 
-                    rows={4} 
-                    className="w-full border rounded px-3 py-2" 
+                    onChange={(e) => setJurusanForm({ ...jurusanForm, deskripsi: e.target.value })}
+                    placeholder="Masukkan deskripsi jurusan"
+                    rows={4}
+                    className="w-full border rounded px-3 py-2"
                   />
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Kode Jurusan</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={jurusanForm.kode}
-                    onChange={(e) => setJurusanForm({...jurusanForm, kode: e.target.value})}
-                    placeholder="Masukkan kode jurusan (misal: TI)" 
-                    className="w-full border rounded px-3 py-2" 
+                    onChange={(e) => setJurusanForm({ ...jurusanForm, kode: e.target.value })}
+                    placeholder="Masukkan kode jurusan (misal: TI)"
+                    className="w-full border rounded px-3 py-2"
                   />
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Icon Emoji</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={jurusanForm.icon}
-                    onChange={(e) => setJurusanForm({...jurusanForm, icon: e.target.value})}
-                    placeholder="Masukkan emoji (misal: 🧠)" 
-                    className="w-full border rounded px-3 py-2" 
+                    onChange={(e) => setJurusanForm({ ...jurusanForm, icon: e.target.value })}
+                    placeholder="Masukkan emoji (misal: 🧠)"
+                    className="w-full border rounded px-3 py-2"
                     maxLength={2}
                   />
                 </div>
                 <div className="flex gap-2">
                   <button type="submit" className="flex-1 bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Simpan</button>
-                  <button type="button" onClick={() => setShowJurusanModal(false)} className="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Batal</button>
+                  <button type="button" onClick={() => setShowJurusanModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
                 </div>
               </form>
             </div>
@@ -1196,34 +1246,34 @@ export default function AdminDashboard() {
 
         {/* Testimonial Modal */}
         {showTestimonialModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-emerald-50 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded shadow max-w-2xl w-full max-h-[80vh] overflow-y-auto">
               <h3 className="text-lg font-bold mb-4">{selectedTestimonial ? 'Edit Testimoni' : 'Tambah Testimoni'}</h3>
               <form onSubmit={handleSaveTestimonial}>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Nama</label>
-                    <input type="text" value={testimonialForm.nama} onChange={(e) => setTestimonialForm({...testimonialForm, nama: e.target.value})} className="w-full border rounded px-3 py-2" />
+                    <input type="text" value={testimonialForm.nama} onChange={(e) => setTestimonialForm({ ...testimonialForm, nama: e.target.value })} className="w-full border rounded px-3 py-2" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Posisi</label>
-                    <input type="text" value={testimonialForm.posisi} onChange={(e) => setTestimonialForm({...testimonialForm, posisi: e.target.value})} className="w-full border rounded px-3 py-2" />
+                    <input type="text" value={testimonialForm.posisi} onChange={(e) => setTestimonialForm({ ...testimonialForm, posisi: e.target.value })} className="w-full border rounded px-3 py-2" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Perusahaan</label>
-                    <input type="text" value={testimonialForm.perusahaan} onChange={(e) => setTestimonialForm({...testimonialForm, perusahaan: e.target.value})} className="w-full border rounded px-3 py-2" />
+                    <input type="text" value={testimonialForm.perusahaan} onChange={(e) => setTestimonialForm({ ...testimonialForm, perusahaan: e.target.value })} className="w-full border rounded px-3 py-2" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Tahun Lulus</label>
-                    <input type="text" value={testimonialForm.tahunLulus} onChange={(e) => setTestimonialForm({...testimonialForm, tahunLulus: e.target.value})} className="w-full border rounded px-3 py-2" />
+                    <input type="text" value={testimonialForm.tahunLulus} onChange={(e) => setTestimonialForm({ ...testimonialForm, tahunLulus: e.target.value })} className="w-full border rounded px-3 py-2" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Testimoni</label>
-                    <textarea value={testimonialForm.testimoni} onChange={(e) => setTestimonialForm({...testimonialForm, testimoni: e.target.value})} className="w-full border rounded px-3 py-2" rows={4} />
+                    <textarea value={testimonialForm.testimoni} onChange={(e) => setTestimonialForm({ ...testimonialForm, testimoni: e.target.value })} className="w-full border rounded px-3 py-2" rows={4} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Rating</label>
-                    <select value={testimonialForm.rating} onChange={(e) => setTestimonialForm({...testimonialForm, rating: Number(e.target.value)})} className="w-full border rounded px-3 py-2">
+                    <select value={testimonialForm.rating} onChange={(e) => setTestimonialForm({ ...testimonialForm, rating: Number(e.target.value) })} className="w-full border rounded px-3 py-2">
                       <option value={5}>5</option>
                       <option value={4}>4</option>
                       <option value={3}>3</option>
@@ -1234,7 +1284,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex gap-2 mt-6">
                   <button type="submit" className="flex-1 bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Simpan</button>
-                  <button type="button" onClick={() => { setShowTestimonialModal(false); setSelectedTestimonial(null); }} className="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Batal</button>
+                  <button type="button" onClick={() => { setShowTestimonialModal(false); setSelectedTestimonial(null); }} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
                 </div>
               </form>
             </div>
@@ -1243,95 +1293,95 @@ export default function AdminDashboard() {
 
         {/* Stats Modal */}
         {showStatsModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-emerald-50 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded shadow max-w-2xl w-full max-h-96 overflow-y-auto">
               <h3 className="text-lg font-bold mb-4">Edit Statistik Sekolah</h3>
               <form onSubmit={handleSaveStats}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Siswa Aktif (Nilai)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={statsForm.siswaAktif}
-                      onChange={(e) => setStatsForm({...statsForm, siswaAktif: e.target.value})}
-                      placeholder="Contoh: 1,200+" 
-                      className="w-full border rounded px-3 py-2" 
+                      onChange={(e) => setStatsForm({ ...statsForm, siswaAktif: e.target.value })}
+                      placeholder="Contoh: 1,200+"
+                      className="w-full border rounded px-3 py-2"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Siswa Aktif (Deskripsi)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={statsForm.deskripsiSiswa}
-                      onChange={(e) => setStatsForm({...statsForm, deskripsiSiswa: e.target.value})}
-                      placeholder="Contoh: Dari berbagai daerah" 
-                      className="w-full border rounded px-3 py-2" 
+                      onChange={(e) => setStatsForm({ ...statsForm, deskripsiSiswa: e.target.value })}
+                      placeholder="Contoh: Dari berbagai daerah"
+                      className="w-full border rounded px-3 py-2"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Mitra Industri (Nilai)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={statsForm.mitraIndustri}
-                      onChange={(e) => setStatsForm({...statsForm, mitraIndustri: e.target.value})}
-                      placeholder="Contoh: 150+" 
-                      className="w-full border rounded px-3 py-2" 
+                      onChange={(e) => setStatsForm({ ...statsForm, mitraIndustri: e.target.value })}
+                      placeholder="Contoh: 150+"
+                      className="w-full border rounded px-3 py-2"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Mitra Industri (Deskripsi)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={statsForm.deskripsiMitra}
-                      onChange={(e) => setStatsForm({...statsForm, deskripsiMitra: e.target.value})}
-                      placeholder="Contoh: Perusahaan ternama" 
-                      className="w-full border rounded px-3 py-2" 
+                      onChange={(e) => setStatsForm({ ...statsForm, deskripsiMitra: e.target.value })}
+                      placeholder="Contoh: Perusahaan ternama"
+                      className="w-full border rounded px-3 py-2"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Tingkat Serapan Kerja (Nilai)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={statsForm.serapanKerja}
-                      onChange={(e) => setStatsForm({...statsForm, serapanKerja: e.target.value})}
-                      placeholder="Contoh: 95%" 
-                      className="w-full border rounded px-3 py-2" 
+                      onChange={(e) => setStatsForm({ ...statsForm, serapanKerja: e.target.value })}
+                      placeholder="Contoh: 95%"
+                      className="w-full border rounded px-3 py-2"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Tingkat Serapan Kerja (Deskripsi)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={statsForm.deskripsiSerapan}
-                      onChange={(e) => setStatsForm({...statsForm, deskripsiSerapan: e.target.value})}
-                      placeholder="Contoh: Alumni tersebar industri" 
-                      className="w-full border rounded px-3 py-2" 
+                      onChange={(e) => setStatsForm({ ...statsForm, deskripsiSerapan: e.target.value })}
+                      placeholder="Contoh: Alumni tersebar industri"
+                      className="w-full border rounded px-3 py-2"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Prestasi (Nilai)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={statsForm.prestasi}
-                      onChange={(e) => setStatsForm({...statsForm, prestasi: e.target.value})}
-                      placeholder="Contoh: 50+" 
-                      className="w-full border rounded px-3 py-2" 
+                      onChange={(e) => setStatsForm({ ...statsForm, prestasi: e.target.value })}
+                      placeholder="Contoh: 50+"
+                      className="w-full border rounded px-3 py-2"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Prestasi (Deskripsi)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={statsForm.deskripsiPrestasi}
-                      onChange={(e) => setStatsForm({...statsForm, deskripsiPrestasi: e.target.value})}
-                      placeholder="Contoh: Tingkat nasional & internasional" 
-                      className="w-full border rounded px-3 py-2" 
+                      onChange={(e) => setStatsForm({ ...statsForm, deskripsiPrestasi: e.target.value })}
+                      placeholder="Contoh: Tingkat nasional & internasional"
+                      className="w-full border rounded px-3 py-2"
                     />
                   </div>
                 </div>
                 <div className="flex gap-2 mt-6">
                   <button type="submit" className="flex-1 bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">Simpan</button>
-                  <button type="button" onClick={() => setShowStatsModal(false)} className="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Batal</button>
+                  <button type="button" onClick={() => setShowStatsModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
                 </div>
               </form>
             </div>

@@ -40,14 +40,14 @@ export default function HeroSection() {
 
     if (isLoading) {
         return (
-            <section className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white flex items-center justify-center">
+            <section className="min-h-screen bg-gradient-to-br from-emerald-600 via-emerald-500 to-emerald-700 text-white flex items-center justify-center">
                 <p>Loading...</p>
             </section>
         );
     }
 
     return (
-        <section className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white flex items-center">
+        <section className="min-h-screen bg-gradient-to-br from-emerald-600 via-emerald-500 to-emerald-700 text-white flex items-center">
             <div className="w-full">
 
 
@@ -61,7 +61,7 @@ export default function HeroSection() {
                                     &nbsp;
                                     {heroData?.heroSubtitle || 'Bersama SMK Unggulan'}
                                 </h1>
-                                <p className="text-xl text-blue-100 mx-auto">
+                                <p className="text-xl text-emerald-50 mx-auto">
                                     {heroData?.heroDescription ||
                                         'Persiapkan diri untuk era industri 4.0 dengan pendidikan vokasi berkualitas, teaching factory modern, dan jaringan industri yang luas.'}
                                 </p>
@@ -71,14 +71,14 @@ export default function HeroSection() {
                             <div className="flex flex-wrap gap-4 pt-4 justify-center">
                                 <Link
                                     href="/ai-recommendation"
-                                    className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition duration-300 shadow-lg hover:shadow-xl"
+                                    className="inline-flex items-center gap-2 bg-white text-emerald-600 px-6 py-3 rounded-lg font-bold hover:bg-emerald-50 transition duration-300 shadow-lg hover:shadow-xl"
                                 >
                                     <span>✨</span>
                                     Tes AI Jurusan
                                 </Link>
                                 <Link
                                     href="/bkk"
-                                    className="inline-flex items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-400 transition duration-300 shadow-lg hover:shadow-xl"
+                                    className="inline-flex items-center gap-2 bg-lime-400 hover:bg-lime-300 text-emerald-900 px-6 py-3 rounded-lg font-bold transition duration-300 shadow-lg hover:shadow-xl"
                                 >
                                     <span>👔</span>
                                     Career Center

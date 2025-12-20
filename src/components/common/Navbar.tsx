@@ -7,10 +7,18 @@ import { useRouter } from 'next/navigation';
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     checkAuth();
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const checkAuth = async () => {
@@ -33,58 +41,67 @@ export default function Navbar() {
     router.push('/');
   };
 
+  // Dynamic classes based on scroll state
+  const navClasses = scrolled
+    ? 'bg-white/70 backdrop-blur-md shadow-sm border-b border-white/20 text-emerald-900 py-3'
+    : 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-4 shadow-lg';
+
+  const linkHoverClass = scrolled
+    ? 'hover:text-emerald-600'
+    : 'hover:text-emerald-50';
+
   return (
-    <nav className="bg-blue-600 text-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link href="/" className="font-bold text-xl">
+    <nav className={`sticky w-full z-50 top-0 transition-all duration-300 ${navClasses}`}>
+      <div className="container mx-auto flex justify-between items-center px-4">
+        <Link href="/" className={`font-bold text-xl transition duration-300 ${linkHoverClass}`}>
           SMK Sunan Giri
         </Link>
 
-        <div className="flex gap-4">
-          <Link href="/" className="hover:underline">
+        <div className="flex gap-6 items-center">
+          <Link href="/" className={`transition duration-200 ${linkHoverClass}`}>
             Beranda
           </Link>
-          <Link href="/ai-recommendation" className="hover:underline">
+          <Link href="/ai-recommendation" className={`transition duration-200 ${linkHoverClass}`}>
             AI Jurusan
           </Link>
-          <Link href="/ppdb" className="hover:underline">
+          <Link href="/ppdb" className={`transition duration-200 ${linkHoverClass}`}>
             PPDB
           </Link>
-          <Link href="/bkk" className="hover:underline">
+          <Link href="/bkk" className={`transition duration-200 ${linkHoverClass}`}>
             BKK
           </Link>
 
           {!isLoading && (
             <>
               {user ? (
-                <>
-                  <span className="text-sm">{user.fullName}</span>
+                <div className="flex items-center gap-4">
+                  <span className={`text-sm ${scrolled ? 'text-emerald-900' : 'text-emerald-50'}`}>{user.fullName}</span>
                   {user.role.includes('ADMIN') && (
-                    <Link href="/admin" className="hover:underline">
+                    <Link href="/admin" className={`transition duration-200 ${linkHoverClass}`}>
                       Admin
                     </Link>
                   )}
                   {user.role === 'ALUMNI' && (
-                    <Link href="/tracer-study" className="hover:underline">
+                    <Link href="/tracer-study" className={`transition duration-200 ${linkHoverClass}`}>
                       Tracer Study
                     </Link>
                   )}
                   <button
                     onClick={handleLogout}
-                    className="bg-red-500 px-3 py-1 rounded"
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded font-medium transition duration-200"
                   >
                     Logout
                   </button>
-                </>
+                </div>
               ) : (
-                <>
-                  <Link href="/login" className="hover:underline">
+                <div className="flex items-center gap-4">
+                  <Link href="/login" className={`transition duration-200 ${linkHoverClass}`}>
                     Login
                   </Link>
-                  <Link href="/register" className="hover:underline">
+                  <Link href="/register" className="bg-lime-500 hover:bg-lime-600 px-4 py-1 rounded font-medium transition duration-200 text-emerald-900">
                     Register
                   </Link>
-                </>
+                </div>
               )}
             </>
           )}

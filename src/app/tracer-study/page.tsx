@@ -2,6 +2,7 @@
 
 import Navbar from '@/components/common/Navbar';
 import { useState } from 'react';
+import { CheckCircle } from 'lucide-react';
 
 export default function TracerStudyPage() {
   const [formData, setFormData] = useState({
@@ -50,38 +51,38 @@ export default function TracerStudyPage() {
       <Navbar />
       <main className="container mx-auto py-12 px-4">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Tracer Study Alumni</h1>
+          <h1 className="text-4xl font-bold mb-8 text-emerald-900">Tracer Study Alumni</h1>
 
           {success && (
-            <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
-              Data tracer study berhasil disimpan
+            <div className="bg-lime-50 text-lime-900 p-4 rounded-lg mb-6 border border-lime-200 font-medium flex items-center">
+              <CheckCircle className="w-5 h-5 mr-2" /> Data tracer study berhasil disimpan
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg border border-emerald-200 space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-2">Tahun Lulus</label>
+                <label className="block text-sm font-semibold text-emerald-900 mb-3">Tahun Lulus</label>
                 <input
                   type="number"
                   name="tahunLulus"
                   value={formData.tahunLulus}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Jurusan</label>
+                <label className="block text-sm font-semibold text-emerald-900 mb-3">Jurusan</label>
                 <select
                   name="jurusanId"
                   value={formData.jurusanId}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
                   required
                 >
-                  <option>-- Pilih --</option>
+                  <option value="">-- Pilih --</option>
                   <option value="1">Teknik Informatika</option>
                   <option value="2">Akuntansi</option>
                   <option value="3">Desain Grafis</option>
@@ -91,12 +92,12 @@ export default function TracerStudyPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Status Saat Ini</label>
+              <label className="block text-sm font-semibold text-emerald-900 mb-3">Status Saat Ini</label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border rounded"
+                className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
                 required
               >
                 <option>-- Pilih --</option>
@@ -110,47 +111,47 @@ export default function TracerStudyPage() {
             {formData.status === 'Bekerja' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Nama Perusahaan</label>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">Nama Perusahaan</label>
                   <input
                     type="text"
                     name="namaPerusahaan"
                     value={formData.namaPerusahaan}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
                   />
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Jabatan</label>
+                    <label className="block text-sm font-semibold text-emerald-900 mb-3">Jabatan</label>
                     <input
                       type="text"
                       name="jabatan"
                       value={formData.jabatan}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Gaji (Opsional)</label>
+                    <label className="block text-sm font-semibold text-emerald-900 mb-3">Gaji (Opsional)</label>
                     <input
                       type="number"
                       name="gaji"
                       value={formData.gaji}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900 placeholder-emerald-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Relevansi Jurusan</label>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-3">Relevansi Jurusan</label>
                   <select
                     name="relevansi"
                     value={formData.relevansi}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
                   >
                     <option>-- Pilih --</option>
                     <option>Relevan</option>
@@ -164,7 +165,7 @@ export default function TracerStudyPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 disabled:bg-gray-400 font-bold"
+              className="w-full bg-lime-500 text-emerald-900 py-3 rounded-lg hover:bg-lime-600 disabled:bg-emerald-400 font-bold transition duration-200"
             >
               {isLoading ? 'Simpan...' : 'Simpan Data'}
             </button>

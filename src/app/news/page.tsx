@@ -33,36 +33,37 @@ export default async function NewsList({ searchParams }: Props) {
 
   return (
     <main className="container mx-auto py-12 px-4">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Berita & Informasi</h1>
+      <div className="text-center mb-12">
+        <div className="inline-block bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">Informasi Terkini</div>
+        <h1 className="text-4xl font-bold text-emerald-900">Berita & Informasi</h1>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
         {news.map((n) => (
-          <article key={n.id} className="bg-white rounded-lg shadow overflow-hidden">
+          <article key={n.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition border-t-4 border-lime-500 overflow-hidden">
             <Link href={`/news/${n.id}`} className="block">
               {n.thumbnail ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={n.thumbnail} alt={n.title} className="w-full h-48 object-cover" />
               ) : (
-                <div className="h-48 bg-gray-100 flex items-center justify-center text-gray-400">Gambar Berita</div>
+                <div className="h-48 bg-emerald-100 flex items-center justify-center text-emerald-9000 font-medium">Gambar Berita</div>
               )}
             </Link>
             <div className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-sm text-gray-500">{new Date(n.createdAt).toLocaleDateString()}</div>
-                {n.featured && <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Featured</span>}
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-sm text-emerald-600 font-medium">{new Date(n.createdAt).toLocaleDateString('id-ID')}</div>
+                {n.featured && <span className="text-xs bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full font-semibold">Featured</span>}
               </div>
-              <h3 className="text-lg font-semibold mb-2"><Link href={`/news/${n.id}`}>{n.title}</Link></h3>
-              <p className="text-gray-600 text-sm">{n.content ? n.content.slice(0, 160) + (n.content.length > 160 ? '...' : '') : ''}</p>
+              <h3 className="text-lg font-bold text-emerald-900 mb-3"><Link href={`/news/${n.id}`}>{n.title}</Link></h3>
+              <p className="text-emerald-700 text-sm leading-relaxed">{n.content ? n.content.slice(0, 160) + (n.content.length > 160 ? '...' : '') : ''}</p>
             </div>
           </article>
         ))}
       </div>
 
-      <div className="flex justify-center mt-8 space-x-2">
+      <div className="flex justify-center mt-12 space-x-2">
         {Array.from({ length: pages }).map((_, i) => (
-          <Link key={i} href={`/news?page=${i + 1}`} className={`px-3 py-1 border rounded ${i + 1 === page ? 'bg-gray-800 text-white' : 'bg-white'}`}>
+          <Link key={i} href={`/news?page=${i + 1}`} className={`px-4 py-2 rounded-lg font-medium transition duration-200 ${i + 1 === page ? 'bg-lime-500 text-emerald-900' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200'}`}>
             {i + 1}
           </Link>
         ))}
