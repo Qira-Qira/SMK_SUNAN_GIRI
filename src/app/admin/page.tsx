@@ -470,7 +470,7 @@ export default function AdminDashboard() {
   return (
     <>
       <Navbar />
-      <main className="container mx-auto py-12 px-4">
+      <main className="container mx-auto py-12 px-4 text-emerald-900">
         <h1 className="text-3xl font-bold mb-8 text-emerald-900">Admin Dashboard</h1>
 
         {/* Tabs Navigation */}
@@ -506,7 +506,7 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-bold mb-2">Total Pendaftar PPDB</h3>
                 <p className="text-3xl font-bold">{stats?.totalStats?.ppdbCount || 0}</p>
               </div>
-              <div className="bg-lime-500 text-emerald-900 p-6 rounded shadow font-semibold">
+              <div className="bg-lime-500 text-white p-6 rounded shadow font-semibold">
                 <h3 className="text-lg font-bold mb-2">Lamaran Kerja</h3>
                 <p className="text-3xl font-bold">{stats?.totalStats?.applicationsCount || 0}</p>
               </div>
@@ -550,7 +550,7 @@ export default function AdminDashboard() {
         {activeTab === 'ppdb' && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Manajemen PPDB</h2>
+              <h2 className="text-2xl font-bold text-emerald-900">Manajemen PPDB</h2>
               <div className="space-x-2">
                 <button
                   onClick={() => exportPPDBToCSV(ppdbEntries)}
@@ -568,7 +568,7 @@ export default function AdminDashboard() {
             </div>
             <div className="bg-white rounded shadow overflow-hidden">
               <table className="w-full text-left text-sm">
-                <thead className="bg-emerald-100 border-b">
+                <thead className="bg-emerald-100 border-b text-emerald-900">
                   <tr>
                     <th className="px-4 py-3">No. Pendaftaran</th>
                     <th className="px-4 py-3">Nama</th>
@@ -610,7 +610,7 @@ export default function AdminDashboard() {
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-9000">Tidak ada data</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-700">Tidak ada data</td></tr>
                   )}
                 </tbody>
               </table>
@@ -622,7 +622,7 @@ export default function AdminDashboard() {
         {activeTab === 'bkk' && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Manajemen Lowongan Kerja</h2>
+              <h2 className="text-2xl font-bold text-emerald-900">Manajemen Lowongan Kerja</h2>
               <div className="space-x-2">
                 <button
                   onClick={() => setShowJobModal(true)}
@@ -646,7 +646,7 @@ export default function AdminDashboard() {
             </div>
             <div className="bg-white rounded shadow overflow-hidden">
               <table className="w-full text-left text-sm">
-                <thead className="bg-emerald-100 border-b">
+                <thead className="bg-emerald-100 border-b text-emerald-900">
                   <tr>
                     <th className="px-4 py-3">Posisi</th>
                     <th className="px-4 py-3">Perusahaan</th>
@@ -680,7 +680,7 @@ export default function AdminDashboard() {
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-9000">Tidak ada data</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-700">Tidak ada data</td></tr>
                   )}
                 </tbody>
               </table>
@@ -690,15 +690,15 @@ export default function AdminDashboard() {
               <div className="fixed inset-0 z-50 flex items-center justify-center">
                 <div onClick={() => setShowJobModal(false)} className="absolute inset-0 bg-emerald-50/40"></div>
                 <form onSubmit={handleSaveJob} className="relative bg-white rounded shadow max-w-2xl w-full p-6 z-50">
-                  <h3 className="text-lg font-bold mb-4">Tambah Lowongan Kerja</h3>
+                  <h3 className="text-lg font-bold mb-4 text-emerald-900">Tambah Lowongan Kerja</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Posisi</label>
+                      <label className="block text-sm font-medium mb-1 text-emerald-700">Posisi</label>
                       <input required value={jobForm.posisi} onChange={(e) => setJobForm({ ...jobForm, posisi: e.target.value })} className="w-full border rounded px-3 py-2" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Lokasi</label>
-                      <input value={jobForm.lokasi} onChange={(e) => setJobForm({ ...jobForm, lokasi: e.target.value })} placeholder="Contoh: Jakarta" className="w-full border rounded px-3 py-2" />
+                      <label className="block text-sm font-medium mb-1 text-emerald-700">Lokasi</label>
+                      <input value={jobForm.lokasi} onChange={(e) => setJobForm({ ...jobForm, lokasi: e.target.value })} placeholder="Contoh: Jakarta" className="w-full border rounded px-3 py-2 text-emerald-700" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Perusahaan (pilih perusahaan jika ingin menugaskan ke perusahaan)</label>

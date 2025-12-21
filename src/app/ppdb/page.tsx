@@ -147,7 +147,7 @@ export default function PPDBPage() {
     return (
       <>
         <Navbar />
-        <main className="container mx-auto py-12 px-4">
+        <main className="container mx-auto py-12 px-4 text-emerald-900">
           <div className="max-w-2xl mx-auto bg-lime-50 border border-lime-300 p-8 rounded-lg">
             <h2 className="text-3xl font-bold text-lime-900 mb-4 flex items-center">
               <CheckCircle className="w-8 h-8 mr-3 text-lime-600" /> Pendaftaran Berhasil

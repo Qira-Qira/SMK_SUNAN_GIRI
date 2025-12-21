@@ -54,7 +54,7 @@ export default function RegisterPage() {
     <div className="min-h-screen relative">
       <GeometricBackground />
       <Navbar />
-      <main className="container mx-auto py-12 px-4 relative z-10">
+      <main className="container mx-auto py-12 px-4 relative z-10 text-emerald-900">
         <form
           onSubmit={handleSubmit}
           className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg border border-emerald-200"

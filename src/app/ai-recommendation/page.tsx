@@ -88,7 +88,7 @@ export default function AIRecommendationPage() {
     return (
       <>
         <Navbar />
-        <main className="container mx-auto py-12 px-4">
+        <main className="container mx-auto py-12 px-4 text-emerald-900">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-12 text-center text-emerald-900">Rekomendasi Jurusan Anda</h1>
             <div className="grid md:grid-cols-3 gap-6">

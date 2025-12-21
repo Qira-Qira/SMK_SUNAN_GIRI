@@ -196,7 +196,7 @@ export default function BKKPage() {
   return (
     <>
       <Navbar />
-      <main className="container mx-auto py-8 px-4">
+      <main className="container mx-auto py-8 px-4 text-emerald-900">
         <h1 className="text-4xl font-bold mb-8 text-emerald-900">Career Center Alumni</h1>
 
         <div className="mb-8">
