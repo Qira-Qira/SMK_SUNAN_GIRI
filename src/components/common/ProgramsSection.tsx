@@ -33,12 +33,12 @@ export default function ProgramsSection() {
         if (res.ok) {
           const data = await res.json();
           if (data.jurusan && Array.isArray(data.jurusan)) {
-            // Take first 5 programs
-            const limitedPrograms = data.jurusan.slice(0, 5).map((program: any, idx: number) => ({
+            // Use all programs returned by CMS
+            const allPrograms = data.jurusan.map((program: any, idx: number) => ({
               ...program,
               icon: program.icon || DEFAULT_ICONS[idx % DEFAULT_ICONS.length],
             }));
-            setPrograms(limitedPrograms);
+            setPrograms(allPrograms);
           }
         }
       } catch (error) {
@@ -67,8 +67,8 @@ export default function ProgramsSection() {
           </p>
         </div>
 
-        {/* Programs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        {/* Programs Grid (1 column on mobile, 2 on small, 3 on md+) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
           {loading ? (
             <div className="col-span-full text-center py-8">
               <Loader2 className="animate-spin w-8 h-8 mx-auto text-emerald-600" />
