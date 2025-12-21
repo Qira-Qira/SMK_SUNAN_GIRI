@@ -13,6 +13,8 @@ export default function BKKPage() {
   const [activeTab, setActiveTab] = useState<Tab>('lowongan');
   const [query, setQuery] = useState('');
   const [selectedJurusan, setSelectedJurusan] = useState<string | null>(null);
+  const [companyQuery, setCompanyQuery] = useState('');
+  const [companySelectedJurusan, setCompanySelectedJurusan] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<any | null>(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
@@ -69,6 +71,19 @@ export default function BKKPage() {
     });
     return Array.from(map.values());
   }, [jobPostings]);
+
+  const [companyPage, setCompanyPage] = useState(1);
+  const filteredCompanies = useMemo(() => {
+    let list = companies || [];
+    if (companySelectedJurusan) {
+      list = list.filter((c) => (jobPostings || []).some((j) => j.perusahaan?.id === c.id && String(j.jurusanId) === String(companySelectedJurusan)));
+    }
+    if (companyQuery.trim()) {
+      const q = companyQuery.toLowerCase();
+      list = list.filter((c) => (c.fullName || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q));
+    }
+    return list;
+  }, [companies, jobPostings, companyQuery, companySelectedJurusan]);
 
   const openDetail = (job: any) => {
     setSelectedJob(job);
@@ -176,11 +191,21 @@ export default function BKKPage() {
 
               {activeTab === 'perusahaan' && (
                 <div>
-                  {companies.length === 0 ? (
-                    <div className="bg-amber-50 border border-amber-300 p-4 rounded text-amber-900">Belum ada perusahaan terdaftar.</div>
+                  <div className="mb-4 flex gap-2 items-center">
+                    <input value={companyQuery} onChange={(e) => { setCompanyQuery(e.target.value); setCompanyPage(1); }} placeholder="Cari perusahaan" className="flex-1 border border-emerald-300 rounded px-3 py-2 text-emerald-900 placeholder-emerald-500" />
+                    <select value={companySelectedJurusan || ''} onChange={(e) => { setCompanySelectedJurusan(e.target.value || null); setCompanyPage(1); }} className="border border-emerald-300 rounded px-3 py-2 text-emerald-900">
+                      <option value="">Semua Jurusan</option>
+                      {jurusanList.map((j) => (
+                        <option key={j.id} value={j.id}>{j.nama}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {filteredCompanies.length === 0 ? (
+                    <div className="bg-amber-50 border border-amber-300 p-4 rounded text-amber-900">Belum ada perusahaan sesuai filter.</div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4">
-                      {companies.map((c) => (
+                      {filteredCompanies.slice((companyPage - 1) * pageSize, companyPage * pageSize).map((c) => (
                         <div key={c.id} className="bg-white p-4 rounded shadow flex justify-between items-center">
                           <div>
                             <h4 className="font-bold text-emerald-900">{c.fullName}</h4>
@@ -191,6 +216,17 @@ export default function BKKPage() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Pagination for companies */}
+                  {filteredCompanies.length > pageSize && (
+                    <div className="mt-4 flex justify-center items-center gap-3">
+                      <button disabled={companyPage === 1} onClick={() => setCompanyPage(p => Math.max(1, p - 1))} className="px-3 py-1 border border-emerald-300 rounded text-emerald-700">Prev</button>
+                      {Array.from({ length: Math.ceil(filteredCompanies.length / pageSize) }).map((_, i) => (
+                        <button key={i} onClick={() => setCompanyPage(i + 1)} className={`px-3 py-1 border rounded ${companyPage === i + 1 ? 'bg-lime-500 text-emerald-900 border-lime-500' : 'border-emerald-300 text-emerald-700'}`}>{i + 1}</button>
+                      ))}
+                      <button disabled={companyPage === Math.ceil(filteredCompanies.length / pageSize)} onClick={() => setCompanyPage(p => Math.min(Math.ceil(filteredCompanies.length / pageSize), p + 1))} className="px-3 py-1 border border-emerald-300 rounded text-emerald-700">Next</button>
                     </div>
                   )}
                 </div>
