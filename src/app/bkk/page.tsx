@@ -4,7 +4,7 @@ import Navbar from '@/components/common/Navbar';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from '@/lib/toast';
 
-type Tab = 'lowongan' | 'perusahaan' | 'profil';
+type Tab = 'lowongan' | 'perusahaan';
 
 export default function BKKPage() {
   const [jobPostings, setJobPostings] = useState<any[]>([]);
@@ -115,9 +115,6 @@ export default function BKKPage() {
             <button onClick={() => setActiveTab('perusahaan')} className={`px-6 py-3 rounded-lg font-semibold transition duration-200 ${activeTab === 'perusahaan' ? 'bg-lime-500 text-emerald-900 shadow-lg' : 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100'}`}>
               Perusahaan
             </button>
-            <button onClick={() => setActiveTab('profil')} className={`px-6 py-3 rounded-lg font-semibold transition duration-200 ${activeTab === 'profil' ? 'bg-lime-500 text-emerald-900 shadow-lg' : 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100'}`}>
-              Profil Saya
-            </button>
           </div>
         </div>
 
@@ -199,17 +196,7 @@ export default function BKKPage() {
                 </div>
               )}
 
-              {activeTab === 'profil' && (
-                <div>
-                  <div className="bg-white p-6 rounded shadow">
-                    <h3 className="font-bold text-lg text-emerald-900 mb-2">Profil Saya</h3>
-                    <p className="text-sm text-emerald-600">Masuk untuk melihat lamaran dan riwayat.</p>
-                    <div className="mt-4">
-                      <a href="/login" className="bg-lime-500 text-emerald-900 px-4 py-2 rounded font-semibold">Masuk / Daftar</a>
-                    </div>
-                  </div>
-                </div>
-              )}
+              
             </div>
 
             {/* Right column: info / help */}
