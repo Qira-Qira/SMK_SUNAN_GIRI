@@ -8,12 +8,15 @@ type Tab = 'lowongan' | 'perusahaan';
 
 export default function BKKPage() {
   const [jobPostings, setJobPostings] = useState<any[]>([]);
+  const [totalJobs, setTotalJobs] = useState(0);
   const [jurusanList, setJurusanList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('lowongan');
   const [query, setQuery] = useState('');
+  const [queryInput, setQueryInput] = useState('');
   const [selectedJurusan, setSelectedJurusan] = useState<string | null>(null);
   const [companyQuery, setCompanyQuery] = useState('');
+  const [companyQueryInput, setCompanyQueryInput] = useState('');
   const [companySelectedJurusan, setCompanySelectedJurusan] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<any | null>(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
@@ -27,6 +30,54 @@ export default function BKKPage() {
     fetchInitial();
   }, []);
 
+  // debounce query input -> query (reduces re-renders while typing)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setQuery(queryInput);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [queryInput]);
+
+  // debounce company query input -> companyQuery
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setCompanyQuery(companyQueryInput);
+      setCompanyPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [companyQueryInput]);
+
+  // fetch jobs from server when page / filters / query change
+  useEffect(() => {
+    const fetchJobs = async () => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams();
+        params.set('page', String(page));
+        params.set('limit', String(pageSize));
+        if (selectedJurusan) params.set('jurusanId', String(selectedJurusan));
+        if (query.trim()) params.set('q', query.trim());
+
+        const res = await fetch(`/api/bkk/job-postings?${params.toString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          setJobPostings(data.jobPostings || []);
+          setTotalJobs(data.total || 0);
+        }
+      } catch (err) {
+        console.error('Fetch jobs error', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (activeTab === 'lowongan') fetchJobs();
+  }, [page, selectedJurusan, query, activeTab]);
+
+  // fetch companies from server when company filters change
+  
+
   const fetchInitial = async () => {
     setIsLoading(true);
     try {
@@ -37,7 +88,13 @@ export default function BKKPage() {
 
       if (jobsRes.ok) {
         const jobs = await jobsRes.json();
-        setJobPostings(jobs || []);
+        // Normalize responses: API may return array or an object { data: [], total } or similar
+        let jobArray: any[] = [];
+        if (Array.isArray(jobs)) jobArray = jobs;
+        else if (Array.isArray(jobs?.data)) jobArray = jobs.data;
+        else if (Array.isArray(jobs?.jobPostings)) jobArray = jobs.jobPostings;
+        else jobArray = [];
+        setJobPostings(jobArray);
       }
 
       if (jurusanRes.ok) {
@@ -52,7 +109,7 @@ export default function BKKPage() {
   };
 
   const filteredJobs = useMemo(() => {
-    let list = jobPostings || [];
+    let list = Array.isArray(jobPostings) ? jobPostings : [];
     if (selectedJurusan) {
       list = list.filter((j) => String(j.jurusanId) === String(selectedJurusan));
     }
@@ -65,7 +122,8 @@ export default function BKKPage() {
 
   const companies = useMemo(() => {
     const map = new Map<string, any>();
-    (jobPostings || []).forEach((j) => {
+    const jobs = Array.isArray(jobPostings) ? jobPostings : [];
+    jobs.forEach((j) => {
       const c = j.perusahaan;
       if (c && !map.has(c.id)) map.set(c.id, c);
     });
@@ -73,17 +131,35 @@ export default function BKKPage() {
   }, [jobPostings]);
 
   const [companyPage, setCompanyPage] = useState(1);
-  const filteredCompanies = useMemo(() => {
-    let list = companies || [];
-    if (companySelectedJurusan) {
-      list = list.filter((c) => (jobPostings || []).some((j) => j.perusahaan?.id === c.id && String(j.jurusanId) === String(companySelectedJurusan)));
-    }
-    if (companyQuery.trim()) {
-      const q = companyQuery.toLowerCase();
-      list = list.filter((c) => (c.fullName || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q));
-    }
-    return list;
-  }, [companies, jobPostings, companyQuery, companySelectedJurusan]);
+  const [companiesList, setCompaniesList] = useState<any[]>([]);
+  const [totalCompanies, setTotalCompanies] = useState(0);
+
+  // fetch companies from server when company filters change
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams();
+        params.set('page', String(companyPage));
+        params.set('limit', String(pageSize));
+        if (companySelectedJurusan) params.set('jurusanId', String(companySelectedJurusan));
+        if (companyQuery.trim()) params.set('q', companyQuery.trim());
+
+        const res = await fetch(`/api/public/companies?${params.toString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          setCompaniesList(data.companies || []);
+          setTotalCompanies(data.total || 0);
+        }
+      } catch (err) {
+        console.error('Fetch companies error', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (activeTab === 'perusahaan') fetchCompanies();
+  }, [companyPage, companySelectedJurusan, companyQuery, activeTab]);
 
   const openDetail = (job: any) => {
     setSelectedJob(job);
@@ -142,8 +218,8 @@ export default function BKKPage() {
               {activeTab === 'lowongan' && (
                 <div>
                   <div className="mb-4 flex gap-2 items-center">
-                    <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari posisi atau perusahaan" className="flex-1 border border-emerald-300 rounded px-3 py-2 text-emerald-900 placeholder-emerald-500" />
-                    <select value={selectedJurusan || ''} onChange={(e) => setSelectedJurusan(e.target.value || null)} className="border border-emerald-300 rounded px-3 py-2 text-emerald-900">
+                    <input value={queryInput} onChange={(e) => setQueryInput(e.target.value)} placeholder="Cari posisi atau perusahaan" className="flex-1 border border-emerald-300 rounded px-3 py-2 text-emerald-900 placeholder-emerald-500" />
+                    <select value={selectedJurusan || ''} onChange={(e) => { setSelectedJurusan(e.target.value || null); setPage(1); }} className="border border-emerald-300 rounded px-3 py-2 text-emerald-900">
                       <option value="">Semua Jurusan</option>
                       {jurusanList.map((j) => (
                         <option key={j.id} value={j.id}>{j.nama}</option>
@@ -151,11 +227,11 @@ export default function BKKPage() {
                     </select>
                   </div>
 
-                  {filteredJobs.length === 0 ? (
+                  {filteredJobs.length === 0 && totalJobs === 0 ? (
                     <div className="bg-amber-50 border border-amber-300 p-4 rounded text-amber-900">Belum ada lowongan sesuai filter.</div>
                   ) : (
                     <div className="space-y-4">
-                      {filteredJobs.slice((page - 1) * pageSize, page * pageSize).map((job) => (
+                      {(jobPostings || []).map((job) => (
                         <div key={job.id} className="bg-white p-6 rounded shadow">
                           <div className="flex justify-between items-start">
                             <div>
@@ -177,13 +253,13 @@ export default function BKKPage() {
                   )}
 
                   {/* Pagination */}
-                  {filteredJobs.length > pageSize && (
+                  {totalJobs > pageSize && (
                     <div className="mt-6 flex justify-center items-center gap-3">
                       <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="px-3 py-1 border border-emerald-300 rounded text-emerald-700">Prev</button>
-                      {Array.from({ length: Math.ceil(filteredJobs.length / pageSize) }).map((_, i) => (
+                      {Array.from({ length: Math.ceil(totalJobs / pageSize) }).map((_, i) => (
                         <button key={i} onClick={() => setPage(i + 1)} className={`px-3 py-1 border rounded ${page === i + 1 ? 'bg-lime-500 text-emerald-900 border-lime-500' : 'border-emerald-300 text-emerald-700'}`}>{i + 1}</button>
                       ))}
-                      <button disabled={page === Math.ceil(filteredJobs.length / pageSize)} onClick={() => setPage(p => Math.min(Math.ceil(filteredJobs.length / pageSize), p + 1))} className="px-3 py-1 border border-emerald-300 rounded text-emerald-700">Next</button>
+                      <button disabled={page === Math.ceil(totalJobs / pageSize)} onClick={() => setPage(p => Math.min(Math.ceil(totalJobs / pageSize), p + 1))} className="px-3 py-1 border border-emerald-300 rounded text-emerald-700">Next</button>
                     </div>
                   )}
                 </div>
@@ -192,7 +268,7 @@ export default function BKKPage() {
               {activeTab === 'perusahaan' && (
                 <div>
                   <div className="mb-4 flex gap-2 items-center">
-                    <input value={companyQuery} onChange={(e) => { setCompanyQuery(e.target.value); setCompanyPage(1); }} placeholder="Cari perusahaan" className="flex-1 border border-emerald-300 rounded px-3 py-2 text-emerald-900 placeholder-emerald-500" />
+                    <input value={companyQueryInput} onChange={(e) => { setCompanyQueryInput(e.target.value); }} placeholder="Cari perusahaan" className="flex-1 border border-emerald-300 rounded px-3 py-2 text-emerald-900 placeholder-emerald-500" />
                     <select value={companySelectedJurusan || ''} onChange={(e) => { setCompanySelectedJurusan(e.target.value || null); setCompanyPage(1); }} className="border border-emerald-300 rounded px-3 py-2 text-emerald-900">
                       <option value="">Semua Jurusan</option>
                       {jurusanList.map((j) => (
@@ -201,11 +277,11 @@ export default function BKKPage() {
                     </select>
                   </div>
 
-                  {filteredCompanies.length === 0 ? (
+                  {companiesList.length === 0 ? (
                     <div className="bg-amber-50 border border-amber-300 p-4 rounded text-amber-900">Belum ada perusahaan sesuai filter.</div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4">
-                      {filteredCompanies.slice((companyPage - 1) * pageSize, companyPage * pageSize).map((c) => (
+                      {companiesList.map((c) => (
                         <div key={c.id} className="bg-white p-4 rounded shadow flex justify-between items-center">
                           <div>
                             <h4 className="font-bold text-emerald-900">{c.fullName}</h4>
@@ -220,13 +296,13 @@ export default function BKKPage() {
                   )}
 
                   {/* Pagination for companies */}
-                  {filteredCompanies.length > pageSize && (
+                  {totalCompanies > pageSize && (
                     <div className="mt-4 flex justify-center items-center gap-3">
                       <button disabled={companyPage === 1} onClick={() => setCompanyPage(p => Math.max(1, p - 1))} className="px-3 py-1 border border-emerald-300 rounded text-emerald-700">Prev</button>
-                      {Array.from({ length: Math.ceil(filteredCompanies.length / pageSize) }).map((_, i) => (
+                      {Array.from({ length: Math.ceil(totalCompanies / pageSize) }).map((_, i) => (
                         <button key={i} onClick={() => setCompanyPage(i + 1)} className={`px-3 py-1 border rounded ${companyPage === i + 1 ? 'bg-lime-500 text-emerald-900 border-lime-500' : 'border-emerald-300 text-emerald-700'}`}>{i + 1}</button>
                       ))}
-                      <button disabled={companyPage === Math.ceil(filteredCompanies.length / pageSize)} onClick={() => setCompanyPage(p => Math.min(Math.ceil(filteredCompanies.length / pageSize), p + 1))} className="px-3 py-1 border border-emerald-300 rounded text-emerald-700">Next</button>
+                      <button disabled={companyPage === Math.ceil(totalCompanies / pageSize)} onClick={() => setCompanyPage(p => Math.min(Math.ceil(totalCompanies / pageSize), p + 1))} className="px-3 py-1 border border-emerald-300 rounded text-emerald-700">Next</button>
                     </div>
                   )}
                 </div>

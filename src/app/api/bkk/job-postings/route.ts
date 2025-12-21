@@ -63,11 +63,25 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const jurusanId = searchParams.get('jurusanId');
+    const q = searchParams.get('q') || '';
+    const page = parseInt(searchParams.get('page') || '1', 10) || 1;
+    const limit = parseInt(searchParams.get('limit') || '10', 10) || 10;
 
     const where: any = { isActive: true };
     if (jurusanId) {
       where.jurusanId = jurusanId;
     }
+
+    if (q) {
+      const qLower = q;
+      where.OR = [
+        { posisi: { contains: qLower, mode: 'insensitive' } },
+        { deskripsi: { contains: qLower, mode: 'insensitive' } },
+        { perusahaan: { is: { fullName: { contains: qLower, mode: 'insensitive' } } } },
+      ];
+    }
+
+    const total = await prisma.jobPosting.count({ where });
 
     const jobPostings = await prisma.jobPosting.findMany({
       where,
@@ -82,9 +96,11 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
-    return NextResponse.json(jobPostings, { status: 200 });
+    return NextResponse.json({ jobPostings, total }, { status: 200 });
   } catch (error) {
     console.error('Job posting get error:', error);
     return NextResponse.json(
