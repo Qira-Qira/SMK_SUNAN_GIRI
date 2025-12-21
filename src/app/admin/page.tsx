@@ -54,6 +54,12 @@ export default function AdminDashboard() {
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [showTestimonialModal, setShowTestimonialModal] = useState(false);
   const [selectedTestimonial, setSelectedTestimonial] = useState<any>(null);
+  // Videos
+  const [videos, setVideos] = useState<any[]>([]);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<any>(null);
+  const [videoForm, setVideoForm] = useState({ title: '', description: '', videoUrl: '', thumbnail: '', featured: false });
+  const [videoFile, setVideoFile] = useState<File | null>(null);
 
   // Form states
   const [profileForm, setProfileForm] = useState({ nama: '', alamat: '', telepon: '', email: '' });
@@ -196,6 +202,13 @@ export default function AdminDashboard() {
       if (testimonialRes.ok) {
         const testimonialData = await testimonialRes.json();
         setTestimonials(testimonialData.testimonials || []);
+      }
+
+      // Fetch videos
+      const videosRes = await fetch('/api/public/videos', { credentials: 'include' });
+      if (videosRes.ok) {
+        const videosData = await videosRes.json();
+        setVideos(videosData.videos || []);
       }
     } catch (error) {
       console.error('Error fetching content:', error);
@@ -476,6 +489,81 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Error deleting testimonial:', error);
       toast.error('Gagal menghapus testimoni');
+    }
+  };
+
+  // Videos handlers
+  const handleSaveVideo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // client-side required fields
+    if (!videoForm.title?.trim() || !videoForm.videoUrl?.trim()) {
+      toast.error('Judul dan Link video wajib diisi');
+      return;
+    }
+
+    try {
+      // upload thumbnail if file provided
+      let thumbUrl = videoForm.thumbnail || '';
+      if (videoFile) {
+        const fd = new FormData();
+        fd.append('file', videoFile as any);
+        const upRes = await fetch('/api/public/uploads', { method: 'POST', body: fd, credentials: 'include' });
+        if (upRes.ok) {
+          const upData = await upRes.json();
+          thumbUrl = upData.url;
+        } else {
+          toast.error('Gagal mengunggah thumbnail');
+          return;
+        }
+      }
+
+      const payload = { title: videoForm.title, description: videoForm.description, videoUrl: videoForm.videoUrl, thumbnail: thumbUrl, featured: !!videoForm.featured };
+      const res = await fetch('/api/public/videos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+      if (res.status === 401 || res.status === 403) {
+        toast.error('Aksi ditolak: silakan login ulang');
+        window.location.href = '/login';
+        return;
+      }
+
+      if (res.ok) {
+        setShowVideoModal(false);
+        setVideoForm({ title: '', description: '', videoUrl: '', thumbnail: '', featured: false });
+        setVideoFile(null);
+        setRefreshTrigger(prev => prev + 1);
+        toast.success('Video berhasil ditambahkan!');
+      } else {
+        let errMsg = 'Gagal menambahkan video';
+        try {
+          const err = await res.json();
+          errMsg = err?.error || err?.message || errMsg;
+        } catch (ee) {
+          console.error('Failed to parse error body', ee);
+        }
+        console.error('Videos POST failed', res.status, res.statusText);
+        toast.error(errMsg);
+      }
+    } catch (error) {
+      console.error('Error saving video:', error);
+      toast.error('Gagal menyimpan video');
+    }
+  };
+
+  const handleDeleteVideo = async (id: string) => {
+    if (!confirm('Yakin ingin menghapus video ini?')) return;
+    try {
+      const res = await fetch(`/api/public/videos?id=${id}`, { method: 'DELETE', credentials: 'include' });
+      if (res.ok) {
+        setRefreshTrigger(prev => prev + 1);
+        toast.success('Video berhasil dihapus!');
+      }
+    } catch (error) {
+      console.error('Error deleting video:', error);
+      toast.error('Gagal menghapus video');
     }
   };
 
@@ -1094,7 +1182,43 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-        )}
+              )}
+
+            {/* Video Section */}
+            <div className="mb-8">
+              <div className="bg-white p-6 rounded shadow">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Video</h3>
+                    <p className="text-emerald-600 mb-4">Kelola video yang tampil di halaman utama</p>
+                  </div>
+                  <button
+                    onClick={() => { setSelectedVideo(null); setVideoForm({ title: '', description: '', videoUrl: '', thumbnail: '', featured: false }); setVideoFile(null); setShowVideoModal(true); }}
+                    className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
+                    Tambah Video
+                  </button>
+                </div>
+
+                {videos.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {videos.map((v: any) => (
+                      <div key={v.id} className="bg-emerald-50 p-4 rounded border-l-4 border-emerald-500">
+                        <h4 className="font-bold text-emerald-900">{v.title}</h4>
+                        <p className="text-sm text-emerald-600 mt-1">{(v.description || '').substring(0, 100)}...</p>
+                        <p className="text-xs text-emerald-9000 mt-2">{v.createdAt ? new Date(v.createdAt).toLocaleDateString('id-ID') : ''}</p>
+                        <div className="flex gap-2 mt-3">
+                          <a href={v.videoUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-700 hover:underline">Tonton</a>
+                          <button onClick={() => handleDeleteVideo(v.id)} className="ml-auto bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Hapus</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-emerald-9000 text-center py-4">Belum ada video</p>
+                )}
+              </div>
+            </div>
+        
 
         {/* Modals */}
         {/* Profile Modal */}
@@ -1269,6 +1393,44 @@ export default function AdminDashboard() {
                 <div className="flex gap-2">
                   <button type="submit" className="flex-1 bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Simpan</button>
                   <button type="button" onClick={() => setShowJurusanModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Video Modal */}
+        {showVideoModal && (
+          <div className="fixed inset-0 bg-emerald-50 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded shadow max-w-md w-full">
+              <h3 className="text-lg font-bold mb-4">Tambah Video</h3>
+              <form onSubmit={handleSaveVideo}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Judul</label>
+                  <input type="text" value={videoForm.title} onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })} className="w-full border rounded px-3 py-2" />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Deskripsi</label>
+                  <textarea value={videoForm.description} onChange={(e) => setVideoForm({ ...videoForm, description: e.target.value })} rows={3} className="w-full border rounded px-3 py-2" />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Link Video (YouTube)</label>
+                  <input type="text" value={videoForm.videoUrl} onChange={(e) => setVideoForm({ ...videoForm, videoUrl: e.target.value })} className="w-full border rounded px-3 py-2" />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Thumbnail (URL atau upload)</label>
+                  <input type="text" value={videoForm.thumbnail} onChange={(e) => setVideoForm({ ...videoForm, thumbnail: e.target.value })} placeholder="URL thumbnail (opsional)" className="w-full border rounded px-3 py-2 mb-2" />
+                  <input type="file" accept="image/*" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} className="w-full" />
+                </div>
+                <div className="mb-4 flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={videoForm.featured} onChange={(e) => setVideoForm({ ...videoForm, featured: e.target.checked })} />
+                    <span className="text-sm">Featured</span>
+                  </label>
+                </div>
+                <div className="flex gap-2">
+                  <button type="submit" className="flex-1 bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">Simpan</button>
+                  <button type="button" onClick={() => setShowVideoModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
                 </div>
               </form>
             </div>

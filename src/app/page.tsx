@@ -7,6 +7,7 @@ import ProgramsSection from '@/components/common/ProgramsSection';
 import FeaturesSection from '@/components/common/FeaturesSection';
 import TestimonialSection from '@/components/common/TestimonialSection';
 import NewsSection from '@/components/common/NewsSection';
+import VideoSection from '@/components/common/VideoSection';
 import Footer from '@/components/common/Footer';
 import ScrollAnimation from '@/components/common/ScrollAnimation';
 
@@ -30,6 +31,10 @@ export default function Home() {
 
       <ScrollAnimation animation="fade-up" delay={200}>
         <NewsSection />
+      </ScrollAnimation>
+
+      <ScrollAnimation animation="fade-up" delay={200}>
+        <VideoSection />
       </ScrollAnimation>
 
       <Footer />
