@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Zap, Briefcase, Loader2 } from 'lucide-react';
+import { Bot, Briefcase, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface HeroStats {
@@ -74,7 +74,7 @@ export default function HeroSection() {
                                     href="/ai-recommendation"
                                     className="inline-flex items-center gap-2 bg-white text-emerald-600 px-6 py-3 rounded-lg font-bold hover:bg-emerald-50 transition duration-300 shadow-lg hover:shadow-xl"
                                 >
-                                    <Zap className="w-5 h-5" />
+                                    <Bot className="w-5 h-5" />
                                     Tes AI Jurusan
                                 </Link>
                                 <Link

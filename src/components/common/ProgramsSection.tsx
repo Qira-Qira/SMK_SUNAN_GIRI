@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { Loader2,Bot } from 'lucide-react';
 
 interface Program {
   id: string;
@@ -121,7 +121,7 @@ export default function ProgramsSection() {
               );
             })
           ) : (
-            <div className="col-span-full text-center text-emerald-9000 py-8">
+            <div className="col-span-full text-center text-emerald-900 py-8">
               Belum ada program
             </div>
           )}
@@ -131,7 +131,7 @@ export default function ProgramsSection() {
         <div className="flex justify-center">
           <Link href="/ai-recommendation">
             <button className="bg-lime-500 hover:bg-lime-600 text-emerald-900 px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition duration-200">
-              <span>ℹ️</span>
+              <Bot className="w-5 h-5" />
               Tes AI Saran Jurusan
             </button>
           </Link>
