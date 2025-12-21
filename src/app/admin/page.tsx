@@ -60,6 +60,7 @@ export default function AdminDashboard() {
   const [newsForm, setNewsForm] = useState({ title: '', content: '', thumbnail: '', featured: false, published: true });
   const [newsFile, setNewsFile] = useState<File | null>(null);
   const [jurusanForm, setJurusanForm] = useState({ nama: '', deskripsi: '', kode: '', icon: '' });
+  const [jurusanLogoFile, setJurusanLogoFile] = useState<File | null>(null);
   const [statsForm, setStatsForm] = useState({
     siswaAktif: '1,200+',
     mitraIndustri: '150+',
@@ -322,15 +323,32 @@ export default function AdminDashboard() {
   const handleSaveJurusan = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // If a logo file was selected, upload it first and set the icon to the uploaded URL
+      let iconUrl = jurusanForm.icon || '';
+      if (jurusanLogoFile) {
+        const fd = new FormData();
+        fd.append('file', jurusanLogoFile as any);
+        const upRes = await fetch('/api/public/uploads', { method: 'POST', body: fd, credentials: 'include' });
+        if (upRes.ok) {
+          const upData = await upRes.json();
+          iconUrl = upData.url;
+        } else {
+          toast.error('Gagal mengunggah logo jurusan');
+          return;
+        }
+      }
+
+      const payload = { ...jurusanForm, icon: iconUrl };
       const res = await fetch('/api/public/jurusan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(jurusanForm),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         setShowJurusanModal(false);
         setJurusanForm({ nama: '', deskripsi: '', kode: '', icon: '' });
+        setJurusanLogoFile(null);
         setRefreshTrigger(prev => prev + 1);
         toast.success('Jurusan berhasil ditambahkan!');
       }
@@ -1230,15 +1248,23 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Icon Emoji</label>
+                  <label className="block text-sm font-medium mb-1">Logo Jurusan (PNG/JPG)</label>
                   <input
-                    type="text"
-                    value={jurusanForm.icon}
-                    onChange={(e) => setJurusanForm({ ...jurusanForm, icon: e.target.value })}
-                    placeholder="Masukkan emoji (misal: 🧠)"
-                    className="w-full border rounded px-3 py-2"
-                    maxLength={2}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setJurusanLogoFile(e.target.files?.[0] || null)}
+                    className="w-full"
                   />
+                  {jurusanLogoFile && (
+                    <div className="mt-2">
+                      <img src={URL.createObjectURL(jurusanLogoFile)} alt="preview" className="w-20 h-20 object-cover rounded" />
+                    </div>
+                  )}
+                  {!jurusanLogoFile && jurusanForm.icon && (
+                    <div className="mt-2">
+                      <img src={jurusanForm.icon} alt="logo" className="w-20 h-20 object-cover rounded" />
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <button type="submit" className="flex-1 bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Simpan</button>

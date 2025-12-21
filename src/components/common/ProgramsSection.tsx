@@ -84,7 +84,15 @@ export default function ProgramsSection() {
                 'bg-emerald-50 border-emerald-500 hover:bg-emerald-100',
                 'bg-lime-50 border-lime-500 hover:bg-lime-100',
               ];
-              
+              // Normalize icon -> imageUrl when it looks like a path/URL (uploads may return 'uploads/..' or 'file.jpg')
+              const imageUrl = (() => {
+                const icon = program.icon || '';
+                if (!icon) return null;
+                if (icon.startsWith('http') || icon.startsWith('/')) return icon;
+                if (icon.includes('/') || icon.includes('.')) return icon.startsWith('/') ? icon : `/${icon}`;
+                return null;
+              })();
+
               return (
                 <div
                   key={program.id || idx}
@@ -92,7 +100,13 @@ export default function ProgramsSection() {
                     accentColors[idx % accentColors.length]
                   }`}
                 >
-                  <div className="text-5xl mb-4">{program.icon}</div>
+                  <div className="mb-4">
+                    {imageUrl ? (
+                      <img src={imageUrl} alt={program.nama} className="w-16 h-16 object-cover rounded-full mx-auto mb-4" />
+                    ) : (
+                      <div className="text-5xl mb-4 text-center">{program.icon}</div>
+                    )}
+                  </div>
                   <h3 className="text-lg font-bold text-emerald-900 mb-2">
                     {program.nama}
                   </h3>

@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { nama, deskripsi, kode } = body;
+    const { nama, deskripsi, kode, icon } = body;
 
     if (!nama || !deskripsi || !kode) {
       return NextResponse.json(
@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
         nama,
         deskripsi,
         kode,
+        ...(icon ? { icon } : {}),
       },
     });
 
@@ -87,7 +88,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { nama, deskripsi, kode } = body;
+    const { nama, deskripsi, kode, icon } = body;
 
     const jurusan = await prisma.jurusan.update({
       where: { id },
@@ -95,6 +96,7 @@ export async function PUT(request: NextRequest) {
         ...(nama && { nama }),
         ...(deskripsi && { deskripsi }),
         ...(kode && { kode }),
+        ...(icon !== undefined && { icon }),
       },
     });
 
