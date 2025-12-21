@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Zap, Briefcase } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface HeroStats {
@@ -73,14 +74,14 @@ export default function HeroSection() {
                                     href="/ai-recommendation"
                                     className="inline-flex items-center gap-2 bg-white text-emerald-600 px-6 py-3 rounded-lg font-bold hover:bg-emerald-50 transition duration-300 shadow-lg hover:shadow-xl"
                                 >
-                                    <span>✨</span>
+                                    <Zap className="w-5 h-5" />
                                     Tes AI Jurusan
                                 </Link>
                                 <Link
                                     href="/bkk"
                                     className="inline-flex items-center gap-2 bg-lime-400 hover:bg-lime-300 text-emerald-900 px-6 py-3 rounded-lg font-bold transition duration-300 shadow-lg hover:shadow-xl"
                                 >
-                                    <span>👔</span>
+                                    <Briefcase className="w-5 h-5" />
                                     Career Center
                                 </Link>
                             </div>
