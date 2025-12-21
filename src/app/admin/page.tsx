@@ -23,6 +23,7 @@ import {
   X,
   Trophy
 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import CountUp from '@/components/common/CountUp';
 
 type TabType = 'dashboard' | 'ppdb' | 'bkk' | 'alumni' | 'users' | 'content';
@@ -460,7 +461,11 @@ export default function AdminDashboard() {
     }
   };
 
-  if (isLoading) return <div className="p-4">Loading...</div>;
+  if (isLoading) return (
+    <div className="p-4 flex items-center justify-center">
+      <Loader2 className="animate-spin w-6 h-6" />
+    </div>
+  );
 
   return (
     <>

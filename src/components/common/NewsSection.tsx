@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 type NewsItem = {
   id: string;
@@ -37,7 +38,10 @@ export default function NewsSection() {
     return (
       <section className="container mx-auto py-12 px-4">
         <h2 className="text-3xl font-bold text-center mb-6 text-emerald-900">Update Terkini SMK</h2>
-        <p className="text-center text-emerald-9000">Memuat berita...</p>
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="animate-spin w-8 h-8 text-emerald-600" />
+          <p className="text-center text-emerald-900">Memuat berita...</p>
+        </div>
       </section>
     );
   }

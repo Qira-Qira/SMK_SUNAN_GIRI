@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 
 type NewsItem = {
@@ -38,7 +39,13 @@ export default function NewsDetail() {
     fetchNews();
   }, [slug]);
 
-  if (loading) return <main className="container mx-auto py-12 px-4 text-emerald-900">Memuat...</main>;
+  if (loading) return (
+    <main className="container mx-auto py-12 px-4 text-emerald-900">
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="animate-spin w-8 h-8 text-emerald-600" />
+      </div>
+    </main>
+  );
   if (!news) return <main className="container mx-auto py-12 px-4"><h1 className="text-2xl font-bold text-emerald-900">Berita tidak ditemukan</h1></main>;
 
   return (

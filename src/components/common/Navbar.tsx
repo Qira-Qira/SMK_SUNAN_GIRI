@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
@@ -71,7 +72,11 @@ export default function Navbar() {
             BKK
           </Link>
 
-          {!isLoading && (
+          {isLoading ? (
+            <div className="flex items-center">
+              <Loader2 className="animate-spin w-5 h-5 text-white" />
+            </div>
+          ) : (
             <>
               {user ? (
                 <div className="flex items-center gap-4">

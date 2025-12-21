@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Zap, Briefcase } from 'lucide-react';
+import { Zap, Briefcase, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface HeroStats {
@@ -42,7 +42,7 @@ export default function HeroSection() {
     if (isLoading) {
         return (
             <section className="min-h-screen bg-gradient-to-br from-emerald-600 via-emerald-500 to-emerald-700 text-white flex items-center justify-center">
-                <p>Loading...</p>
+                <Loader2 className="animate-spin w-8 h-8" />
             </section>
         );
     }

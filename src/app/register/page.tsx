@@ -4,6 +4,7 @@ import Navbar from '@/components/common/Navbar';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GeometricBackground from '@/components/common/GeometricBackground';
+import { Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -119,9 +120,15 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-lime-500 hover:bg-lime-600 text-emerald-900 py-3 rounded-lg font-semibold transition duration-200 disabled:bg-emerald-400"
+            className="w-full bg-lime-500 hover:bg-lime-600 text-emerald-900 py-3 rounded-lg font-semibold transition duration-200 disabled:bg-emerald-400 flex items-center justify-center gap-2"
           >
-            {isLoading ? 'Loading...' : 'Daftar'}
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin w-5 h-5" /> Sedang Memproses...
+              </>
+            ) : (
+              'Daftar'
+            )}
           </button>
         </form>
       </main>

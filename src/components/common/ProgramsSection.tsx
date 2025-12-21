@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 interface Program {
   id: string;
@@ -69,8 +70,9 @@ export default function ProgramsSection() {
         {/* Programs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {loading ? (
-            <div className="col-span-full text-center text-emerald-9000 py-8">
-              Memuat program...
+            <div className="col-span-full text-center py-8">
+              <Loader2 className="animate-spin w-8 h-8 mx-auto text-emerald-600" />
+              <p className="mt-3 text-emerald-900">Memuat program...</p>
             </div>
           ) : programs.length > 0 ? (
             programs.map((program, idx) => {

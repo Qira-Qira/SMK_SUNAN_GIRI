@@ -2,7 +2,7 @@
 
 import Navbar from '@/components/common/Navbar';
 import { useState } from 'react';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Loader2 } from 'lucide-react';
 
 export default function TracerStudyPage() {
   const [formData, setFormData] = useState({
@@ -165,9 +165,15 @@ export default function TracerStudyPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-lime-500 text-emerald-900 py-3 rounded-lg hover:bg-lime-600 disabled:bg-emerald-400 font-bold transition duration-200"
+              className="w-full bg-lime-500 text-emerald-900 py-3 rounded-lg hover:bg-lime-600 disabled:bg-emerald-400 font-bold transition duration-200 flex items-center justify-center gap-2"
             >
-              {isLoading ? 'Simpan...' : 'Simpan Data'}
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin w-5 h-5" /> Menyimpan...
+                </>
+              ) : (
+                'Simpan Data'
+              )}
             </button>
           </form>
         </div>

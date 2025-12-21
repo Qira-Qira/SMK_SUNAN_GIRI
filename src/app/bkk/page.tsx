@@ -2,6 +2,7 @@
 
 import Navbar from '@/components/common/Navbar';
 import { useEffect, useMemo, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 
 type Tab = 'lowongan' | 'perusahaan';
@@ -210,7 +211,7 @@ export default function BKKPage() {
         </div>
 
         {isLoading ? (
-          <div>Loading...</div>
+          <div className="flex items-center justify-center py-8"><Loader2 className="animate-spin w-6 h-6" /></div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left column: filters / tabs content */}

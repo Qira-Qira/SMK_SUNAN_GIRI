@@ -2,7 +2,7 @@
 
 import Navbar from '@/components/common/Navbar';
 import { useState } from 'react';
-import { CheckCircle, Upload } from 'lucide-react';
+import { CheckCircle, Upload, Loader2 } from 'lucide-react';
 
 interface UploadedFile {
   name: string;
@@ -487,10 +487,12 @@ export default function PPDBPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-lime-500 hover:bg-lime-600 text-emerald-900 py-4 rounded-lg hover:shadow-lg font-bold text-lg transition duration-200 disabled:bg-emerald-400 flex items-center justify-center"
+              className="w-full bg-lime-500 hover:bg-lime-600 text-emerald-900 py-4 rounded-lg hover:shadow-lg font-bold text-lg transition duration-200 disabled:bg-emerald-400 flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                'Sedang Memproses...'
+                <>
+                  <Loader2 className="animate-spin w-5 h-5" /> Sedang Memproses...
+                </>
               ) : (
                 <>
                   <CheckCircle className="w-6 h-6 mr-2" /> Daftar PPDB

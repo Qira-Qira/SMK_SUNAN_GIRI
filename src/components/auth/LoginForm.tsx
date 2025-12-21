@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
@@ -77,9 +78,15 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-lime-500 hover:bg-lime-600 text-emerald-900 py-3 rounded-lg font-semibold transition duration-200 disabled:bg-emerald-400"
+        className="w-full bg-lime-500 hover:bg-lime-600 text-emerald-900 py-3 rounded-lg font-semibold transition duration-200 disabled:bg-emerald-400 flex items-center justify-center gap-2"
       >
-        {isLoading ? 'Loading...' : 'Login'}
+        {isLoading ? (
+          <>
+            <Loader2 className="animate-spin w-5 h-5" /> Sedang Memproses...
+          </>
+        ) : (
+          'Login'
+        )}
       </button>
     </form>
   );
