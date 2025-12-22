@@ -62,7 +62,7 @@ export default function AdminDashboard() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
   // Form states
-  const [profileForm, setProfileForm] = useState({ nama: '', alamat: '', telepon: '', email: '' });
+  const [profileForm, setProfileForm] = useState({ nama: '', alamat: '', telepon: '', email: '', visi: '', misi: '' });
   const [newsForm, setNewsForm] = useState({ title: '', content: '', thumbnail: '', featured: false, published: true });
   const [newsFile, setNewsFile] = useState<File | null>(null);
   const [jurusanForm, setJurusanForm] = useState({ nama: '', deskripsi: '', kode: '', icon: '' });
@@ -996,7 +996,9 @@ export default function AdminDashboard() {
                         nama: schoolProfile?.heroTitle || '',
                         alamat: schoolProfile?.heroSubtitle || '',
                         telepon: schoolProfile?.heroDescription || '',
-                        email: ''
+                        email: '',
+                        visi: schoolProfile?.visi || '',
+                        misi: schoolProfile?.misi || '',
                       });
                       setShowProfileModal(true);
                     }}
@@ -1021,17 +1023,48 @@ export default function AdminDashboard() {
                     <p className="text-emerald-600 mb-4">Kelola informasi resmi sekolah</p>
                   </div>
                   <button
-                    onClick={() => setShowProfileModal(true)}
+                    onClick={() => {
+                      setProfileForm({
+                        nama: schoolProfile?.nama || '',
+                        alamat: schoolProfile?.alamat || '',
+                        telepon: schoolProfile?.telepon || '',
+                        email: schoolProfile?.email || '',
+                        visi: schoolProfile?.visi || '',
+                        misi: schoolProfile?.misi || '',
+                      });
+                      setShowProfileModal(true);
+                    }}
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                     Edit Profil Sekolah
                   </button>
                 </div>
                 {schoolProfile && (
                   <div className="bg-emerald-50 p-4 rounded">
-                    <p><strong>Nama Sekolah:</strong> {schoolProfile.nama || '-'}</p>
-                    <p><strong>Alamat:</strong> {schoolProfile.alamat || '-'}</p>
-                    <p><strong>Telepon:</strong> {schoolProfile.telepon || '-'}</p>
-                    <p><strong>Email:</strong> {schoolProfile.email || '-'}</p>
+                    <div className="grid md:grid-cols-3 gap-4 items-start">
+                      <div className="md:col-span-2">
+                        <h4 className="text-lg font-bold text-emerald-900 mb-2">{schoolProfile.nama || '-'}</h4>
+                        <div className="space-y-2 text-emerald-700">
+                          <div className="flex items-start gap-3">
+                            <span className="text-emerald-600 font-semibold w-28">Alamat</span>
+                            <div className="flex-1">{schoolProfile.alamat || '-'}</div>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <span className="text-emerald-600 font-semibold w-28">Telepon</span>
+                            <div className="flex-1">{schoolProfile.telepon || '-'}</div>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <span className="text-emerald-600 font-semibold w-28">Email</span>
+                            <div className="flex-1">{schoolProfile.email || '-'}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="md:col-span-1">
+                        <h5 className="text-sm font-bold text-emerald-900 mb-2">Visi</h5>
+                        <div className="bg-white p-3 rounded text-emerald-700 leading-relaxed whitespace-pre-line mb-4 min-h-[80px]">{schoolProfile.visi || '-'}</div>
+                        <h5 className="text-sm font-bold text-emerald-900 mb-2">Misi</h5>
+                        <div className="bg-white p-3 rounded text-emerald-700 leading-relaxed whitespace-pre-line min-h-[80px]">{schoolProfile.misi || '-'}</div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1298,42 +1331,60 @@ export default function AdminDashboard() {
             <div className="bg-white p-6 rounded shadow max-w-md w-full">
               <h3 className="text-lg font-bold mb-4">Edit Profil Sekolah</h3>
               <form onSubmit={handleSaveProfile}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Nama Sekolah</label>
-                  <input
-                    type="text"
-                    value={profileForm.nama}
-                    onChange={(e) => setProfileForm({ ...profileForm, nama: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Nama Sekolah</label>
+                    <input
+                      type="text"
+                      value={profileForm.nama}
+                      onChange={(e) => setProfileForm({ ...profileForm, nama: e.target.value })}
+                      className="w-full border rounded px-3 py-2"
+                    />
+
+                    <label className="block text-sm font-medium mb-1 mt-3">Alamat</label>
+                    <textarea
+                      value={profileForm.alamat}
+                      onChange={(e) => setProfileForm({ ...profileForm, alamat: e.target.value })}
+                      className="w-full border rounded px-3 py-2"
+                      rows={3}
+                    />
+
+                    <div className="flex gap-2 mt-3">
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium mb-1">Telepon</label>
+                        <input type="text" value={profileForm.telepon} onChange={(e) => setProfileForm({ ...profileForm, telepon: e.target.value })} className="w-full border rounded px-3 py-2" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium mb-1">Email</label>
+                        <input type="email" value={profileForm.email} onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })} className="w-full border rounded px-3 py-2" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Visi</label>
+                    <textarea
+                      value={profileForm.visi}
+                      onChange={(e) => setProfileForm({ ...profileForm, visi: e.target.value })}
+                      className="w-full border rounded px-3 py-2"
+                      rows={6}
+                      placeholder="Tuliskan visi sekolah"
+                    />
+
+                    <label className="block text-sm font-medium mb-1 mt-3">Misi</label>
+                    <textarea
+                      value={profileForm.misi}
+                      onChange={(e) => setProfileForm({ ...profileForm, misi: e.target.value })}
+                      className="w-full border rounded px-3 py-2"
+                      rows={8}
+                      placeholder="Tuliskan misi sekolah (pisahkan dengan baris)"
+                    />
+
+                    <div className="mt-3 text-sm text-emerald-600">Tip: pisahkan setiap misi dengan baris baru untuk tampilan terbaik.</div>
+                  </div>
                 </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Alamat</label>
-                  <textarea
-                    value={profileForm.alamat}
-                    onChange={(e) => setProfileForm({ ...profileForm, alamat: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Telepon</label>
-                  <input
-                    type="text"
-                    value={profileForm.telepon}
-                    onChange={(e) => setProfileForm({ ...profileForm, telepon: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={profileForm.email}
-                    onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </div>
-                <div className="flex gap-2">
+
+                <div className="flex gap-2 mt-4">
                   <button type="submit" className="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Simpan</button>
                   <button type="button" onClick={() => setShowProfileModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
                 </div>

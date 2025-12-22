@@ -8,6 +8,7 @@ import FeaturesSection from '@/components/common/FeaturesSection';
 import TestimonialSection from '@/components/common/TestimonialSection';
 import NewsSection from '@/components/common/NewsSection';
 import VideoSection from '@/components/common/VideoSection';
+import VisiMisiSection from '@/components/common/VisiMisiSection';
 import Footer from '@/components/common/Footer';
 import ScrollAnimation from '@/components/common/ScrollAnimation';
 
@@ -18,6 +19,10 @@ export default function Home() {
       <HeroSection />
 
       <StatsSection />
+
+      <ScrollAnimation animation="fade-up" delay={150}>
+        <VisiMisiSection />
+      </ScrollAnimation>
 
       <ScrollAnimation animation="fade-up" delay={200}>
         <ProgramsSection />
