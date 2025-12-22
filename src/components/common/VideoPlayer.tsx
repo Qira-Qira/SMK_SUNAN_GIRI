@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 type VideoItem = {
   id?: string;
@@ -141,7 +142,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoItem; onCl
 
   if (!shouldRender) return null;
 
-  return (
+  const modal = (
     <div className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ${visible ? 'opacity-100' : 'opacity-0'}`} aria-modal="true" role="dialog">
       <div className={`absolute inset-0 bg-black transition-opacity duration-200 ${visible ? 'opacity-60' : 'opacity-0'}`} aria-hidden="true"></div>
       <div ref={containerRef} className={`relative w-full max-w-4xl mx-4 transform transition-all duration-200 ${visible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
@@ -161,7 +162,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoItem; onCl
               <div className="flex items-center justify-center h-full p-6">Tidak dapat memutar video ini.</div>
             )}
           </div>
-            <div className="p-3 flex items-center justify-between">
+          <div className="p-3 flex items-center justify-between">
             <div className="text-sm font-medium text-emerald-900">{video.title}</div>
             <button ref={closeBtnRef} onClick={handleClose} className="text-emerald-600 hover:underline">Tutup</button>
           </div>
@@ -172,4 +173,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoItem; onCl
       <div className="sr-only" aria-live="polite">{visible ? 'Video terbuka' : ''}</div>
     </div>
   );
+
+  if (typeof document === 'undefined') return modal;
+  return createPortal(modal, document.body);
 }
