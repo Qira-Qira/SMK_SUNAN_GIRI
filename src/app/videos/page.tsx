@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import VideoPlayer, { prefetchEmbed } from '../../components/common/VideoPlayer';
 
-type VideoItem = { id?: string; title?: string; link?: string; url?: string; videoUrl?: string; thumbnail?: string; description?: string };
+type VideoItem = { id?: string; title?: string; link?: string; url?: string; videoUrl?: string; thumbnail?: string; description?: string; createdAt?: string; featured?: boolean };
 
 function extractYoutubeId(link?: string | null) {
   if (!link) return null;
@@ -24,7 +24,7 @@ export default function VideosPage() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [limit] = useState(12);
+  const [limit] = useState(3);
   const [hasMore, setHasMore] = useState(false);
   const [selected, setSelected] = useState<VideoItem | null>(null);
 
@@ -41,17 +41,22 @@ export default function VideosPage() {
           return;
         }
         const data = await res.json();
+        let items: VideoItem[] = Array.isArray(data) ? data : (data.videos || []);
+        items.sort((a, b) => {
+          const fb = Number(Boolean(b.featured));
+          const fa = Number(Boolean(a.featured));
+          if (fb - fa !== 0) return fb - fa;
+          const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return tb - ta;
+        });
+        setVideos(items);
         if (Array.isArray(data)) {
-          setVideos(data);
-          setHasMore(data.length === limit);
+          setHasMore(items.length === limit);
+        } else if (typeof data.total === 'number') {
+          setHasMore(page * limit < data.total);
         } else {
-          const v = data.videos || [];
-          setVideos(v);
-          if (typeof data.total === 'number') {
-            setHasMore(page * limit < data.total);
-          } else {
-            setHasMore((v || []).length === limit);
-          }
+          setHasMore(items.length === limit);
         }
       } catch (err) {
         console.error('Failed to load videos', err);
@@ -83,21 +88,29 @@ export default function VideosPage() {
               const id = extractYoutubeId(link);
               const thumb = v.thumbnail || (id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null);
               return (
-                <article key={v.id || link} className="bg-white rounded-lg overflow-hidden shadow">
-                      <div className="relative">
-                        <img src={thumb || ''} alt={v.title || 'thumbnail'} loading="lazy" className="w-full h-auto object-cover aspect-video" />
-                        <button type="button" aria-label={`Putar ${v.title || 'video'}`} onClick={() => setSelected(v)} onMouseEnter={() => prefetchEmbed(id ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1` : undefined)} onFocus={() => prefetchEmbed(id ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1` : undefined)} className="absolute inset-0 flex items-center justify-center bg-transparent">
-                          <span className="sr-only">Putar</span>
-                          <div className="bg-emerald-600/75 rounded-full p-3">
-                            <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
-                        </button>
+                <article key={v.id || link} className="bg-white rounded-lg shadow-sm hover:shadow-md transition duration-300 overflow-hidden border-t-4 border-lime-500">
+                  <div className="relative cursor-pointer" onClick={() => setSelected(v)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') setSelected(v); }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={thumb || ''} alt={v.title || 'thumbnail'} loading="lazy" className="w-full h-48 object-cover" />
+                    <button type="button" aria-label={`Putar ${v.title || 'video'}`} onClick={() => setSelected(v)} onMouseEnter={() => prefetchEmbed(id ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1` : undefined)} onFocus={() => prefetchEmbed(id ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1` : undefined)} className="absolute inset-0 flex items-center justify-center bg-transparent">
+                      <span className="sr-only">Putar</span>
+                      <div className="bg-emerald-600/75 rounded-full p-3">
+                        <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
                       </div>
-                  <div className="p-4">
-                    <div className="text-sm font-medium text-emerald-900">{v.title}</div>
-                    {v.description && <div className="text-xs text-emerald-600 mt-1">{(v.description || '').substring(0, 120)}</div>}
+                    </button>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-sm text-emerald-600 font-medium">{v.createdAt ? new Date(v.createdAt).toLocaleDateString('id-ID') : ''}</div>
+                      {v.featured && <span className="text-xs bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full font-semibold">Featured</span>}
+                    </div>
+
+                    <h3 className="text-xl font-bold mb-1 text-emerald-900">
+                      <button onClick={() => setSelected(v)} className="text-left w-full text-emerald-900 hover:underline">{v.title}</button>
+                    </h3>
                   </div>
                 </article>
               );

@@ -58,7 +58,7 @@ export default function AdminDashboard() {
   const [videos, setVideos] = useState<any[]>([]);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<any>(null);
-  const [videoForm, setVideoForm] = useState({ title: '', description: '', videoUrl: '', thumbnail: '', featured: false });
+  const [videoForm, setVideoForm] = useState({ title: '', videoUrl: '', thumbnail: '', featured: false });
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
   // Form states
@@ -208,7 +208,16 @@ export default function AdminDashboard() {
       const videosRes = await fetch('/api/public/videos', { credentials: 'include' });
       if (videosRes.ok) {
         const videosData = await videosRes.json();
-        setVideos(videosData.videos || []);
+        let vitems = videosData.videos || [];
+        vitems.sort((a: any, b: any) => {
+          const fb = Number(Boolean(b.featured));
+          const fa = Number(Boolean(a.featured));
+          if (fb - fa !== 0) return fb - fa;
+          const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return tb - ta;
+        });
+        setVideos(vitems);
       }
     } catch (error) {
       console.error('Error fetching content:', error);
@@ -517,7 +526,7 @@ export default function AdminDashboard() {
         }
       }
 
-      const payload = { title: videoForm.title, description: videoForm.description, videoUrl: videoForm.videoUrl, thumbnail: thumbUrl, featured: !!videoForm.featured };
+      const payload = { title: videoForm.title, videoUrl: videoForm.videoUrl, thumbnail: thumbUrl, featured: !!videoForm.featured };
       const res = await fetch('/api/public/videos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -532,7 +541,7 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         setShowVideoModal(false);
-        setVideoForm({ title: '', description: '', videoUrl: '', thumbnail: '', featured: false });
+        setVideoForm({ title: '', videoUrl: '', thumbnail: '', featured: false });
         setVideoFile(null);
         setRefreshTrigger(prev => prev + 1);
         toast.success('Video berhasil ditambahkan!');
@@ -1193,7 +1202,7 @@ export default function AdminDashboard() {
                     <p className="text-emerald-600 mb-4">Kelola video yang tampil di halaman utama</p>
                   </div>
                   <button
-                    onClick={() => { setSelectedVideo(null); setVideoForm({ title: '', description: '', videoUrl: '', thumbnail: '', featured: false }); setVideoFile(null); setShowVideoModal(true); }}
+                    onClick={() => { setSelectedVideo(null); setVideoForm({ title: '', videoUrl: '', thumbnail: '', featured: false }); setVideoFile(null); setShowVideoModal(true); }}
                     className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
                     Tambah Video
                   </button>
@@ -1202,13 +1211,44 @@ export default function AdminDashboard() {
                 {videos.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {videos.map((v: any) => (
-                      <div key={v.id} className="bg-emerald-50 p-4 rounded border-l-4 border-emerald-500">
-                        <h4 className="font-bold text-emerald-900">{v.title}</h4>
+                      <div key={v.id} className={`p-4 rounded border-l-4 ${v.featured ? 'border-yellow-400 bg-yellow-50' : 'border-emerald-500 bg-emerald-50'}`}>
+                        <div className="flex items-start justify-between">
+                          <h4 className="font-bold text-emerald-900">{v.title}</h4>
+                          {v.featured && <span className="text-xs bg-yellow-300 text-yellow-900 px-2 py-1 rounded-full font-semibold">Featured</span>}
+                        </div>
                         <p className="text-sm text-emerald-600 mt-1">{(v.description || '').substring(0, 100)}...</p>
                         <p className="text-xs text-emerald-9000 mt-2">{v.createdAt ? new Date(v.createdAt).toLocaleDateString('id-ID') : ''}</p>
                         <div className="flex gap-2 mt-3">
                           <a href={v.videoUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-700 hover:underline">Tonton</a>
                           <button onClick={() => handleDeleteVideo(v.id)} className="ml-auto bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Hapus</button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                const res = await fetch('/api/public/videos', {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  credentials: 'include',
+                                  body: JSON.stringify({ id: v.id, featured: !v.featured }),
+                                });
+                                if (res.ok) {
+                                  setRefreshTrigger(prev => prev + 1);
+                                  toast.success(`${!v.featured ? 'Marked as featured' : 'Removed featured'}`);
+                                } else if (res.status === 401 || res.status === 403) {
+                                  toast.error('Aksi ditolak: silakan login ulang');
+                                  window.location.href = '/login';
+                                } else {
+                                  const err = await res.json();
+                                  toast.error(err?.error || 'Gagal memperbarui featured');
+                                }
+                              } catch (err) {
+                                console.error('Failed to toggle featured', err);
+                                toast.error('Gagal memperbarui featured');
+                              }
+                            }}
+                            className={`px-3 py-1 rounded text-sm ${v.featured ? 'bg-yellow-500 text-white hover:bg-yellow-600' : 'bg-emerald-200 text-emerald-900 hover:bg-emerald-300'}`}
+                          >
+                            {v.featured ? 'Unfeature' : 'Feature'}
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -1408,10 +1448,6 @@ export default function AdminDashboard() {
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Judul</label>
                   <input type="text" value={videoForm.title} onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })} className="w-full border rounded px-3 py-2" />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Deskripsi</label>
-                  <textarea value={videoForm.description} onChange={(e) => setVideoForm({ ...videoForm, description: e.target.value })} rows={3} className="w-full border rounded px-3 py-2" />
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Link Video (YouTube)</label>

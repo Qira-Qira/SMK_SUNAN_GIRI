@@ -25,7 +25,7 @@ export default async function NewsList({ searchParams }: Props) {
   const { prisma } = await import('@/lib/db/prisma');
 
   const [news, total] = await Promise.all([
-    prisma.news.findMany({ where: { published: true }, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+    prisma.news.findMany({ where: { published: true }, orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }], skip, take: limit }),
     prisma.news.count({ where: { published: true } }),
   ]);
 
