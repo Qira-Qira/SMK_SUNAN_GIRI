@@ -1055,10 +1055,13 @@ export default function AdminDashboard() {
                 {news.length > 0 ? (
                   <div className="space-y-3">
                     {news.map((item: any) => (
-                      <div key={item.id} className="bg-emerald-50 p-4 rounded border-l-4 border-green-500">
+                      <div key={item.id} className={`p-4 rounded border-l-4 ${item.featured ? 'border-yellow-400 bg-yellow-50' : 'border-green-500 bg-emerald-50'}`}>
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <h4 className="font-bold">{item.title}</h4>
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-bold">{item.title}</h4>
+                              {item.featured && <span className="text-xs bg-yellow-300 text-yellow-900 px-2 py-1 rounded-full font-semibold">Featured</span>}
+                            </div>
                             <p className="text-sm text-emerald-600 mt-1">{(item.content || '').substring(0, 100)}...</p>
                             <p className="text-xs text-emerald-9000 mt-2">
                               {new Date(item.createdAt).toLocaleDateString('id-ID')}
@@ -1076,6 +1079,34 @@ export default function AdminDashboard() {
                               className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
                             >
                               Hapus
+                            </button>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(`/api/public/news?id=${item.id}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    credentials: 'include',
+                                    body: JSON.stringify({ featured: !item.featured }),
+                                  });
+                                  if (res.ok) {
+                                    setRefreshTrigger(prev => prev + 1);
+                                    toast.success(item.featured ? 'Removed featured' : 'Marked as featured');
+                                  } else if (res.status === 401 || res.status === 403) {
+                                    toast.error('Aksi ditolak: silakan login ulang');
+                                    window.location.href = '/login';
+                                  } else {
+                                    const err = await res.json();
+                                    toast.error(err?.error || 'Gagal memperbarui featured');
+                                  }
+                                } catch (err) {
+                                  console.error('Failed to toggle featured', err);
+                                  toast.error('Gagal memperbarui featured');
+                                }
+                              }}
+                              className={`px-3 py-1 rounded text-sm ${item.featured ? 'bg-yellow-500 text-white hover:bg-yellow-600' : 'bg-emerald-200 text-emerald-900 hover:bg-emerald-300'}`}
+                            >
+                              {item.featured ? 'Unfeature' : 'Feature'}
                             </button>
                           </div>
                         </div>
