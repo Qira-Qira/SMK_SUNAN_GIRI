@@ -46,6 +46,7 @@ export default function AdminDashboard() {
   const [news, setNews] = useState<any[]>([]);
   const [jurusan, setJurusan] = useState<any[]>([]);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showHeroModal, setShowHeroModal] = useState(false);
   const [showNewsModal, setShowNewsModal] = useState(false);
   const [showJurusanModal, setShowJurusanModal] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
@@ -63,6 +64,7 @@ export default function AdminDashboard() {
 
   // Form states
   const [profileForm, setProfileForm] = useState({ nama: '', alamat: '', telepon: '', email: '', visi: '', misi: '' });
+  const [heroForm, setHeroForm] = useState({ heroTitle: '', heroSubtitle: '', heroDescription: '' });
   const [newsForm, setNewsForm] = useState({ title: '', content: '', thumbnail: '', featured: false, published: true });
   const [newsFile, setNewsFile] = useState<File | null>(null);
   const [jurusanForm, setJurusanForm] = useState({ nama: '', deskripsi: '', kode: '', icon: '' });
@@ -270,6 +272,26 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Error saving profile:', error);
       toast.error('Gagal menyimpan profil sekolah');
+    }
+  };
+
+  const handleSaveHero = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/public/school-profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(heroForm),
+      });
+      if (res.ok) {
+        setShowHeroModal(false);
+        setRefreshTrigger(prev => prev + 1);
+        toast.success('Hero section berhasil diperbarui!');
+      }
+    } catch (error) {
+      console.error('Error saving hero:', error);
+      toast.error('Gagal menyimpan hero section');
     }
   };
 
@@ -992,15 +1014,12 @@ export default function AdminDashboard() {
                   </div>
                   <button
                     onClick={() => {
-                      setProfileForm({
-                        nama: schoolProfile?.heroTitle || '',
-                        alamat: schoolProfile?.heroSubtitle || '',
-                        telepon: schoolProfile?.heroDescription || '',
-                        email: '',
-                        visi: schoolProfile?.visi || '',
-                        misi: schoolProfile?.misi || '',
+                      setHeroForm({
+                        heroTitle: schoolProfile?.heroTitle || '',
+                        heroSubtitle: schoolProfile?.heroSubtitle || '',
+                        heroDescription: schoolProfile?.heroDescription || '',
                       });
-                      setShowProfileModal(true);
+                      setShowHeroModal(true);
                     }}
                     className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
                     Edit Hero
@@ -1387,6 +1406,54 @@ export default function AdminDashboard() {
                 <div className="flex gap-2 mt-4">
                   <button type="submit" className="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Simpan</button>
                   <button type="button" onClick={() => setShowProfileModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Hero Modal */}
+        {showHeroModal && (
+          <div className="fixed inset-0 bg-emerald-50 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded shadow max-w-md w-full">
+              <h3 className="text-lg font-bold mb-4">Edit Hero Section</h3>
+              <form onSubmit={handleSaveHero}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Judul Hero</label>
+                  <input
+                    type="text"
+                    value={heroForm.heroTitle}
+                    onChange={(e) => setHeroForm({ ...heroForm, heroTitle: e.target.value })}
+                    placeholder="Masukkan judul hero section"
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Subtitle</label>
+                  <input
+                    type="text"
+                    value={heroForm.heroSubtitle}
+                    onChange={(e) => setHeroForm({ ...heroForm, heroSubtitle: e.target.value })}
+                    placeholder="Masukkan subtitle hero section"
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Deskripsi</label>
+                  <textarea
+                    value={heroForm.heroDescription}
+                    onChange={(e) => setHeroForm({ ...heroForm, heroDescription: e.target.value })}
+                    placeholder="Masukkan deskripsi hero section"
+                    rows={4}
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <button type="submit" className="flex-1 bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Simpan</button>
+                  <button type="button" onClick={() => setShowHeroModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
                 </div>
               </form>
             </div>

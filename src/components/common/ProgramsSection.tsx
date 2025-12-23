@@ -248,7 +248,6 @@ function ProgramModal({ program, onClose }: { program: any; onClose(): void }) {
               <div className="mt-4 flex gap-3 items-center">
                 <Link href="/ppdb" className="inline-block bg-lime-500 hover:bg-lime-600 text-emerald-900 px-5 py-2 rounded-lg font-semibold shadow">Daftar Sekarang</Link>
                 <button onClick={handleClose} className="inline-block bg-white border border-emerald-200 text-emerald-800 px-4 py-2 rounded-lg">Tutup</button>
-                {/* <div className="ml-auto text-sm text-emerald-600">Pilihan terbaik untuk karirmu — daftar sekarang!</div> */}
               </div>
             </div>
           </div>

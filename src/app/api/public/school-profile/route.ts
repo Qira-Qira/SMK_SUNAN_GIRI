@@ -13,7 +13,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ profile }, { status: 200 });
+    // Map database fields to frontend field names
+    const mappedProfile = {
+      ...profile,
+      alamat: profile.address,
+      telepon: profile.phoneNumber,
+      email: profile.emailSchool,
+      nama: profile.heroTitle,
+    };
+
+    return NextResponse.json({ profile: mappedProfile }, { status: 200 });
   } catch (error) {
     console.error('School profile error:', error);
     return NextResponse.json(
