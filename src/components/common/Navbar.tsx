@@ -7,14 +7,14 @@ import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
-  const [schoolName, setSchoolName] = useState<string>('SMK Sunan Giri');
+  const [schoolProfile, setSchoolProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     checkAuth();
-    fetchSchoolName();
+    fetchSchoolProfile();
 
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -24,15 +24,15 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const fetchSchoolName = async () => {
+  const fetchSchoolProfile = async () => {
     try {
       const res = await fetch('/api/public/school-profile');
       if (res.ok) {
         const data = await res.json();
-        setSchoolName(data.profile?.nama || 'SMK Sunan Giri');
+        setSchoolProfile(data.profile || null);
       }
     } catch (error) {
-      console.error('Failed to fetch school name:', error);
+      console.error('Failed to fetch school profile:', error);
     }
   };
 
@@ -68,8 +68,15 @@ export default function Navbar() {
   return (
     <nav className={`sticky w-full z-50 top-0 transition-all duration-300 ${navClasses}`}>
       <div className="container mx-auto flex justify-between items-center px-4">
-        <Link href="/" className={`font-bold text-xl transition duration-300 ${linkHoverClass}`}>
-          {schoolName}
+        <Link href="/" className={`font-bold text-xl transition duration-300 ${linkHoverClass} flex items-center gap-2`}>
+          {schoolProfile?.logo && (
+            <img 
+              src={schoolProfile.logo} 
+              alt="Logo" 
+              className="h-10 w-10 object-contain"
+            />
+          )}
+          <span>{schoolProfile?.nama || 'SMK Sunan Giri'}</span>
         </Link>
 
         <div className="flex gap-6 items-center">

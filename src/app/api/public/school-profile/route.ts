@@ -45,7 +45,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { nama, alamat, telepon, email, heroTitle, heroSubtitle, heroDescription, visi, misi, youtube, instagram } = body;
+    const { nama, alamat, telepon, email, heroTitle, heroSubtitle, heroDescription, visi, misi, youtube, instagram, logo } = body;
 
     let profile = await prisma.schoolProfile.findFirst();
 
@@ -62,6 +62,7 @@ export async function PUT(request: NextRequest) {
           ...(misi && { misi }),
           ...(youtube && { youtube }),
           ...(instagram && { instagram }),
+          ...(logo && { logo }),
           ...(telepon && { phoneNumber: telepon }),
           ...(email && { emailSchool: email }),
           ...(alamat && { address: alamat }),

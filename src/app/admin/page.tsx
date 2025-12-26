@@ -63,7 +63,8 @@ export default function AdminDashboard() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
   // Form states
-  const [profileForm, setProfileForm] = useState({ nama: '', alamat: '', telepon: '', email: '', visi: '', misi: '', youtube: '', instagram: '' });
+  const [profileForm, setProfileForm] = useState({ nama: '', alamat: '', telepon: '', email: '', visi: '', misi: '', youtube: '', instagram: '', logo: '' });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [heroForm, setHeroForm] = useState({ heroTitle: '', heroSubtitle: '', heroDescription: '' });
   const [newsForm, setNewsForm] = useState({ title: '', content: '', thumbnail: '', featured: false, published: true });
   const [newsFile, setNewsFile] = useState<File | null>(null);
@@ -258,14 +259,31 @@ export default function AdminDashboard() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let logoUrl = profileForm.logo;
+      
+      // If a file is selected, upload it first
+      if (logoFile) {
+        const fd = new FormData();
+        fd.append('file', logoFile as any);
+        const upRes = await fetch('/api/public/uploads', { method: 'POST', body: fd, credentials: 'include' });
+        if (upRes.ok) {
+          const upData = await upRes.json();
+          logoUrl = upData.url;
+        } else {
+          toast.error('Gagal upload logo');
+          return;
+        }
+      }
+      
       const res = await fetch('/api/public/school-profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(profileForm),
+        body: JSON.stringify({ ...profileForm, logo: logoUrl }),
       });
       if (res.ok) {
         setShowProfileModal(false);
+        setLogoFile(null);
         setRefreshTrigger(prev => prev + 1);
         toast.success('Profil sekolah berhasil diperbarui!');
       }
@@ -1052,7 +1070,9 @@ export default function AdminDashboard() {
                         misi: schoolProfile?.misi || '',
                         youtube: schoolProfile?.youtube || '',
                         instagram: schoolProfile?.instagram || '',
+                        logo: schoolProfile?.logo || '',
                       });
+                      setLogoFile(null);
                       setShowProfileModal(true);
                     }}
                     className="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600 font-semibold transition">
@@ -1061,8 +1081,18 @@ export default function AdminDashboard() {
                 </div>
                 {schoolProfile && (
                   <div className="space-y-6">
-                    {/* Informasi Dasar */}
+                    {/* Logo & Informasi Dasar */}
                     <div className="bg-emerald-50 p-5 rounded border-l-4 border-emerald-500">
+                      <p className="text-sm font-semibold text-emerald-600 mb-3">Logo Sekolah</p>
+                      {schoolProfile.logo && (
+                        <div className="mb-4">
+                          <img 
+                            src={schoolProfile.logo} 
+                            alt="Logo Sekolah" 
+                            className="h-16 w-16 object-contain rounded border border-emerald-300 p-2 bg-white"
+                          />
+                        </div>
+                      )}
                       <p className="text-sm font-semibold text-emerald-600 mb-1">Nama Sekolah</p>
                       <h4 className="text-lg font-bold text-emerald-900 mb-4">{schoolProfile.nama || '-'}</h4>
                       <div className="grid md:grid-cols-2 gap-6">
@@ -1467,6 +1497,41 @@ export default function AdminDashboard() {
                         placeholder="Tuliskan misi sekolah (pisahkan setiap misi dengan baris baru)..."
                       />
                       <p className="text-xs text-blue-600 mt-2">💡 Tip: Pisahkan setiap misi dengan baris baru untuk tampilan yang lebih rapi</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Logo Sekolah */}
+                <div className="bg-purple-50 p-5 rounded border border-purple-200">
+                  <h4 className="text-lg font-bold text-purple-900 mb-4">Logo Sekolah</h4>
+                  <div className="space-y-4">
+                    {profileForm.logo && !logoFile && (
+                      <div className="relative inline-block">
+                        <img 
+                          src={profileForm.logo} 
+                          alt="Logo Preview" 
+                          className="h-24 w-24 object-contain rounded border-2 border-purple-300"
+                        />
+                      </div>
+                    )}
+                    {logoFile && (
+                      <div className="relative inline-block">
+                        <img 
+                          src={URL.createObjectURL(logoFile)} 
+                          alt="Logo Preview" 
+                          className="h-24 w-24 object-contain rounded border-2 border-purple-300"
+                        />
+                      </div>
+                    )}
+                    <div>
+                      <label className="block text-sm font-semibold text-purple-800 mb-2">Upload Logo</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+                        className="w-full border-2 border-dashed border-purple-300 rounded px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+                      />
+                      <p className="text-xs text-purple-600 mt-2">Ukuran rekomendasi: 200x200px atau lebih, format PNG/JPG</p>
                     </div>
                   </div>
                 </div>

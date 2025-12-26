@@ -254,6 +254,9 @@ model SchoolProfile {
   heroDescription String?   @default("Persiapkan diri untuk era industri 4.0")
   heroStatistics  String?   // JSON string dengan stats
   
+  // Logo
+  logo            String?
+  
   // Social Links
   youtube         String?
   instagram       String?
