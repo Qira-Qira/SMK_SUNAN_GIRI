@@ -7,12 +7,14 @@ import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
+  const [schoolName, setSchoolName] = useState<string>('SMK Sunan Giri');
   const [isLoading, setIsLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     checkAuth();
+    fetchSchoolName();
 
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -21,6 +23,18 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const fetchSchoolName = async () => {
+    try {
+      const res = await fetch('/api/public/school-profile');
+      if (res.ok) {
+        const data = await res.json();
+        setSchoolName(data.profile?.nama || 'SMK Sunan Giri');
+      }
+    } catch (error) {
+      console.error('Failed to fetch school name:', error);
+    }
+  };
 
   const checkAuth = async () => {
     try {
@@ -55,7 +69,7 @@ export default function Navbar() {
     <nav className={`sticky w-full z-50 top-0 transition-all duration-300 ${navClasses}`}>
       <div className="container mx-auto flex justify-between items-center px-4">
         <Link href="/" className={`font-bold text-xl transition duration-300 ${linkHoverClass}`}>
-          SMK Sunan Giri
+          {schoolName}
         </Link>
 
         <div className="flex gap-6 items-center">
