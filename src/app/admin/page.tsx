@@ -1035,11 +1035,11 @@ export default function AdminDashboard() {
 
             {/* Profil Sekolah Section */}
             <div className="mb-8">
-              <div className="bg-white p-6 rounded shadow">
-                <div className="flex justify-between items-center mb-4">
+              <div className="bg-white p-6 rounded shadow border border-emerald-200">
+                <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h3 className="text-lg font-bold mb-2">Profil Sekolah</h3>
-                    <p className="text-emerald-600 mb-4">Kelola informasi resmi sekolah</p>
+                    <h3 className="text-xl font-bold mb-1 text-emerald-900">Profil Sekolah</h3>
+                    <p className="text-emerald-600 text-sm">Kelola informasi resmi dan identitas sekolah</p>
                   </div>
                   <button
                     onClick={() => {
@@ -1055,35 +1055,65 @@ export default function AdminDashboard() {
                       });
                       setShowProfileModal(true);
                     }}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    Edit Profil Sekolah
+                    className="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600 font-semibold transition">
+                    Edit Profil
                   </button>
                 </div>
                 {schoolProfile && (
-                  <div className="bg-emerald-50 p-4 rounded">
-                    <div className="grid md:grid-cols-3 gap-4 items-start">
-                      <div className="md:col-span-2">
-                        <h4 className="text-lg font-bold text-emerald-900 mb-2">{schoolProfile.nama || '-'}</h4>
-                        <div className="space-y-2 text-emerald-700">
-                          <div className="flex items-start gap-3">
-                            <span className="text-emerald-600 font-semibold w-28">Alamat</span>
-                            <div className="flex-1">{schoolProfile.alamat || '-'}</div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <span className="text-emerald-600 font-semibold w-28">Telepon</span>
-                            <div className="flex-1">{schoolProfile.telepon || '-'}</div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <span className="text-emerald-600 font-semibold w-28">Email</span>
-                            <div className="flex-1">{schoolProfile.email || '-'}</div>
+                  <div className="space-y-6">
+                    {/* Informasi Dasar */}
+                    <div className="bg-emerald-50 p-5 rounded border-l-4 border-emerald-500">
+                      <p className="text-sm font-semibold text-emerald-600 mb-1">Nama Sekolah</p>
+                      <h4 className="text-lg font-bold text-emerald-900 mb-4">{schoolProfile.nama || '-'}</h4>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <p className="text-sm font-semibold text-emerald-600 mb-1">Alamat</p>
+                          <p className="text-emerald-800 leading-relaxed">{schoolProfile.alamat || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-emerald-600 mb-1">Kontak</p>
+                          <div className="space-y-1 text-emerald-800">
+                            <p><span className="font-medium">Telepon:</span> {schoolProfile.telepon || '-'}</p>
+                            <p><span className="font-medium">Email:</span> {schoolProfile.email || '-'}</p>
                           </div>
                         </div>
                       </div>
-                      <div className="md:col-span-1">
-                        <h5 className="text-sm font-bold text-emerald-900 mb-2">Visi</h5>
-                        <div className="bg-white p-3 rounded text-emerald-700 leading-relaxed whitespace-pre-line mb-4 min-h-[80px]">{schoolProfile.visi || '-'}</div>
-                        <h5 className="text-sm font-bold text-emerald-900 mb-2">Misi</h5>
-                        <div className="bg-white p-3 rounded text-emerald-700 leading-relaxed whitespace-pre-line min-h-[80px]">{schoolProfile.misi || '-'}</div>
+                    </div>
+
+                    {/* Visi & Misi */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-5 rounded border-l-4 border-blue-500">
+                        <h5 className="text-sm font-bold text-blue-900 mb-3 uppercase tracking-wide">Visi</h5>
+                        <p className="text-blue-800 leading-relaxed whitespace-pre-line text-sm">{schoolProfile.visi || '-'}</p>
+                      </div>
+                      <div className="bg-purple-50 p-5 rounded border-l-4 border-purple-500">
+                        <h5 className="text-sm font-bold text-purple-900 mb-3 uppercase tracking-wide">Misi</h5>
+                        <p className="text-purple-800 leading-relaxed whitespace-pre-line text-sm">{schoolProfile.misi || '-'}</p>
+                      </div>
+                    </div>
+
+                    {/* Media Sosial */}
+                    <div className="bg-indigo-50 p-5 rounded border-l-4 border-indigo-500">
+                      <h5 className="text-sm font-bold text-indigo-900 mb-3 uppercase tracking-wide">Tautan Media Sosial</h5>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs font-semibold text-indigo-600 mb-1">YouTube</p>
+                          {schoolProfile.youtube ? (
+                            <a href={schoolProfile.youtube} target="_blank" rel="noopener noreferrer" className="text-indigo-700 hover:text-indigo-900 break-all text-sm">
+                              {schoolProfile.youtube}
+                            </a>
+                          ) : (
+                            <p className="text-indigo-500 text-sm italic">Belum diatur</p>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-indigo-600 mb-1">Instagram</p>
+                          {schoolProfile.instagram ? (
+                            <p className="text-indigo-800 text-sm">{schoolProfile.instagram}</p>
+                          ) : (
+                            <p className="text-indigo-500 text-sm italic">Belum diatur</p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1345,87 +1375,144 @@ export default function AdminDashboard() {
             </div>
         
 
-        {/* Modals */}
         {/* Profile Modal */}
         {showProfileModal && (
-          <div className="fixed inset-0 bg-emerald-50 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded shadow max-w-md w-full">
-              <h3 className="text-lg font-bold mb-4">Edit Profil Sekolah</h3>
-              <form onSubmit={handleSaveProfile}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Nama Sekolah</label>
-                    <input
-                      type="text"
-                      value={profileForm.nama}
-                      onChange={(e) => setProfileForm({ ...profileForm, nama: e.target.value })}
-                      className="w-full border rounded px-3 py-2"
-                    />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-emerald-200 p-6 flex justify-between items-center">
+                <div>
+                  <h3 className="text-2xl font-bold text-emerald-900">Edit Profil Sekolah</h3>
+                  <p className="text-emerald-600 text-sm mt-1">Kelola informasi dan identitas resmi sekolah Anda</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowProfileModal(false)}
+                  className="text-emerald-500 hover:text-emerald-700 text-2xl font-light"
+                >
+                  ✕
+                </button>
+              </div>
 
-                    <label className="block text-sm font-medium mb-1 mt-3">Alamat</label>
-                    <textarea
-                      value={profileForm.alamat}
-                      onChange={(e) => setProfileForm({ ...profileForm, alamat: e.target.value })}
-                      className="w-full border rounded px-3 py-2"
-                      rows={3}
-                    />
-
-                    <div className="flex gap-2 mt-3">
-                      <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">Telepon</label>
-                        <input type="text" value={profileForm.telepon} onChange={(e) => setProfileForm({ ...profileForm, telepon: e.target.value })} className="w-full border rounded px-3 py-2" />
+              <form onSubmit={handleSaveProfile} className="p-6 space-y-6">
+                {/* Informasi Dasar */}
+                <div className="bg-emerald-50 p-5 rounded border border-emerald-200">
+                  <h4 className="text-lg font-bold text-emerald-900 mb-4">Informasi Dasar</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-emerald-800 mb-2">Nama Sekolah</label>
+                      <input
+                        type="text"
+                        value={profileForm.nama}
+                        onChange={(e) => setProfileForm({ ...profileForm, nama: e.target.value })}
+                        className="w-full border border-emerald-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                        placeholder="Masukkan nama sekolah"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-emerald-800 mb-2">Alamat</label>
+                      <textarea
+                        value={profileForm.alamat}
+                        onChange={(e) => setProfileForm({ ...profileForm, alamat: e.target.value })}
+                        className="w-full border border-emerald-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                        rows={3}
+                        placeholder="Masukkan alamat lengkap sekolah"
+                      />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-emerald-800 mb-2">Nomor Telepon</label>
+                        <input
+                          type="text"
+                          value={profileForm.telepon}
+                          onChange={(e) => setProfileForm({ ...profileForm, telepon: e.target.value })}
+                          className="w-full border border-emerald-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                          placeholder="Contoh: (021) 1234-5678"
+                        />
                       </div>
-                      <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">Email</label>
-                        <input type="email" value={profileForm.email} onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })} className="w-full border rounded px-3 py-2" />
+                      <div>
+                        <label className="block text-sm font-semibold text-emerald-800 mb-2">Email</label>
+                        <input
+                          type="email"
+                          value={profileForm.email}
+                          onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                          className="w-full border border-emerald-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                          placeholder="Contoh: info@sekolah.ac.id"
+                        />
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Visi</label>
-                    <textarea
-                      value={profileForm.visi}
-                      onChange={(e) => setProfileForm({ ...profileForm, visi: e.target.value })}
-                      className="w-full border rounded px-3 py-2"
-                      rows={6}
-                      placeholder="Tuliskan visi sekolah"
-                    />
-
-                    <label className="block text-sm font-medium mb-1 mt-3">Misi</label>
-                    <textarea
-                      value={profileForm.misi}
-                      onChange={(e) => setProfileForm({ ...profileForm, misi: e.target.value })}
-                      className="w-full border rounded px-3 py-2"
-                      rows={8}
-                      placeholder="Tuliskan misi sekolah (pisahkan dengan baris)"
-                    />
-
-                    <div className="mt-3 text-sm text-emerald-600">Tip: pisahkan setiap misi dengan baris baru untuk tampilan terbaik.</div>
-
-                    <label className="block text-sm font-medium mb-1 mt-3">YouTube</label>
-                    <input
-                      type="text"
-                      value={profileForm.youtube}
-                      onChange={(e) => setProfileForm({ ...profileForm, youtube: e.target.value })}
-                      className="w-full border rounded px-3 py-2"
-                      placeholder="Contoh: https://youtube.com/@sekolah"
-                    />
-
-                    <label className="block text-sm font-medium mb-1 mt-3">Instagram</label>
-                    <input
-                      type="text"
-                      value={profileForm.instagram}
-                      onChange={(e) => setProfileForm({ ...profileForm, instagram: e.target.value })}
-                      className="w-full border rounded px-3 py-2"
-                      placeholder="Contoh: @sekolah_official"
-                    />
+                {/* Visi & Misi */}
+                <div className="bg-blue-50 p-5 rounded border border-blue-200">
+                  <h4 className="text-lg font-bold text-blue-900 mb-4">Visi & Misi</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-blue-800 mb-2">Visi Sekolah</label>
+                      <textarea
+                        value={profileForm.visi}
+                        onChange={(e) => setProfileForm({ ...profileForm, visi: e.target.value })}
+                        className="w-full border border-blue-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                        rows={4}
+                        placeholder="Tuliskan visi sekolah..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-blue-800 mb-2">Misi Sekolah</label>
+                      <textarea
+                        value={profileForm.misi}
+                        onChange={(e) => setProfileForm({ ...profileForm, misi: e.target.value })}
+                        className="w-full border border-blue-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                        rows={5}
+                        placeholder="Tuliskan misi sekolah (pisahkan setiap misi dengan baris baru)..."
+                      />
+                      <p className="text-xs text-blue-600 mt-2">💡 Tip: Pisahkan setiap misi dengan baris baru untuk tampilan yang lebih rapi</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2 mt-4">
-                  <button type="submit" className="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Simpan</button>
-                  <button type="button" onClick={() => setShowProfileModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
+                {/* Media Sosial */}
+                <div className="bg-indigo-50 p-5 rounded border border-indigo-200">
+                  <h4 className="text-lg font-bold text-indigo-900 mb-4">Media Sosial</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-indigo-800 mb-2">🎥 Link YouTube</label>
+                      <input
+                        type="text"
+                        value={profileForm.youtube}
+                        onChange={(e) => setProfileForm({ ...profileForm, youtube: e.target.value })}
+                        className="w-full border border-indigo-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                        placeholder="https://youtube.com/@sekolah"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-indigo-800 mb-2">📷 Link Instagram</label>
+                      <input
+                        type="text"
+                        value={profileForm.instagram}
+                        onChange={(e) => setProfileForm({ ...profileForm, instagram: e.target.value })}
+                        className="w-full border border-indigo-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                        placeholder="https://www.instagram.com/sekolah_official"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tombol Aksi */}
+                <div className="flex gap-3 justify-end pt-4 border-t border-emerald-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileModal(false)}
+                    className="px-6 py-2 rounded border border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-semibold transition"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 font-semibold transition shadow-md"
+                  >
+                    Simpan Perubahan
+                  </button>
                 </div>
               </form>
             </div>
