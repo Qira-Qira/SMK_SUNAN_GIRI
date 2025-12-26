@@ -63,7 +63,7 @@ export default function AdminDashboard() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
   // Form states
-  const [profileForm, setProfileForm] = useState({ nama: '', alamat: '', telepon: '', email: '', visi: '', misi: '' });
+  const [profileForm, setProfileForm] = useState({ nama: '', alamat: '', telepon: '', email: '', visi: '', misi: '', youtube: '', instagram: '' });
   const [heroForm, setHeroForm] = useState({ heroTitle: '', heroSubtitle: '', heroDescription: '' });
   const [newsForm, setNewsForm] = useState({ title: '', content: '', thumbnail: '', featured: false, published: true });
   const [newsFile, setNewsFile] = useState<File | null>(null);
@@ -1050,6 +1050,8 @@ export default function AdminDashboard() {
                         email: schoolProfile?.email || '',
                         visi: schoolProfile?.visi || '',
                         misi: schoolProfile?.misi || '',
+                        youtube: schoolProfile?.youtube || '',
+                        instagram: schoolProfile?.instagram || '',
                       });
                       setShowProfileModal(true);
                     }}
@@ -1400,6 +1402,24 @@ export default function AdminDashboard() {
                     />
 
                     <div className="mt-3 text-sm text-emerald-600">Tip: pisahkan setiap misi dengan baris baru untuk tampilan terbaik.</div>
+
+                    <label className="block text-sm font-medium mb-1 mt-3">YouTube</label>
+                    <input
+                      type="text"
+                      value={profileForm.youtube}
+                      onChange={(e) => setProfileForm({ ...profileForm, youtube: e.target.value })}
+                      className="w-full border rounded px-3 py-2"
+                      placeholder="Contoh: https://youtube.com/@sekolah"
+                    />
+
+                    <label className="block text-sm font-medium mb-1 mt-3">Instagram</label>
+                    <input
+                      type="text"
+                      value={profileForm.instagram}
+                      onChange={(e) => setProfileForm({ ...profileForm, instagram: e.target.value })}
+                      className="w-full border rounded px-3 py-2"
+                      placeholder="Contoh: @sekolah_official"
+                    />
                   </div>
                 </div>
 

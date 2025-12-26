@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
       alamat: profile.address,
       telepon: profile.phoneNumber,
       email: profile.emailSchool,
-      nama: profile.heroTitle,
     };
 
     return NextResponse.json({ profile: mappedProfile }, { status: 200 });
@@ -46,7 +45,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { nama, alamat, telepon, email, heroTitle, heroSubtitle, heroDescription, visi, misi } = body;
+    const { nama, alamat, telepon, email, heroTitle, heroSubtitle, heroDescription, visi, misi, youtube, instagram } = body;
 
     let profile = await prisma.schoolProfile.findFirst();
 
@@ -55,11 +54,14 @@ export async function PUT(request: NextRequest) {
       profile = await prisma.schoolProfile.update({
         where: { id: profile.id },
         data: {
+          ...(nama && { nama }),
           ...(heroTitle && { heroTitle }),
           ...(heroSubtitle && { heroSubtitle }),
           ...(heroDescription && { heroDescription }),
           ...(visi && { visi }),
           ...(misi && { misi }),
+          ...(youtube && { youtube }),
+          ...(instagram && { instagram }),
           ...(telepon && { phoneNumber: telepon }),
           ...(email && { emailSchool: email }),
           ...(alamat && { address: alamat }),

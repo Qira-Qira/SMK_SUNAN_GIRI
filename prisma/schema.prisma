@@ -219,9 +219,23 @@ model News {
   updatedAt DateTime @updatedAt
 }
 
+// Testimonial
+model Testimonial {
+  id        String   @id @default(cuid())
+  nama      String
+  posisi    String
+  perusahaan String
+  tahunLulus String
+  testimoni String
+  rating    Int      @default(5)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // School Profile
 model SchoolProfile {
   id              String   @id @default(cuid())
+  nama            String   @default("SMK Unggulan Digital")
   sejarah         String
   visi            String
   misi            String
@@ -239,6 +253,10 @@ model SchoolProfile {
   heroSubtitle    String?   @default("Bersama SMK Unggulan")
   heroDescription String?   @default("Persiapkan diri untuk era industri 4.0")
   heroStatistics  String?   // JSON string dengan stats
+  
+  // Social Links
+  youtube         String?
+  instagram       String?
   
   // Statistics Fields
   siswaAktif      String?   @default("1,200+")
