@@ -76,7 +76,7 @@ export default function Navbar() {
               className="h-10 w-10 object-contain"
             />
           )}
-          <span>{schoolProfile?.nama || 'SMK Sunan Giri'}</span>
+          <span>{schoolProfile?.nama || 'Nama Sekolah Belum di Set'}</span>
         </Link>
 
         <div className="flex gap-6 items-center">

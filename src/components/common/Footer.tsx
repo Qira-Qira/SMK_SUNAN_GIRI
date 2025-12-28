@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail, Copy, Check } from 'lucide-react';
 
 type SchoolProfile = {
   alamat?: string;
@@ -16,6 +16,7 @@ type SchoolProfile = {
 export default function Footer() {
   const [profile, setProfile] = useState<SchoolProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -34,6 +35,16 @@ export default function Footer() {
     })();
     return () => { mounted = false; };
   }, []);
+
+  const copyToClipboard = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(type);
+      setTimeout(() => setCopied(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   return (
     <footer className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-12">
@@ -54,25 +65,90 @@ export default function Footer() {
               <p className="text-emerald-100 text-sm">Memuat kontak...</p>
             ) : (
               <div className="space-y-3 text-emerald-50">
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-emerald-100 mt-1" />
-                  <div className="text-sm">{profile?.alamat || 'Alamat belum diatur'}</div>
+                <div className="flex items-start gap-3 group">
+                  <MapPin className="w-5 h-5 text-emerald-100 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <div className="text-sm">{profile?.alamat || 'Alamat belum diatur'}</div>
+                    {profile?.alamat && (
+                      <button
+                        onClick={() => copyToClipboard(profile.alamat!, 'alamat')}
+                        className="mt-1 text-xs text-emerald-200 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+                        title="Copy alamat"
+                      >
+                        {copied === 'alamat' ? (
+                          <>
+                            <Check className="w-3 h-3" />
+                            Tersalin
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            Salin
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 text-emerald-100 mt-1" />
-                  {profile?.telepon ? (
-                    <a href={`tel:${profile.telepon}`} className="text-sm text-emerald-50 hover:underline">{profile.telepon}</a>
-                  ) : (
-                    <div className="text-sm">Telepon belum diatur</div>
-                  )}
+
+                <div className="flex items-start gap-3 group">
+                  <Phone className="w-5 h-5 text-emerald-100 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    {profile?.telepon ? (
+                      <>
+                        <a href={`tel:${profile.telepon}`} className="text-sm text-emerald-50 hover:underline">{profile.telepon}</a>
+                        <button
+                          onClick={() => copyToClipboard(profile.telepon!, 'telepon')}
+                          className="mt-1 text-xs text-emerald-200 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+                          title="Copy nomor telepon"
+                        >
+                          {copied === 'telepon' ? (
+                            <>
+                              <Check className="w-3 h-3" />
+                              Tersalin
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3" />
+                              Salin
+                            </>
+                          )}
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-sm">Telepon belum diatur</div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <Mail className="w-5 h-5 text-emerald-100 mt-1" />
-                  {profile?.email ? (
-                    <a href={`mailto:${profile.email}`} className="text-sm text-emerald-50 hover:underline">{profile.email}</a>
-                  ) : (
-                    <div className="text-sm">Email belum diatur</div>
-                  )}
+
+                <div className="flex items-start gap-3 group">
+                  <Mail className="w-5 h-5 text-emerald-100 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    {profile?.email ? (
+                      <>
+                        <a href={`mailto:${profile.email}`} className="text-sm text-emerald-50 hover:underline">{profile.email}</a>
+                        <button
+                          onClick={() => copyToClipboard(profile.email!, 'email')}
+                          className="mt-1 text-xs text-emerald-200 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+                          title="Copy email"
+                        >
+                          {copied === 'email' ? (
+                            <>
+                              <Check className="w-3 h-3" />
+                              Tersalin
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3" />
+                              Salin
+                            </>
+                          )}
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-sm">Email belum diatur</div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -107,7 +183,7 @@ export default function Footer() {
                 <span className="hidden md:inline text-sm">Instagram</span>
               </a>
             </div>
-            <p className="text-emerald-100 text-sm mt-4">&copy; {new Date().getFullYear()} {profile?.nama || 'SMK Sunan Giri'}. Semua hak dilindungi.</p>
+            <p className="text-emerald-100 text-sm mt-4">&copy; {new Date().getFullYear()} {profile?.nama || 'Nama Sekolah Belum di Set'}. Semua hak dilindungi.</p>
           </div>
         </div>
       </div>
