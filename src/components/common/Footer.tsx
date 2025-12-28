@@ -54,8 +54,8 @@ export default function Footer() {
             <h2 className="text-2xl md:text-3xl font-bold mb-2">Siap Memulai Karirmu di Industri Digital?</h2>
             <p className="text-emerald-50 mb-4 max-w-xl">Bergabunglah dengan ribuan alumni yang telah sukses berkarir di perusahaan ternama. Temukan jurusan yang tepat dan daftar sekarang.</p>
             <div className="flex gap-3">
-              <Link href="/register" className="inline-block bg-white text-emerald-600 font-semibold px-5 py-2 rounded-lg shadow hover:bg-emerald-50 transition">Daftar Sekarang</Link>
-              <Link href="/ppdb" className="inline-block bg-transparent border border-white/30 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">Informasi PPDB</Link>
+              <Link href="/ppdb" className="inline-block bg-white text-emerald-600 font-semibold px-5 py-2 rounded-lg shadow hover:bg-emerald-50 transition">Daftar Sekarang</Link>
+              <Link href="/bkk" className="inline-block bg-transparent border border-white/30 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">Career Center</Link>
             </div>
           </div>
 

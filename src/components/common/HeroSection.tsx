@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Bot, Briefcase, Loader2 } from 'lucide-react';
+import { Bot, UserPlus, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface HeroStats {
@@ -78,11 +78,11 @@ export default function HeroSection() {
                                     Tes AI Jurusan
                                 </Link>
                                 <Link
-                                    href="/bkk"
+                                    href="/ppdb"
                                     className="inline-flex items-center gap-2 bg-lime-400 hover:bg-lime-300 text-emerald-900 px-6 py-3 rounded-lg font-bold transition duration-300 shadow-lg hover:shadow-xl"
                                 >
-                                    <Briefcase className="w-5 h-5" />
-                                    Career Center
+                                    <UserPlus className="w-5 h-5" />
+                                    Daftar Sekarang
                                 </Link>
                             </div>
 
