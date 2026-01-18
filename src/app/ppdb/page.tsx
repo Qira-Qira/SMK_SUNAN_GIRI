@@ -1,7 +1,7 @@
 'use client';
 
 import Navbar from '@/components/common/Navbar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, Upload, Loader2 } from 'lucide-react';
 
 interface UploadedFile {
@@ -9,7 +9,16 @@ interface UploadedFile {
   size: number;
 }
 
+interface Jurusan {
+  id: string;
+  nama: string;
+  kode: string;
+}
+
 export default function PPDBPage() {
+  const [jurusanList, setJurusanList] = useState<Jurusan[]>([]);
+  const [jurusanLoading, setJurusanLoading] = useState(true);
+  
   const [formData, setFormData] = useState({
     nisn: '',
     nik: '',
@@ -37,6 +46,25 @@ export default function PPDBPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState<any>(null);
   const [error, setError] = useState('');
+
+  // Fetch jurusan dari API
+  useEffect(() => {
+    const fetchJurusan = async () => {
+      try {
+        const res = await fetch('/api/public/jurusan');
+        if (res.ok) {
+          const data = await res.json();
+          setJurusanList(data.jurusan || []);
+        }
+      } catch (error) {
+        console.error('Error fetching jurusan:', error);
+      } finally {
+        setJurusanLoading(false);
+      }
+    };
+
+    fetchJurusan();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -348,12 +376,16 @@ export default function PPDBPage() {
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
                     required
+                    disabled={jurusanLoading}
                   >
-                    <option value="">-- Pilih Jurusan --</option>
-                    <option value="Teknik Informatika">Teknik Informatika</option>
-                    <option value="Akuntansi">Akuntansi</option>
-                    <option value="Desain Grafis">Desain Grafis</option>
-                    <option value="Teknik Otomotif">Teknik Otomotif</option>
+                    <option value="">
+                      {jurusanLoading ? 'Memuat jurusan...' : '-- Pilih Jurusan --'}
+                    </option>
+                    {jurusanList.map((j) => (
+                      <option key={j.id} value={j.nama}>
+                        {j.nama}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -365,12 +397,14 @@ export default function PPDBPage() {
                       value={formData.majorChoice2}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
+                      disabled={jurusanLoading}
                     >
                       <option value="">-- Pilih Jurusan --</option>
-                      <option value="Teknik Informatika">Teknik Informatika</option>
-                      <option value="Akuntansi">Akuntansi</option>
-                      <option value="Desain Grafis">Desain Grafis</option>
-                      <option value="Teknik Otomotif">Teknik Otomotif</option>
+                      {jurusanList.map((j) => (
+                        <option key={j.id} value={j.nama}>
+                          {j.nama}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -381,12 +415,14 @@ export default function PPDBPage() {
                       value={formData.majorChoice3}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-emerald-900"
+                      disabled={jurusanLoading}
                     >
                       <option value="">-- Pilih Jurusan --</option>
-                      <option value="Teknik Informatika">Teknik Informatika</option>
-                      <option value="Akuntansi">Akuntansi</option>
-                      <option value="Desain Grafis">Desain Grafis</option>
-                      <option value="Teknik Otomotif">Teknik Otomotif</option>
+                      {jurusanList.map((j) => (
+                        <option key={j.id} value={j.nama}>
+                          {j.nama}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
