@@ -148,12 +148,15 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch('/api/admin/users', {
         credentials: 'include',
       });
       if (res.ok) {
         const data = await res.json();
-        setUsers([data.user]);
+        setUsers(data.users || []);
+      } else if (res.status === 403 || res.status === 401) {
+        // Not authenticated, redirect to login
+        window.location.href = '/login';
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -240,6 +243,27 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error updating PPDB status:', error);
+    }
+  };
+
+  const updateUserStatus = async (userId: string, newStatus: boolean) => {
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ userId, isActive: newStatus }),
+      });
+      if (res.ok) {
+        toast.success(newStatus ? 'User berhasil diaktifkan' : 'User berhasil dinonaktifkan');
+        setRefreshTrigger(prev => prev + 1);
+      } else {
+        const err = await res.json();
+        toast.error(err?.error || 'Gagal mengupdate status user');
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      toast.error('Gagal mengupdate status user');
     }
   };
 
@@ -1151,39 +1175,49 @@ export default function AdminDashboard() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Manajemen Pengguna</h2>
-            <div className="bg-white rounded shadow overflow-hidden">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-emerald-900 mb-2">Manajemen Pengguna</h2>
+              <p className="text-emerald-600">Total: <span className="font-semibold text-lg">{users.length}</span> pengguna terdaftar</p>
+            </div>
+            <div className="bg-white rounded shadow overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-emerald-100 border-b">
+                <thead className="bg-emerald-100 border-b text-emerald-900">
                   <tr>
-                    <th className="px-4 py-3">Nama</th>
+                    <th className="px-4 py-3">Nama Lengkap</th>
+                    <th className="px-4 py-3">Username</th>
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Role</th>
+                    <th className="px-4 py-3">Telepon</th>
                     <th className="px-4 py-3">Terdaftar</th>
-                    <th className="px-4 py-3">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.length > 0 ? (
                     users.map((user: any) => (
                       <tr key={user.id} className="border-t hover:bg-emerald-50">
-                        <td className="px-4 py-3">{user.name || '-'}</td>
-                        <td className="px-4 py-3 text-sm">{user.email}</td>
+                        <td className="px-4 py-3 font-semibold text-emerald-900">{user.fullName || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-emerald-800">{user.username || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-emerald-800">{user.email}</td>
                         <td className="px-4 py-3">
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                            user.role === 'ADMIN_UTAMA' ? 'bg-red-100 text-red-800' :
+                            user.role === 'ADMIN_PPDB' ? 'bg-orange-100 text-orange-800' :
+                            user.role === 'ADMIN_BKK' ? 'bg-yellow-100 text-yellow-800' :
+                            user.role === 'CALON_SISWA' ? 'bg-blue-100 text-blue-800' :
+                            user.role === 'SISWA_AKTIF' ? 'bg-green-100 text-green-800' :
+                            user.role === 'ALUMNI' ? 'bg-purple-100 text-purple-800' :
+                            user.role === 'PERUSAHAAN' ? 'bg-indigo-100 text-indigo-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
                             {user.role}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm">{new Date(user.createdAt).toLocaleDateString('id-ID')}</td>
-                        <td className="px-4 py-3">
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">
-                            Aktif
-                          </span>
-                        </td>
+                        <td className="px-4 py-3 text-sm text-emerald-800">{user.phone || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-emerald-800">{new Date(user.createdAt).toLocaleDateString('id-ID')}</td>
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={5} className="px-4 py-3 text-center text-emerald-9000">Tidak ada data</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-700">Belum ada pengguna</td></tr>
                   )}
                 </tbody>
               </table>

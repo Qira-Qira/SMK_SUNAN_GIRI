@@ -121,11 +121,8 @@ export default function Navbar() {
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
-                  <Link href="/login" className={`transition duration-200 ${linkHoverClass}`}>
+                  <Link href="/login" className="bg-lime-500 hover:bg-lime-600 px-4 py-1 rounded font-bold transition duration-200 text-emerald-900">
                     Login
-                  </Link>
-                  <Link href="/register" className="bg-lime-500 hover:bg-lime-600 px-4 py-1 rounded font-medium transition duration-200 text-emerald-900">
-                    Register
                   </Link>
                 </div>
               )}

@@ -2,6 +2,7 @@
 
 import Navbar from '@/components/common/Navbar';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { CheckCircle, Upload, Loader2 } from 'lucide-react';
 
 interface UploadedFile {
@@ -19,6 +20,9 @@ interface Jurusan {
 export default function PPDBPage() {
   const [jurusanList, setJurusanList] = useState<Jurusan[]>([]);
   const [jurusanLoading, setJurusanLoading] = useState(true);
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   
   const [formData, setFormData] = useState({
     nisn: '',
@@ -50,6 +54,39 @@ export default function PPDBPage() {
 
   // Fetch jurusan dari API
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/auth/me', {
+          credentials: 'include',
+        });
+
+        if (!res.ok || res.status === 401) {
+          // User belum login, redirect ke login
+          router.push('/login?redirect=/ppdb');
+          return;
+        }
+
+        const data = await res.json();
+        if (data.user) {
+          setIsAuthorized(true);
+        } else {
+          router.push('/login?redirect=/ppdb');
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        router.push('/login?redirect=/ppdb');
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  // Fetch jurusan dari API
+  useEffect(() => {
+    if (!isAuthorized) return;
+
     const fetchJurusan = async () => {
       try {
         const res = await fetch('/api/public/jurusan');
@@ -65,7 +102,7 @@ export default function PPDBPage() {
     };
 
     fetchJurusan();
-  }, []);
+  }, [isAuthorized]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -231,6 +268,24 @@ export default function PPDBPage() {
         </main>
       </>
     );
+  }
+
+  if (isCheckingAuth) {
+    return (
+      <>
+        <Navbar />
+        <main className="container mx-auto py-12 px-4 text-emerald-900">
+          <div className="max-w-2xl mx-auto flex items-center justify-center">
+            <Loader2 className="animate-spin w-8 h-8 text-emerald-600" />
+            <span className="ml-3 text-lg font-semibold">Memverifikasi akun Anda...</span>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null;
   }
 
   return (

@@ -35,7 +35,14 @@ export default function LoginForm() {
         return;
       }
 
-      router.push('/admin');
+      const data = await res.json();
+      
+      // Redirect based on user role
+      if (data.user?.role === 'ADMIN_UTAMA' || data.user?.role === 'ADMIN_PPDB' || data.user?.role === 'ADMIN_BKK') {
+        router.push('/admin');
+      } else {
+        router.push('/ppdb');
+      }
     } catch (error) {
       setError('An error occurred');
     } finally {
@@ -88,6 +95,15 @@ export default function LoginForm() {
           'Login'
         )}
       </button>
+
+      <div className="mt-6 text-center">
+        <p className="text-emerald-700 font-medium">
+          Tidak punya akun?{' '}
+          <a href="/register" className="text-lime-600 hover:text-lime-700 font-bold hover:underline">
+            Daftar di sini
+          </a>
+        </p>
+      </div>
     </form>
   );
 }

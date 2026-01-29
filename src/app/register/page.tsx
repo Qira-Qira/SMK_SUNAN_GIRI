@@ -42,7 +42,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push('/login?success=true');
+      router.push('/login');
     } catch (error) {
       setError('An error occurred');
     } finally {
@@ -130,6 +130,15 @@ export default function RegisterPage() {
               'Daftar'
             )}
           </button>
+
+          <div className="mt-6 text-center">
+            <p className="text-emerald-700 font-medium">
+              Sudah punya akun?{' '}
+              <a href="/login" className="text-lime-600 hover:text-lime-700 font-bold hover:underline">
+                Login di sini
+              </a>
+            </p>
+          </div>
         </form>
       </main>
     </div>
