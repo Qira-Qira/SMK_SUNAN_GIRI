@@ -7,6 +7,7 @@ import { CheckCircle, Upload, Loader2 } from 'lucide-react';
 interface UploadedFile {
   name: string;
   size: number;
+  file?: File;
 }
 
 interface Jurusan {
@@ -94,6 +95,7 @@ export default function PPDBPage() {
         [fieldName]: {
           name: file.name,
           size: file.size,
+          file: file, // Simpan file object
         },
       });
       setError('');
@@ -113,7 +115,37 @@ export default function PPDBPage() {
         return;
       }
 
-      // Buat FormData untuk mengirim file dan form data
+      // Upload semua file terlebih dahulu
+      const uploadedUrls: { [key: string]: string } = {};
+
+      for (const [fieldName, fileData] of Object.entries(uploadedFiles)) {
+        if (fileData.file) {
+          try {
+            const fileFormData = new FormData();
+            fileFormData.append('file', fileData.file);
+            
+            const uploadRes = await fetch('/api/public/uploads', {
+              method: 'POST',
+              body: fileFormData,
+            });
+
+            if (uploadRes.ok) {
+              const uploadData = await uploadRes.json();
+              uploadedUrls[fieldName] = uploadData.url;
+            } else {
+              setError(`Gagal upload file ${fieldName}`);
+              setIsLoading(false);
+              return;
+            }
+          } catch (err) {
+            setError(`Error saat upload file ${fieldName}`);
+            setIsLoading(false);
+            return;
+          }
+        }
+      }
+
+      // Buat FormData untuk mengirim form data + URL file
       const formDataToSend = new FormData();
 
       // Tambah form fields
@@ -121,11 +153,9 @@ export default function PPDBPage() {
         formDataToSend.append(key, value as string);
       });
 
-      // Tambah file references (dalam aplikasi real, file benar-benar di-upload ke storage)
-      Object.entries(uploadedFiles).forEach(([key, value]) => {
-        if (value.name) {
-          formDataToSend.append(key, value.name);
-        }
+      // Tambah URL file yang sudah terupload
+      Object.entries(uploadedUrls).forEach(([key, url]) => {
+        formDataToSend.append(key, url);
       });
 
       const res = await fetch('/api/ppdb/register', {
@@ -165,6 +195,7 @@ export default function PPDBPage() {
         fotoCalonFile: { name: '', size: 0 },
       });
     } catch (error) {
+      console.error('Submit error:', error);
       setError('Terjadi kesalahan');
     } finally {
       setIsLoading(false);

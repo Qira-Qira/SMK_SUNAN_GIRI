@@ -33,6 +33,8 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [ppdbEntries, setPpdbEntries] = useState<any[]>([]);
+  const [showPPDBDetailModal, setShowPPDBDetailModal] = useState(false);
+  const [selectedPPDBEntry, setSelectedPPDBEntry] = useState<any>(null);
   const [jobPostings, setJobPostings] = useState<any[]>([]);
   const [showJobModal, setShowJobModal] = useState(false);
   const [jobForm, setJobForm] = useState({ perusahaanId: '', jurusanId: '', posisi: '', deskripsi: '', requirements: '', salary: '', lokasi: '', tipePekerjaan: '', deadline: '' });
@@ -749,10 +751,11 @@ export default function AdminDashboard() {
                             {entry.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 space-x-2 flex items-center gap-2">
+                          
                           <select
                             onChange={(e) => updatePPDBStatus(entry.id, e.target.value)}
-                            className="px-2 py-1 text-xs border rounded"
+                            className="px-2 py-1 text-xs border rounded min-w-max"
                           >
                             <option value="">Update Status</option>
                             <option value="PENDING_VERIFIKASI">Pending</option>
@@ -761,6 +764,12 @@ export default function AdminDashboard() {
                             <option value="CADANGAN">Cadangan</option>
                             <option value="DITOLAK">Ditolak</option>
                           </select>
+                          <button
+                            onClick={() => { setSelectedPPDBEntry(entry); setShowPPDBDetailModal(true); }}
+                            className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
+                          >
+                            Lihat Detail
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -769,6 +778,171 @@ export default function AdminDashboard() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* PPDB Detail Modal */}
+        {showPPDBDetailModal && selectedPPDBEntry && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 flex justify-between items-center">
+                <div>
+                  <h3 className="text-2xl font-bold">Detail Pendaftar PPDB</h3>
+                  <p className="text-emerald-100 text-sm mt-1">No. Pendaftaran: {selectedPPDBEntry.registrationNumber}</p>
+                </div>
+                <button
+                  onClick={() => setShowPPDBDetailModal(false)}
+                  className="text-white hover:text-emerald-200 text-2xl font-light"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Data Pribadi */}
+                <div className="bg-blue-50 p-5 rounded border-l-4 border-blue-500">
+                  <h4 className="text-lg font-bold text-blue-900 mb-4">Data Pribadi</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-blue-700">Nama Lengkap</p>
+                      <p className="text-blue-900">{selectedPPDBEntry.fullName || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-700">Email</p>
+                      <p className="text-blue-900">{selectedPPDBEntry.email || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-700">NISN</p>
+                      <p className="text-blue-900">{selectedPPDBEntry.NISN || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-700">NIK</p>
+                      <p className="text-blue-900">{selectedPPDBEntry.NIK || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-700">Tanggal Lahir</p>
+                      <p className="text-blue-900">{selectedPPDBEntry.birthDate ? new Date(selectedPPDBEntry.birthDate).toLocaleDateString('id-ID') : '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-700">Tempat Lahir</p>
+                      <p className="text-blue-900">{selectedPPDBEntry.birthPlace || '-'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Data Orang Tua */}
+                <div className="bg-purple-50 p-5 rounded border-l-4 border-purple-500">
+                  <h4 className="text-lg font-bold text-purple-900 mb-4">Data Orang Tua</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-purple-700">Nama Orang Tua</p>
+                      <p className="text-purple-900">{selectedPPDBEntry.parentName || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-purple-700">Telepon Orang Tua</p>
+                      <p className="text-purple-900">{selectedPPDBEntry.parentPhone || '-'}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="text-sm font-semibold text-purple-700">Alamat Orang Tua</p>
+                      <p className="text-purple-900">{selectedPPDBEntry.parentAddress || '-'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Data Akademik */}
+                <div className="bg-orange-50 p-5 rounded border-l-4 border-orange-500">
+                  <h4 className="text-lg font-bold text-orange-900 mb-4">Data Akademik</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-orange-700">Sekolah Asal</p>
+                      <p className="text-orange-900">{selectedPPDBEntry.previousSchool || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-orange-700">Rata-rata Nilai</p>
+                      <p className="text-orange-900">{selectedPPDBEntry.averageScore || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-orange-700">Pilihan Jurusan 1</p>
+                      <p className="text-orange-900">{selectedPPDBEntry.majorChoice1 || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-orange-700">Pilihan Jurusan 2</p>
+                      <p className="text-orange-900">{selectedPPDBEntry.majorChoice2 || '-'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* File Upload */}
+                <div className="bg-indigo-50 p-5 rounded border-l-4 border-indigo-500">
+                  <h4 className="text-lg font-bold text-indigo-900 mb-4">File Dokumen</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { label: 'Kartu Keluarga (KK)', file: selectedPPDBEntry.kkFile },
+                      { label: 'Akta Kelahiran', file: selectedPPDBEntry.aktaFile },
+                      { label: 'Rapor Sekolah', file: selectedPPDBEntry.raportFile },
+                      { label: 'Ijazah', file: selectedPPDBEntry.ijazahFile },
+                      { label: 'Foto Calon Siswa', file: selectedPPDBEntry.fotoCalonFile },
+                    ].map((doc) => (
+                      <div key={doc.label} className="bg-white p-3 rounded border border-indigo-200">
+                        <p className="text-sm font-semibold text-indigo-900 mb-2">{doc.label}</p>
+                        {doc.file ? (
+                          <>
+                            {doc.file.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                              <div className="mb-2">
+                                <img src={doc.file} alt={doc.label} className="max-h-48 max-w-full rounded border border-indigo-300" />
+                              </div>
+                            ) : (
+                              <p className="text-xs text-indigo-600 mb-2">File: {doc.file.split('/').pop()}</p>
+                            )}
+                            <a
+                              href={doc.file}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-indigo-600 hover:text-indigo-900 hover:underline inline-flex items-center gap-1"
+                            >
+                              📥 Unduh File
+                            </a>
+                          </>
+                        ) : (
+                          <p className="text-xs text-gray-500 italic">Belum diupload</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className="bg-emerald-50 p-5 rounded border-l-4 border-emerald-500">
+                  <h4 className="text-lg font-bold text-emerald-900 mb-4">Status Pendaftaran</h4>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-700">Status Saat Ini</p>
+                      <span className={`inline-block px-3 py-1 rounded text-sm font-semibold mt-1 ${
+                        selectedPPDBEntry.status === 'LULUS' ? 'bg-green-100 text-green-800' :
+                        selectedPPDBEntry.status === 'DITOLAK' ? 'bg-red-100 text-red-800' :
+                        selectedPPDBEntry.status === 'CADANGAN' ? 'bg-yellow-100 text-yellow-800' :
+                        selectedPPDBEntry.status === 'VERIFIKASI_LANJUT' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {selectedPPDBEntry.status}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold text-emerald-700">
+                      Tanggal Mendaftar: {selectedPPDBEntry.createdAt ? new Date(selectedPPDBEntry.createdAt).toLocaleDateString('id-ID') : '-'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 bg-gray-100 p-4 flex justify-end gap-2">
+                <button
+                  onClick={() => setShowPPDBDetailModal(false)}
+                  className="px-4 py-2 rounded border border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-semibold transition"
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -1335,8 +1509,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-          </div>
-              )}
 
             {/* Video Section */}
             <div className="mb-8">
@@ -1403,7 +1575,8 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
-        
+          </div>
+        )}
 
         {/* Profile Modal */}
         {showProfileModal && (
