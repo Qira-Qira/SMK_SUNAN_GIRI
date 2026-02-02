@@ -1,61 +1,189 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 
-// AI recommendation engine based on form data
+// Advanced mapping dengan scoring bobot
+interface JurusanProfile {
+  keywords: string[];
+  primaryInterest: string;
+  abilities: string[];
+  learningStyle: string[];
+  careerPath: string[];
+}
+
+const JURUSAN_PROFILES: { [key: string]: JurusanProfile } = {
+  'informatika': {
+    keywords: ['informatika', 'it', 'teknologi informasi', 'sistem informasi', 'komputer'],
+    primaryInterest: 'membuat_program',
+    abilities: ['logika_analisis', 'kreativitas'],
+    learningStyle: ['visual', 'campuran'],
+    careerPath: ['lanjut_kuliah', 'industri_kreatif', 'pegawai'],
+  },
+  'teknik elektronika': {
+    keywords: ['elektronika', 'elektronik', 'teknik elektronika', 'listrik'],
+    primaryInterest: 'memperbaiki_elektronik',
+    abilities: ['logika_analisis', 'kesabaran_detail'],
+    learningStyle: ['kinestetik', 'campuran'],
+    careerPath: ['pegawai', 'berwirausaha'],
+  },
+  'desain grafis': {
+    keywords: ['desain', 'grafis', 'multimedia', 'seni', 'desain grafis'],
+    primaryInterest: 'menggambar_desain',
+    abilities: ['kreativitas', 'kesabaran_detail'],
+    learningStyle: ['visual', 'kinestetik'],
+    careerPath: ['industri_kreatif', 'berwirausaha'],
+  },
+  'akuntansi': {
+    keywords: ['akuntansi', 'keuangan', 'akuntansi keuangan', 'perpajakan'],
+    primaryInterest: 'analisis_data',
+    abilities: ['logika_analisis', 'kesabaran_detail'],
+    learningStyle: ['visual', 'campuran'],
+    careerPath: ['pegawai', 'pemerintah', 'berwirausaha'],
+  },
+  'keperawatan': {
+    keywords: ['keperawatan', 'kesehatan', 'perawat', 'farmasi'],
+    primaryInterest: 'membantu_orang',
+    abilities: ['komunikasi', 'kerja_sama_tim'],
+    learningStyle: ['kinestetik', 'campuran'],
+    careerPath: ['pegawai', 'lanjut_kuliah'],
+  },
+  'teknik otomotif': {
+    keywords: ['otomotif', 'otomotiv', 'teknik otomotif', 'mesin', 'kendaraan'],
+    primaryInterest: 'merakit_buat',
+    abilities: ['logika_analisis', 'kerja_sama_tim'],
+    learningStyle: ['kinestetik', 'campuran'],
+    careerPath: ['pegawai', 'berwirausaha'],
+  },
+  'bisnis': {
+    keywords: ['bisnis', 'manajemen', 'marketing', 'admin', 'administrasi'],
+    primaryInterest: 'analisis_data',
+    abilities: ['komunikasi', 'kepemimpinan'],
+    learningStyle: ['visual', 'auditori'],
+    careerPath: ['berwirausaha', 'pegawai'],
+  },
+  'teknik mesin': {
+    keywords: ['teknik mesin', 'mesin', 'manufaktur', 'produksi'],
+    primaryInterest: 'merakit_buat',
+    abilities: ['logika_analisis', 'kerja_sama_tim'],
+    learningStyle: ['kinestetik', 'campuran'],
+    careerPath: ['pegawai', 'berwirausaha'],
+  },
+};
+
+// AI recommendation engine with advanced scoring
 async function generateAIRecommendation(quizData: any) {
   const jurusan = await prisma.jurusan.findMany();
-  
-  // Rule-based scoring system
+
   const scores = jurusan.map((j) => {
-    let score = 0;
+    let totalScore = 0;
     const normalizedJurusanName = j.nama.toLowerCase();
 
-    // Match interests with program
-    if (quizData.minatTeknologi && (normalizedJurusanName.includes('teknik') || normalizedJurusanName.includes('informatika'))) {
-      score += 35;
-    }
-    if (quizData.minatBisnis && (normalizedJurusanName.includes('akuntansi') || normalizedJurusanName.includes('bisnis'))) {
-      score += 35;
-    }
-    if (quizData.minatDesain && normalizedJurusanName.includes('desain')) {
-      score += 35;
-    }
-    if (quizData.minatKesehatan && (normalizedJurusanName.includes('kesehatan') || normalizedJurusanName.includes('keperawatan'))) {
-      score += 35;
-    }
-    if (quizData.minatOtomotif && normalizedJurusanName.includes('otomotif')) {
-      score += 35;
+    // Cek profile jurusan
+    let jurusanProfile: JurusanProfile | null = null;
+    for (const [key, profile] of Object.entries(JURUSAN_PROFILES)) {
+      if (profile.keywords.some(kw => normalizedJurusanName.includes(kw))) {
+        jurusanProfile = profile;
+        break;
+      }
     }
 
-    // Match abilities with program
-    if (quizData.kemampuanLogika) score += 10;
-    if (quizData.kemampuanKreativitas) score += 10;
-    if (quizData.kemampuanKomunikasi) score += 10;
-    if (quizData.kemampuanKepemimpinan) score += 10;
+    const reasons: string[] = [];
 
-    // Academic values contribution
-    const nilaiAkademik = (quizData.nilaiAkademik || 0) / 100;
-    const nilaiPeminatan = (quizData.nilaiPeminatan || 0) / 100;
-    const nilaiBakat = (quizData.nilaiBakat || 0) / 100;
-    score += (nilaiAkademik + nilaiPeminatan + nilaiBakat) / 3 * 15;
+    // 1. Primary Interest Match - WEIGHT: 40 points
+    // Ini adalah faktor paling penting - bisa membedakan sangat signifikan
+    if (jurusanProfile && jurusanProfile.primaryInterest === quizData.minat) {
+      totalScore += 40; // Perfect match
+      reasons.push(`cocok sempurna dengan minat Anda untuk ${quizData.minat.replace(/_/g, ' ')}`);
+    } else if (jurusanProfile) {
+      totalScore += 5; // No match
+    } else {
+      totalScore += 2;
+    }
 
-    // Career alignment
-    if (quizData.citaCita === 'berwirausaha') score += 5;
-    if (quizData.preferensi === 'praktik') score += 5;
+    // 2. Abilities Match - WEIGHT: 30 points
+    if (jurusanProfile && jurusanProfile.abilities.includes(quizData.kemampuan)) {
+      totalScore += 30; // Perfect match
+      reasons.push(`memanfaatkan kemampuan ${quizData.kemampuan.replace(/_/g, ' ')}`);
+    } else if (jurusanProfile && jurusanProfile.abilities.length > 0) {
+      totalScore += 8; // Partial match
+    } else {
+      totalScore += 2;
+    }
+
+    // 3. Learning Style Match - WEIGHT: 20 points
+    if (jurusanProfile && jurusanProfile.learningStyle.includes(quizData.gayaBelajar)) {
+      totalScore += 20; // Perfect match
+      reasons.push(`sesuai gaya belajar ${quizData.gayaBelajar}`);
+    } else if (quizData.gayaBelajar === 'campuran') {
+      // Tipe belajar campuran cocok untuk semua
+      totalScore += 16;
+      reasons.push(`sesuai dengan gaya belajar fleksibel Anda`);
+    } else if (jurusanProfile && jurusanProfile.learningStyle.length > 0) {
+      totalScore += 6; // Partial match
+    } else {
+      totalScore += 2;
+    }
+
+    // 4. Career Path Match - WEIGHT: 7 points
+    if (jurusanProfile && jurusanProfile.careerPath.includes(quizData.karier)) {
+      totalScore += 7; // Match
+      reasons.push(`mendukung cita-cita menjadi ${quizData.karier.replace(/_/g, ' ')}`);
+    } else if (jurusanProfile && jurusanProfile.careerPath.length > 0) {
+      totalScore += 2; // Partial match
+    } else {
+      totalScore += 0.5;
+    }
+
+    // 5. Work Preference Match - WEIGHT: 3 points
+    if (quizData.preferensi === 'praktik' && jurusanProfile && jurusanProfile.learningStyle.includes('kinestetik')) {
+      totalScore += 3;
+      reasons.push(`menawarkan pengalaman praktik langsung`);
+    } else if (quizData.preferensi === 'teori_riset' && jurusanProfile && jurusanProfile.learningStyle.includes('visual')) {
+      totalScore += 3;
+    } else if (quizData.preferensi === 'campuran_kerja') {
+      totalScore += 2;
+    } else if (jurusanProfile) {
+      totalScore += 1;
+    } else {
+      totalScore += 0.5;
+    }
+
+    const alasan = reasons.length > 0 
+      ? `Program ${j.nama} ${reasons.join(', ')}.`
+      : `Program ${j.nama} bisa menjadi opsi menarik untuk eksplorasi karir Anda.`;
 
     return {
       jurusanId: j.id,
       jurusanName: j.nama,
       deskripsi: j.deskripsi,
-      score: Math.min(100, Math.max(0, score)),
-      alasan: `Program ${j.nama} cocok dengan profil Anda berdasarkan minat, kemampuan, dan nilai akademik.`,
+      score: totalScore,
+      alasan: alasan,
     };
   });
 
   // Sort by score descending
   scores.sort((a, b) => b.score - a.score);
 
-  return scores.slice(0, 3);
+  // Get top 3
+  const topThree = scores.slice(0, 3);
+
+  // Normalize scores sehingga total = 100%
+  if (topThree.length > 0) {
+    const totalScore = topThree.reduce((sum, item) => sum + item.score, 0);
+    const normalized = topThree.map(item => ({
+      ...item,
+      score: Number(((item.score / totalScore) * 100).toFixed(1)),
+    }));
+    
+    // Jika ada rounding error, adjust yang terakhir
+    const sum = normalized.reduce((acc, item) => acc + item.score, 0);
+    if (sum !== 100) {
+      normalized[normalized.length - 1].score += (100 - sum);
+    }
+    
+    return normalized;
+  }
+
+  return topThree;
 }
 
 export async function POST(request: NextRequest) {
@@ -79,7 +207,7 @@ export async function POST(request: NextRequest) {
           id: r.jurusanId,
           jurusan: r.jurusanName,
           deskripsi: r.deskripsi,
-          score: r.score.toFixed(1),
+          score: r.score, // Already normalized as number
           alasan: r.alasan,
         })),
       },
