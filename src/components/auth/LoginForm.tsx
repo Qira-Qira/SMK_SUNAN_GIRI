@@ -38,7 +38,7 @@ export default function LoginForm() {
       const data = await res.json();
       
       // Redirect based on user role
-      if (data.user?.role === 'ADMIN_UTAMA' || data.user?.role === 'ADMIN_PPDB' || data.user?.role === 'ADMIN_BKK') {
+      if (data.user?.role === 'ADMIN_UTAMA' || data.user?.role === 'ADMIN_PPDB' || data.user?.role === 'ADMIN_BKK' || data.user?.role === 'ADMIN_BERITA') {
         router.push('/admin');
       } else {
         router.push('/ppdb');

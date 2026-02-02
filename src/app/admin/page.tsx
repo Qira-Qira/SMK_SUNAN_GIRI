@@ -32,6 +32,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [ppdbEntries, setPpdbEntries] = useState<any[]>([]);
   const [showPPDBDetailModal, setShowPPDBDetailModal] = useState(false);
   const [selectedPPDBEntry, setSelectedPPDBEntry] = useState<any>(null);
@@ -42,6 +43,22 @@ export default function AdminDashboard() {
   const [companies, setCompanies] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  // User CRUD states
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [userFormError, setUserFormError] = useState('');
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [userForm, setUserForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    fullName: '',
+    role: 'CALON_SISWA',
+    phone: '',
+    address: '',
+  });
 
   // Content management states
   const [schoolProfile, setSchoolProfile] = useState<any>(null);
@@ -93,11 +110,55 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchStats();
+    fetchCurrentUser();
     if (activeTab === 'ppdb') fetchPPDBEntries();
     if (activeTab === 'bkk') fetchJobPostings();
     if (activeTab === 'users') fetchUsers();
     if (activeTab === 'content') fetchContent();
   }, [activeTab, refreshTrigger]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await fetch('/api/auth/me', {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data.user);
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  };
+
+  // Define which tabs are allowed based on role
+  const getAllowedTabs = (): TabType[] => {
+    if (!currentUser) return [];
+    
+    const role = currentUser.role;
+    const allTabs: TabType[] = ['dashboard', 'ppdb', 'bkk', 'alumni', 'users', 'content'];
+    
+    switch (role) {
+      case 'ADMIN_UTAMA':
+        return allTabs; // All tabs
+      case 'ADMIN_PPDB':
+        return ['ppdb'];
+      case 'ADMIN_BKK':
+        return ['bkk'];
+      case 'ADMIN_BERITA':
+        return ['content'];
+      default:
+        return [];
+    }
+  };
+
+  const allowedTabs = getAllowedTabs();
+  
+  useEffect(() => {
+    if (allowedTabs.length > 0 && !allowedTabs.includes(activeTab)) {
+      setActiveTab(allowedTabs[0]);
+    }
+  }, [currentUser]);
 
   const fetchStats = async () => {
     try {
@@ -278,6 +339,184 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error deleting job posting:', error);
+    }
+  };
+
+  // User CRUD handlers
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUserFormError('');
+    
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(userForm),
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        setShowUserModal(false);
+        setUserForm({
+          username: '',
+          email: '',
+          password: '',
+          fullName: '',
+          role: 'CALON_SISWA',
+          phone: '',
+          address: '',
+        });
+        setRefreshTrigger(prev => prev + 1);
+        toast.success('User berhasil dibuat!');
+      } else {
+        setUserFormError(data.error || 'Gagal membuat user');
+        toast.error(data.error || 'Gagal membuat user');
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      setUserFormError('Gagal membuat user');
+      toast.error('Gagal membuat user');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Yakin ingin menghapus user ini?')) return;
+    
+    try {
+      const res = await fetch(`/api/admin/users?userId=${userId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      
+      if (res.ok) {
+        setRefreshTrigger(prev => prev + 1);
+        toast.success('User berhasil dihapus!');
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Gagal menghapus user');
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error('Gagal menghapus user');
+    }
+  };
+
+  const handleUpdateUserRole = async (userId: string, newRole: string) => {
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ userId, role: newRole }),
+      });
+      
+      if (res.ok) {
+        setRefreshTrigger(prev => prev + 1);
+        toast.success('Role user berhasil diperbarui!');
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Gagal mengupdate role');
+      }
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      toast.error('Gagal mengupdate role');
+    }
+  };
+
+  const handleEditUser = (user: any) => {
+    setSelectedUser(user);
+    setIsEditMode(true);
+    setUserForm({
+      username: user.username,
+      email: user.email,
+      password: '',
+      fullName: user.fullName || '',
+      role: user.role,
+      phone: user.phone || '',
+      address: user.address || '',
+    });
+    setUserFormError('');
+    setShowUserModal(true);
+  };
+
+  const handleSaveUserModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUserFormError('');
+    
+    try {
+      if (isEditMode) {
+        // Update user
+        const updateData: any = {
+          userId: selectedUser.id,
+          fullName: userForm.fullName,
+          phone: userForm.phone,
+          address: userForm.address,
+          role: userForm.role,
+        };
+        
+        const res = await fetch('/api/admin/users', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(updateData),
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          setShowUserModal(false);
+          setSelectedUser(null);
+          setIsEditMode(false);
+          setUserForm({
+            username: '',
+            email: '',
+            password: '',
+            fullName: '',
+            role: 'CALON_SISWA',
+            phone: '',
+            address: '',
+          });
+          setRefreshTrigger(prev => prev + 1);
+          toast.success('User berhasil diperbarui!');
+        } else {
+          setUserFormError(data.error || 'Gagal memperbarui user');
+          toast.error(data.error || 'Gagal memperbarui user');
+        }
+      } else {
+        // Create new user
+        const res = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(userForm),
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          setShowUserModal(false);
+          setUserForm({
+            username: '',
+            email: '',
+            password: '',
+            fullName: '',
+            role: 'CALON_SISWA',
+            phone: '',
+            address: '',
+          });
+          setRefreshTrigger(prev => prev + 1);
+          toast.success('User berhasil dibuat!');
+        } else {
+          setUserFormError(data.error || 'Gagal membuat user');
+          toast.error(data.error || 'Gagal membuat user');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving user:', error);
+      setUserFormError('Gagal menyimpan user');
+      toast.error('Gagal menyimpan user');
     }
   };
 
@@ -656,7 +895,7 @@ export default function AdminDashboard() {
 
         {/* Tabs Navigation */}
         <div className="flex flex-wrap gap-2 mb-8 border-b border-emerald-300">
-          {['dashboard', 'ppdb', 'bkk', 'alumni', 'users', 'content'].map((tab) => (
+          {allowedTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as TabType)}
@@ -1175,10 +1414,38 @@ export default function AdminDashboard() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div>
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-emerald-900 mb-2">Manajemen Pengguna</h2>
-              <p className="text-emerald-600">Total: <span className="font-semibold text-lg">{users.length}</span> pengguna terdaftar</p>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-emerald-900 mb-2">Manajemen Pengguna</h2>
+                <p className="text-emerald-600">Total: <span className="font-semibold text-lg">{users.length}</span> pengguna terdaftar</p>
+              </div>
+              {currentUser?.role === 'ADMIN_UTAMA' && (
+                <button
+                  onClick={() => {
+                    setSelectedUser(null);
+                    setIsEditMode(false);
+                    setUserForm({ username: '', email: '', password: '', fullName: '', role: 'CALON_SISWA', phone: '', address: '' });
+                    setUserFormError('');
+                    setShowUserModal(true);
+                  }}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 font-semibold"
+                >
+                  + Tambah User
+                </button>
+              )}
             </div>
+
+            {/* Search Box */}
+            <div className="mb-6">
+              <input
+                type="text"
+                placeholder="Cari user berdasarkan nama, username, atau email..."
+                value={userSearchQuery}
+                onChange={(e) => setUserSearchQuery(e.target.value)}
+                className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900 placeholder-emerald-500"
+              />
+            </div>
+
             <div className="bg-white rounded shadow overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="bg-emerald-100 border-b text-emerald-900">
@@ -1189,47 +1456,272 @@ export default function AdminDashboard() {
                     <th className="px-4 py-3">Role</th>
                     <th className="px-4 py-3">Telepon</th>
                     <th className="px-4 py-3">Terdaftar</th>
+                    {currentUser?.role === 'ADMIN_UTAMA' && <th className="px-4 py-3">Aksi</th>}
                   </tr>
                 </thead>
                 <tbody>
-                  {users.length > 0 ? (
-                    users.map((user: any) => (
+                  {users.filter((user: any) => {
+                    const query = userSearchQuery.toLowerCase();
+                    return (
+                      user.fullName?.toLowerCase().includes(query) ||
+                      user.username?.toLowerCase().includes(query) ||
+                      user.email?.toLowerCase().includes(query)
+                    );
+                  }).length > 0 ? (
+                    users.filter((user: any) => {
+                      const query = userSearchQuery.toLowerCase();
+                      return (
+                        user.fullName?.toLowerCase().includes(query) ||
+                        user.username?.toLowerCase().includes(query) ||
+                        user.email?.toLowerCase().includes(query)
+                      );
+                    }).map((user: any) => (
                       <tr key={user.id} className="border-t hover:bg-emerald-50">
                         <td className="px-4 py-3 font-semibold text-emerald-900">{user.fullName || '-'}</td>
                         <td className="px-4 py-3 text-sm text-emerald-800">{user.username || '-'}</td>
                         <td className="px-4 py-3 text-sm text-emerald-800">{user.email}</td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            user.role === 'ADMIN_UTAMA' ? 'bg-red-100 text-red-800' :
-                            user.role === 'ADMIN_PPDB' ? 'bg-orange-100 text-orange-800' :
-                            user.role === 'ADMIN_BKK' ? 'bg-yellow-100 text-yellow-800' :
-                            user.role === 'CALON_SISWA' ? 'bg-blue-100 text-blue-800' :
-                            user.role === 'SISWA_AKTIF' ? 'bg-green-100 text-green-800' :
-                            user.role === 'ALUMNI' ? 'bg-purple-100 text-purple-800' :
-                            user.role === 'PERUSAHAAN' ? 'bg-indigo-100 text-indigo-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {user.role}
-                          </span>
+                          {currentUser?.role === 'ADMIN_UTAMA' ? (
+                            <select
+                              value={user.role}
+                              onChange={(e) => handleUpdateUserRole(user.id, e.target.value)}
+                              className="px-2 py-1 rounded text-xs border border-emerald-300 bg-white"
+                            >
+                              <option value="CALON_SISWA">CALON_SISWA</option>
+                              <option value="SISWA_AKTIF">SISWA_AKTIF</option>
+                              <option value="ALUMNI">ALUMNI</option>
+                              <option value="ADMIN_PPDB">ADMIN_PPDB</option>
+                              <option value="ADMIN_BKK">ADMIN_BKK</option>
+                              <option value="ADMIN_BERITA">ADMIN_BERITA</option>
+                              <option value="ADMIN_UTAMA">ADMIN_UTAMA</option>
+                              <option value="PERUSAHAAN">PERUSAHAAN</option>
+                            </select>
+                          ) : (
+                            <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                              user.role === 'ADMIN_UTAMA' ? 'bg-red-100 text-red-800' :
+                              user.role === 'ADMIN_PPDB' ? 'bg-orange-100 text-orange-800' :
+                              user.role === 'ADMIN_BKK' ? 'bg-yellow-100 text-yellow-800' :
+                              user.role === 'ADMIN_BERITA' ? 'bg-pink-100 text-pink-800' :
+                              user.role === 'CALON_SISWA' ? 'bg-blue-100 text-blue-800' :
+                              user.role === 'SISWA_AKTIF' ? 'bg-green-100 text-green-800' :
+                              user.role === 'ALUMNI' ? 'bg-purple-100 text-purple-800' :
+                              user.role === 'PERUSAHAAN' ? 'bg-indigo-100 text-indigo-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {user.role}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-sm text-emerald-800">{user.phone || '-'}</td>
                         <td className="px-4 py-3 text-sm text-emerald-800">{new Date(user.createdAt).toLocaleDateString('id-ID')}</td>
+                        {currentUser?.role === 'ADMIN_UTAMA' && (
+                          <td className="px-4 py-3 space-x-2 flex items-center">
+                            <button
+                              onClick={() => handleEditUser(user)}
+                              className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(user.id)}
+                              className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 whitespace-nowrap"
+                            >
+                              Hapus
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-700">Belum ada pengguna</td></tr>
+                    <tr><td colSpan={currentUser?.role === 'ADMIN_UTAMA' ? 7 : 6} className="px-4 py-3 text-center text-emerald-700">Tidak ada pengguna yang cocok</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
+
+            {/* Add/Edit User Modal */}
+            {showUserModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                  {/* Modal Header */}
+                  <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 flex justify-between items-center">
+                    <div>
+                      <h3 className="text-2xl font-bold">{isEditMode ? 'Edit User' : 'Tambah User Baru'}</h3>
+                      <p className="text-emerald-100 text-sm mt-1">
+                        {isEditMode ? `Edit informasi user ${selectedUser?.fullName}` : 'Buat akun pengguna baru'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowUserModal(false);
+                        setIsEditMode(false);
+                      }}
+                      className="text-white hover:text-emerald-200 text-3xl font-light leading-none"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Modal Body */}
+                  <div className="p-6">
+                    {userFormError && (
+                      <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
+                        <p className="font-semibold">Error:</p>
+                        <p>{userFormError}</p>
+                      </div>
+                    )}
+
+                    <form onSubmit={handleSaveUserModal} className="space-y-6">
+                      {/* Row 1: Nama Lengkap & Username */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-emerald-700 mb-2">Nama Lengkap *</label>
+                          <input
+                            type="text"
+                            required
+                            value={userForm.fullName}
+                            onChange={(e) => setUserForm({ ...userForm, fullName: e.target.value })}
+                            className="w-full border border-emerald-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900"
+                            placeholder="Masukkan nama lengkap"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-emerald-700 mb-2">Username {isEditMode ? '' : '*'}</label>
+                          <input
+                            type="text"
+                            required={!isEditMode}
+                            disabled={isEditMode}
+                            value={userForm.username}
+                            onChange={(e) => setUserForm({ ...userForm, username: e.target.value })}
+                            className={`w-full border rounded-lg px-4 py-2 focus:outline-none text-emerald-900 placeholder-emerald-500 ${
+                              isEditMode 
+                                ? 'bg-emerald-50 border-emerald-200 cursor-not-allowed' 
+                                : 'border-emerald-300 focus:ring-2 focus:ring-emerald-500'
+                            }`}
+                            placeholder="Masukkan username"
+                          />
+                          {isEditMode && <p className="text-xs text-emerald-600 mt-1">Username tidak dapat diubah</p>}
+                        </div>
+                      </div>
+
+                      {/* Row 2: Email & Password */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-emerald-700 mb-2">Email {isEditMode ? '' : '*'}</label>
+                          <input
+                            type="email"
+                            required={!isEditMode}
+                            disabled={isEditMode}
+                            value={userForm.email}
+                            onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                            className={`w-full border rounded-lg px-4 py-2 focus:outline-none text-emerald-900 placeholder-emerald-500 ${
+                              isEditMode 
+                                ? 'bg-emerald-50 border-emerald-200 cursor-not-allowed' 
+                                : 'border-emerald-300 focus:ring-2 focus:ring-emerald-500'
+                            }`}
+                            placeholder="Masukkan email"
+                          />
+                          {isEditMode && <p className="text-xs text-emerald-600 mt-1">Email tidak dapat diubah</p>}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-emerald-700 mb-2">Password {isEditMode ? '' : '*'}</label>
+                          <input
+                            type="password"
+                            required={!isEditMode}
+                            value={userForm.password}
+                            onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                            className="w-full border border-emerald-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900 placeholder-emerald-500"
+                            placeholder={isEditMode ? 'Kosongkan jika tidak ingin mengubah' : 'Masukkan password'}
+                          />
+                          {isEditMode && <p className="text-xs text-emerald-600 mt-1">Opsional saat edit</p>}
+                        </div>
+                      </div>
+
+                      {/* Row 3: Role & Telepon */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-emerald-700 mb-2">Role *</label>
+                          <select
+                            required
+                            value={userForm.role}
+                            onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                            className="w-full border border-emerald-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900 bg-white"
+                          >
+                            <option value="">-- Pilih Role --</option>
+                            <option value="CALON_SISWA">Calon Siswa</option>
+                            <option value="SISWA_AKTIF">Siswa Aktif</option>
+                            <option value="ALUMNI">Alumni</option>
+                            <option value="PERUSAHAAN">Perusahaan</option>
+                            <option value="ADMIN_PPDB">Admin PPDB</option>
+                            <option value="ADMIN_BKK">Admin BKK</option>
+                            <option value="ADMIN_BERITA">Admin Berita</option>
+                            <option value="ADMIN_UTAMA">Admin Utama</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-emerald-700 mb-2">Telepon</label>
+                          <input
+                            type="tel"
+                            value={userForm.phone}
+                            onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
+                            className="w-full border border-emerald-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900 placeholder-emerald-500"
+                            placeholder="Masukkan nomor telepon"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Row 4: Alamat */}
+                      <div>
+                        <label className="block text-sm font-semibold text-emerald-700 mb-2">Alamat</label>
+                        <textarea
+                          value={userForm.address}
+                          onChange={(e) => setUserForm({ ...userForm, address: e.target.value })}
+                          rows={3}
+                          className="w-full border border-emerald-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900 placeholder-emerald-500 resize-none"
+                          placeholder="Masukkan alamat lengkap"
+                        />
+                      </div>
+
+                      {/* Form Actions */}
+                      <div className="flex gap-3 justify-end pt-4 border-t border-emerald-200">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowUserModal(false);
+                            setIsEditMode(false);
+                          }}
+                          className="px-6 py-2 border-2 border-emerald-300 text-emerald-700 rounded-lg hover:bg-emerald-50 font-semibold transition"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-semibold transition"
+                        >
+                          {isEditMode ? 'Perbarui User' : 'Buat User'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* Content Tab */}
         {activeTab === 'content' && (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Manajemen Konten</h2>
+            {currentUser?.role === 'ADMIN_BERITA' ? (
+              <h2 className="text-2xl font-bold mb-4">Kelola Berita</h2>
+            ) : (
+              <h2 className="text-2xl font-bold mb-4">Manajemen Konten</h2>
+            )}
 
+            {/* Only show Hero, Profil, Jurusan, Statistik, Video for non-ADMIN_BERITA */}
+            {currentUser?.role !== 'ADMIN_BERITA' && (
+              <>
             {/* Hero Section */}
             <div className="mb-8">
               <div className="bg-white p-6 rounded shadow">
@@ -1358,6 +1850,8 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
+            </>
+            )}
 
             {/* Berita Section */}
             <div className="mb-8">
@@ -1442,6 +1936,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Jurusan Section */}
+            {currentUser?.role !== 'ADMIN_BERITA' && (
             <div className="mb-8">
               <div className="bg-white p-6 rounded shadow">
                 <div className="flex justify-between items-center mb-4">
@@ -1476,8 +1971,10 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
+            )}
 
             {/* Statistik Section */}
+            {currentUser?.role !== 'ADMIN_BERITA' && (
             <div className="mb-8">
               <div className="bg-white p-6 rounded shadow">
                 <div className="flex justify-between items-center mb-4">
@@ -1543,8 +2040,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Video Section */}
+            {currentUser?.role !== 'ADMIN_BERITA' && (
             <div className="mb-8">
               <div className="bg-white p-6 rounded shadow">
                 <div className="flex justify-between items-center mb-4">
@@ -1609,6 +2108,7 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
+            )}
           </div>
         )}
 
