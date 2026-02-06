@@ -49,18 +49,18 @@ export default function Footer() {
   return (
     <footer className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-12">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start md:items-center">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">Siap Memulai Karirmu di Industri Digital?</h2>
-            <p className="text-emerald-50 mb-4 max-w-xl">Bergabunglah dengan ribuan alumni yang telah sukses berkarir di perusahaan ternama. Temukan jurusan yang tepat dan daftar sekarang.</p>
-            <div className="flex gap-3">
-              <Link href="/ppdb" className="inline-block bg-white text-emerald-600 font-semibold px-5 py-2 rounded-lg shadow hover:bg-emerald-50 transition">Daftar Sekarang</Link>
-              <Link href="/bkk" className="inline-block bg-transparent border border-white/30 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">Career Center</Link>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Siap Memulai Karirmu di Industri Digital?</h2>
+            <p className="text-emerald-50 mb-4 max-w-xl text-sm sm:text-base">Bergabunglah dengan ribuan alumni yang telah sukses berkarir di perusahaan ternama. Temukan jurusan yang tepat dan daftar sekarang.</p>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Link href="/ppdb" className="inline-block bg-white text-emerald-600 font-semibold px-4 sm:px-5 py-2 rounded-lg shadow hover:bg-emerald-50 transition text-center text-sm sm:text-base">Daftar Sekarang</Link>
+              <Link href="/bkk" className="inline-block bg-transparent border border-white/30 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition text-center text-sm sm:text-base">Career Center</Link>
             </div>
           </div>
 
-          <div className="md:col-span-1 bg-white/5 p-4 rounded-lg">
-            <h3 className="text-sm font-semibold text-emerald-50 mb-3">Kontak Sekolah</h3>
+          <div className="col-span-1 bg-white/5 p-4 rounded-lg">
+            <h3 className="text-xs sm:text-sm font-semibold text-emerald-50 mb-3">Kontak Sekolah</h3>
             {loading ? (
               <p className="text-emerald-100 text-sm">Memuat kontak...</p>
             ) : (

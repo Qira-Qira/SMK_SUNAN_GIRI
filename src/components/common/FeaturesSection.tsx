@@ -33,7 +33,7 @@ export default function FeaturesSection() {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <div className="inline-block bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
+          <div className="inline-block bg-emerald-600 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold mb-4">
             Keunggulan Kami
           </div>
           <h2 className="text-4xl font-bold text-emerald-900 mb-4">

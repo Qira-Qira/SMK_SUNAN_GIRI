@@ -60,13 +60,13 @@ export default function ProgramsSection() {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-block bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-block bg-emerald-600 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold mb-4">
             Program Keahlian
           </div>
-          <h2 className="text-4xl font-bold text-emerald-900 mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-900 mb-4">
             Pilih Jurusan Sesuai Passion & Karirmu
           </h2>
-          <p className="text-emerald-700 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base text-emerald-700 max-w-2xl mx-auto px-2">
             Dapatkan pendidikan vokasi yang relevan dengan kebutuhan industri dan siap kerja setelah lulus.
           </p>
         </div>

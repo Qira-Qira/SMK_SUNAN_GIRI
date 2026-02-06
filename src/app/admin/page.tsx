@@ -921,10 +921,10 @@ export default function AdminDashboard() {
               </button>
             </div>
 
-            <div className="grid md:grid-cols-5 gap-4 mb-8">
-              <div className="bg-emerald-600 text-white p-6 rounded shadow">
-                <h3 className="text-lg font-bold mb-2">Total Pendaftar PPDB</h3>
-                <p className="text-3xl font-bold">{stats?.totalStats?.ppdbCount || 0}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <div className="bg-emerald-600 text-white p-4 sm:p-6 rounded shadow">
+                <h3 className="text-sm sm:text-lg font-bold mb-2">Total Pendaftar PPDB</h3>
+                <p className="text-2xl sm:text-3xl font-bold">{stats?.totalStats?.ppdbCount || 0}</p>
               </div>
               <div className="bg-lime-500 text-white p-6 rounded shadow font-semibold">
                 <h3 className="text-lg font-bold mb-2">Lamaran Kerja</h3>
@@ -988,25 +988,25 @@ export default function AdminDashboard() {
             </div>
             <div className="bg-white rounded shadow overflow-hidden">
               <table className="w-full text-left text-sm">
-                <thead className="bg-emerald-100 border-b text-emerald-900">
+                <thead className="bg-emerald-100 border-b text-emerald-900 text-xs sm:text-sm">
                   <tr>
-                    <th className="px-4 py-3">No. Pendaftaran</th>
-                    <th className="px-4 py-3">Nama</th>
-                    <th className="px-4 py-3">Email</th>
-                    <th className="px-4 py-3">Jurusan Pilihan</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Aksi</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3">No. Pendaftaran</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3">Nama</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 hidden md:table-cell">Email</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3">Jurusan</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 hidden lg:table-cell">Status</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {ppdbEntries.length > 0 ? (
                     ppdbEntries.map((entry: any) => (
-                      <tr key={entry.id} className="border-t hover:bg-emerald-50">
-                        <td className="px-4 py-3">{entry.registrationNumber}</td>
-                        <td className="px-4 py-3">{entry.fullName}</td>
-                        <td className="px-4 py-3 text-sm">{entry.email}</td>
-                        <td className="px-4 py-3">{entry.majorChoice1}</td>
-                        <td className="px-4 py-3">
+                      <tr key={entry.id} className="border-t hover:bg-emerald-50 text-xs sm:text-sm">
+                        <td className="px-2 sm:px-4 py-2 sm:py-3">{entry.registrationNumber}</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3">{entry.fullName}</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 hidden md:table-cell">{entry.email}</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3">{entry.majorChoice1}</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 hidden lg:table-cell">
                           <span className={`px-2 py-1 rounded text-xs font-semibold ${entry.status === 'LULUS' ? 'bg-green-100 text-green-800' :
                             entry.status === 'DITOLAK' ? 'bg-red-100 text-red-800' :
                               'bg-yellow-100 text-yellow-800'
@@ -1447,16 +1447,16 @@ export default function AdminDashboard() {
             </div>
 
             <div className="bg-white rounded shadow overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="bg-emerald-100 border-b text-emerald-900">
                   <tr>
-                    <th className="px-4 py-3">Nama Lengkap</th>
-                    <th className="px-4 py-3">Username</th>
-                    <th className="px-4 py-3">Email</th>
-                    <th className="px-4 py-3">Role</th>
-                    <th className="px-4 py-3">Telepon</th>
-                    <th className="px-4 py-3">Terdaftar</th>
-                    {currentUser?.role === 'ADMIN_UTAMA' && <th className="px-4 py-3">Aksi</th>}
+                    <th className="px-2 sm:px-4 py-2 sm:py-3">Nama Lengkap</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 hidden sm:table-cell">Username</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 hidden md:table-cell">Email</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3">Role</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 hidden lg:table-cell">Telepon</th>
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 hidden lg:table-cell">Terdaftar</th>
+                    {currentUser?.role === 'ADMIN_UTAMA' && <th className="px-2 sm:px-4 py-2 sm:py-3">Aksi</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -1477,15 +1477,15 @@ export default function AdminDashboard() {
                       );
                     }).map((user: any) => (
                       <tr key={user.id} className="border-t hover:bg-emerald-50">
-                        <td className="px-4 py-3 font-semibold text-emerald-900">{user.fullName || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-emerald-800">{user.username || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-emerald-800">{user.email}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 font-semibold text-emerald-900">{user.fullName || '-'}</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 text-emerald-800 hidden sm:table-cell">{user.username || '-'}</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 text-emerald-800 hidden md:table-cell">{user.email}</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3">
                           {currentUser?.role === 'ADMIN_UTAMA' ? (
                             <select
                               value={user.role}
                               onChange={(e) => handleUpdateUserRole(user.id, e.target.value)}
-                              className="px-2 py-1 rounded text-xs border border-emerald-300 bg-white"
+                              className="px-1 sm:px-2 py-1 rounded text-xs border border-emerald-300 bg-white"
                             >
                               <option value="CALON_SISWA">CALON_SISWA</option>
                               <option value="SISWA_AKTIF">SISWA_AKTIF</option>
@@ -1512,19 +1512,19 @@ export default function AdminDashboard() {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-sm text-emerald-800">{user.phone || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-emerald-800">{new Date(user.createdAt).toLocaleDateString('id-ID')}</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 text-emerald-800 hidden lg:table-cell">{user.phone || '-'}</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 text-emerald-800 hidden lg:table-cell">{new Date(user.createdAt).toLocaleDateString('id-ID')}</td>
                         {currentUser?.role === 'ADMIN_UTAMA' && (
-                          <td className="px-4 py-3 space-x-2 flex items-center">
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 space-x-1 sm:space-x-2 flex items-center">
                             <button
                               onClick={() => handleEditUser(user)}
-                              className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
+                              className="px-1.5 sm:px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDeleteUser(user.id)}
-                              className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 whitespace-nowrap"
+                              className="px-1.5 sm:px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 whitespace-nowrap"
                             >
                               Hapus
                             </button>
@@ -1533,7 +1533,7 @@ export default function AdminDashboard() {
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={currentUser?.role === 'ADMIN_UTAMA' ? 7 : 6} className="px-4 py-3 text-center text-emerald-700">Tidak ada pengguna yang cocok</td></tr>
+                    <tr><td colSpan={currentUser?.role === 'ADMIN_UTAMA' ? 7 : 6} className="px-2 sm:px-4 py-2 sm:py-3 text-center text-emerald-700 text-xs sm:text-sm">Tidak ada pengguna yang cocok</td></tr>
                   )}
                 </tbody>
               </table>
@@ -1541,13 +1541,13 @@ export default function AdminDashboard() {
 
             {/* Add/Edit User Modal */}
             {showUserModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+                <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-y-auto">
                   {/* Modal Header */}
-                  <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 flex justify-between items-center">
+                  <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-4 sm:p-6 flex justify-between items-center">
                     <div>
-                      <h3 className="text-2xl font-bold">{isEditMode ? 'Edit User' : 'Tambah User Baru'}</h3>
-                      <p className="text-emerald-100 text-sm mt-1">
+                      <h3 className="text-xl sm:text-2xl font-bold">{isEditMode ? 'Edit User' : 'Tambah User Baru'}</h3>
+                      <p className="text-emerald-100 text-xs sm:text-sm mt-1">
                         {isEditMode ? `Edit informasi user ${selectedUser?.fullName}` : 'Buat akun pengguna baru'}
                       </p>
                     </div>
@@ -1564,25 +1564,25 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Modal Body */}
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
                     {userFormError && (
-                      <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
+                      <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded text-sm">
                         <p className="font-semibold">Error:</p>
                         <p>{userFormError}</p>
                       </div>
                     )}
 
-                    <form onSubmit={handleSaveUserModal} className="space-y-6">
+                    <form onSubmit={handleSaveUserModal} className="space-y-4 sm:space-y-6">
                       {/* Row 1: Nama Lengkap & Username */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
-                          <label className="block text-sm font-semibold text-emerald-700 mb-2">Nama Lengkap *</label>
+                          <label className="block text-xs sm:text-sm font-semibold text-emerald-700 mb-1 sm:mb-2">Nama Lengkap *</label>
                           <input
                             type="text"
                             required
                             value={userForm.fullName}
                             onChange={(e) => setUserForm({ ...userForm, fullName: e.target.value })}
-                            className="w-full border border-emerald-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900"
+                            className="w-full border border-emerald-300 rounded-lg px-3 sm:px-4 py-2 sm:py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900 text-sm"
                             placeholder="Masukkan nama lengkap"
                           />
                         </div>

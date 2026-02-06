@@ -291,10 +291,10 @@ export default function PPDBPage() {
   return (
     <>
       <Navbar />
-      <main className="container mx-auto py-12 px-4">
-        <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-emerald-200">
-          <h1 className="text-4xl font-bold mb-2 text-emerald-900">PPDB Online SMK Sunan Giri</h1>
-          <p className="text-emerald-700 mb-8 font-medium">Silakan isi data pribadi dan upload dokumen yang diperlukan</p>
+      <main className="container mx-auto py-8 sm:py-12 px-3 sm:px-4">
+        <div className="max-w-2xl sm:max-w-3xl lg:max-w-4xl mx-auto bg-white p-4 sm:p-6 lg:p-8 rounded-lg shadow-lg border border-emerald-200">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-emerald-900">PPDB Online SMK Sunan Giri</h1>
+          <p className="text-sm sm:text-base text-emerald-700 mb-6 sm:mb-8 font-medium">Silakan isi data pribadi dan upload dokumen yang diperlukan</p>
 
           {error && <div className="bg-red-50 text-red-900 p-4 rounded-lg mb-6 border border-red-200 font-medium">{error}</div>}
 

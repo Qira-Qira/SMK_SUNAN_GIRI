@@ -51,44 +51,43 @@ export default function NewsSection() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-center mb-12">
           <div className="text-center">
-            <div className="inline-block bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <div className="inline-block bg-emerald-600 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold mb-4">
               Berita & Informasi
             </div>
-            <h2 className="text-4xl font-bold text-emerald-900">Update Terkini SMK</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-900">Update Terkini SMK</h2>
           </div>
         </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         {news.map((n) => (
           <article key={n.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition duration-300 overflow-hidden border-t-4 border-lime-500">
             <Link href={`/news/${n.id}`} className="block">
               {n.thumbnail ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={n.thumbnail} alt={n.title} className="w-full h-48 object-cover" />
+                <img src={n.thumbnail} alt={n.title} className="w-full h-40 sm:h-48 object-cover" />
               ) : (
-                <div className="h-48 bg-emerald-100 flex items-center justify-center text-emerald-9000 font-medium"> 
-                  <span className="text-sm">Gambar Berita</span>
+                <div className="h-40 sm:h-48 bg-emerald-100 flex items-center justify-center text-emerald-9000 font-medium"> 
+                  <span className="text-xs sm:text-sm">Gambar Berita</span>
                 </div>
               )}
             </Link>
 
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-sm text-emerald-600 font-medium">{new Date(n.createdAt).toLocaleDateString('id-ID')}</div>
-                {n.featured && <span className="text-xs bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full font-semibold">Featured</span>}
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3 gap-2">
+                <div className="text-xs sm:text-sm text-emerald-600 font-medium">{new Date(n.createdAt).toLocaleDateString('id-ID')}</div>
+                {n.featured && <span className="text-xs bg-emerald-100 text-emerald-900 px-2 sm:px-3 py-1 rounded-full font-semibold flex-shrink-0">Featured</span>}
               </div>
 
-              <h3 className="text-lg font-bold mb-3 text-emerald-900">
+              <h3 className="text-base sm:text-lg font-bold mb-3 text-emerald-900 line-clamp-2">
                 <Link href={`/news/${n.id}`}>{n.title}</Link>
               </h3>
-              <p className="text-emerald-700 text-sm leading-relaxed">{n.content ? n.content.slice(0, 140) + (n.content.length > 140 ? '...' : '') : ''}</p>
             </div>
           </article>
         ))}
       </div>
 
       <div className="flex justify-center mt-8">
-        <Link href="/news" className="inline-block bg-lime-500 hover:bg-lime-600 text-emerald-900 font-medium px-6 py-3 rounded-lg transition duration-200">Lihat Semua Berita →</Link>
+        <Link href="/news" className="bg-lime-500 hover:bg-lime-600 text-emerald-900 px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition duration-200">Lihat Semua Berita →</Link>
       </div>
       </div>
     </section>

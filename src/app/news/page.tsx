@@ -55,13 +55,13 @@ export default function NewsList() {
   const hasNext = page < pages;
 
   return (
-    <main className="container mx-auto py-12 px-4">
-      <div className="flex items-center justify-between mb-12">
+    <main className="container mx-auto py-8 sm:py-12 px-4">
+      <div className="flex items-center justify-between mb-8 sm:mb-12 flex-col sm:flex-row gap-4">
         <div>
-          <div className="inline-block bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">Informasi Terkini</div>
-          <h1 className="text-4xl font-bold text-emerald-900">Berita & Informasi</h1>
+          <div className="inline-block bg-emerald-600 text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4">Informasi Terkini</div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-900">Berita & Informasi</h1>
         </div>
-        <Link href="/" className="text-sm text-emerald-600 hover:underline">Kembali ke Beranda</Link>
+        <Link href="/" className="text-xs sm:text-sm text-emerald-600 hover:underline whitespace-nowrap">Kembali ke Beranda</Link>
       </div>
 
       {loading ? (
@@ -70,43 +70,42 @@ export default function NewsList() {
         </div>
       ) : (
         <>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             {news.map((n) => (
               <article key={n.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition border-t-4 border-lime-500 overflow-hidden">
                 <Link href={`/news/${n.id}`} className="block">
                   {n.thumbnail ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={n.thumbnail} alt={n.title} className="w-full h-48 object-cover" />
+                    <img src={n.thumbnail} alt={n.title} className="w-full h-40 sm:h-48 object-cover" />
                   ) : (
-                    <div className="h-48 bg-emerald-100 flex items-center justify-center text-emerald-9000 font-medium">Gambar Berita</div>
+                    <div className="h-40 sm:h-48 bg-emerald-100 flex items-center justify-center text-emerald-9000 font-medium text-xs sm:text-sm">Gambar Berita</div>
                   )}
                 </Link>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-sm text-emerald-600 font-medium">{new Date(n.createdAt).toLocaleDateString('id-ID')}</div>
-                    {n.featured && <span className="text-xs bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full font-semibold">Featured</span>}
+                <div className="p-4 sm:p-6">
+                  <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
+                    <div className="text-xs sm:text-sm text-emerald-600 font-medium">{new Date(n.createdAt).toLocaleDateString('id-ID')}</div>
+                    {n.featured && <span className="text-xs bg-emerald-100 text-emerald-900 px-2 sm:px-3 py-1 rounded-full font-semibold flex-shrink-0">Featured</span>}
                   </div>
 
-                  <h3 className="text-lg font-bold text-emerald-900 mb-3"><Link href={`/news/${n.id}`}>{n.title}</Link></h3>
-                  <p className="text-emerald-700 text-sm leading-relaxed">{n.content ? n.content.slice(0, 160) + (n.content.length > 160 ? '...' : '') : ''}</p>
+                  <h3 className="text-base sm:text-lg font-bold text-emerald-900 line-clamp-2"><Link href={`/news/${n.id}`}>{n.title}</Link></h3>
                 </div>
               </article>
             ))}
           </div>
 
-          <div className="flex items-center justify-center gap-4 mt-12">
+          <div className="flex items-center justify-center gap-2 sm:gap-4 mt-8 sm:mt-12 flex-wrap">
             <Link
               href={`/news?page=${Math.max(1, page - 1)}`}
-              className={`px-4 py-2 rounded-lg font-medium transition duration-200 ${hasPrev ? 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200' : 'bg-emerald-100 text-emerald-900 opacity-50 pointer-events-none'}`}
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition duration-200 text-xs sm:text-sm ${hasPrev ? 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200' : 'bg-emerald-100 text-emerald-900 opacity-50 pointer-events-none'}`}
             >
               ← Sebelumnya
             </Link>
 
-            <div className="text-sm">Halaman {page} dari {pages}</div>
+            <div className="text-xs sm:text-sm">Halaman {page} dari {pages}</div>
 
             <Link
               href={`/news?page=${page + 1}`}
-              className={`px-4 py-2 rounded-lg font-medium transition duration-200 ${hasNext ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-900 opacity-50 pointer-events-none'}`}
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition duration-200 text-xs sm:text-sm ${hasNext ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-900 opacity-50 pointer-events-none'}`}
             >
               Berikutnya →
             </Link>

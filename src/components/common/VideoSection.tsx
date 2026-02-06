@@ -99,7 +99,7 @@ export default function VideoSection() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-center mb-12">
           <div className="text-center">
-            <div className="inline-block bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <div className="inline-block bg-emerald-600 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold mb-4">
               Video
             </div>
             <h2 className="text-4xl font-bold text-emerald-900">Video Terbaru</h2>
@@ -159,7 +159,7 @@ export default function VideoSection() {
         </div>
 
         <div className="flex justify-center mt-8">
-          <a href="/videos" className="inline-block bg-lime-500 hover:bg-lime-600 text-emerald-900 font-medium px-6 py-3 rounded-lg transition duration-200">Lihat Semua Video →</a>
+          <a href="/videos" className="bg-lime-500 hover:bg-lime-600 text-emerald-900 px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition duration-200">Lihat Semua Video →</a>
         </div>
       </div>
 
