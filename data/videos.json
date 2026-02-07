@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "id": "vid-1770413660178",
+    "title": "GELAR KARYA 2023 | SMKS SUNAN GIRI GRESIK",
+    "description": "",
+    "videoUrl": "https://youtu.be/kyCf3dQLo6k?si=oue2_pwuRUW4X5cK",
+    "thumbnail": null,
+    "featured": false,
+    "createdAt": "2026-02-06T21:34:20.178Z"
+  },
+  {
+    "id": "vid-1770413614565",
+    "title": "SMK Sunan Giri Menganti Gresik Gandeng BBPPMPV BOE untuk Tingkatkan Kualitas Siswa!",
+    "description": "",
+    "videoUrl": "https://youtu.be/oExveSEQ7vk?si=An06d8Lqp7OJlFZM",
+    "thumbnail": null,
+    "featured": false,
+    "createdAt": "2026-02-06T21:33:34.565Z"
+  }
+]

@@ -224,36 +224,85 @@ function ProgramModal({ program, onClose }: { program: any; onClose(): void }) {
   const modal = (
     <div className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ${visible ? 'opacity-100' : 'opacity-0'}`} aria-modal="true" role="dialog">
       <div className={`absolute inset-0 bg-black transition-opacity duration-200 ${visible ? 'opacity-60' : 'opacity-0'}`} aria-hidden="true"></div>
-      <div ref={containerRef} className={`relative w-full max-w-3xl mx-4 transform transition-all duration-200 ${visible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-        <div className="bg-white rounded overflow-hidden shadow-lg">
-          <div className="p-4 flex justify-end">
-            <button ref={closeBtnRef} onClick={handleClose} className="text-emerald-700 hover:text-emerald-900"><X /></button>
+      <div ref={containerRef} className={`relative w-full max-w-2xl mx-2 sm:mx-4 max-h-[90vh] transform transition-all duration-200 ${visible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} overflow-y-auto flex flex-col`}>
+        <div className="bg-white rounded-lg sm:rounded-xl shadow-2xl">
+          {/* Header dengan Close Button */}
+          <div className="bg-gradient-to-r from-emerald-600 to-lime-500 px-4 sm:px-8 py-4 sm:py-6 flex items-center justify-between flex-shrink-0 sticky top-0 z-50 shadow-md ">
+            <h2 className="text-white text-lg sm:text-2xl font-bold truncate pr-2">{program.nama}</h2>
+            <button 
+              ref={closeBtnRef} 
+              onClick={handleClose} 
+              className="text-white hover:bg-white/20 p-2 rounded-lg transition duration-200 flex-shrink-0"
+              aria-label="Close modal"
+            >
+              <X size={20} className="sm:w-6 sm:h-6" />
+            </button>
           </div>
-          <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-            <div className="md:col-span-1 flex flex-col items-center">
-              {srcImage ? (
-                <img src={srcImage} alt={program.nama} className="w-28 h-28 object-cover rounded-full mb-4" />
-              ) : (
-                <div className="w-28 h-28 rounded-full bg-emerald-50 flex items-center justify-center text-4xl mb-4">{program.icon}</div>
-              )}
-              <div className="text-sm text-emerald-600 font-bold">{(program as any).kode ? (program as any).kode.toUpperCase() : program.id.toUpperCase()}</div>
-              <h3 className="text-xl font-bold text-emerald-900 mt-2 text-center">{program.nama}</h3>
-            </div>
-            <div className="md:col-span-2">
-              <div className="bg-gradient-to-r from-emerald-50 to-lime-50 p-4 rounded-md shadow-sm mb-4">
-                <h4 className="text-sm font-bold text-emerald-900 mb-2">Tujuan Konsentrasi Keahlian</h4>
-                <div className="prose prose-emerald max-w-none text-emerald-700 leading-relaxed whitespace-pre-line">{program.deskripsi || '-'}</div>
+
+          {/* Content */}
+          <div className="p-4 sm:p-6 md:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {/* Image & Code Section */}
+              <div className="flex flex-col items-center md:col-span-1">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-emerald-50 to-lime-50 flex items-center justify-center mb-4 shadow-md flex-shrink-0">
+                  {srcImage ? (
+                    <img src={srcImage} alt={program.nama} className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-full" />
+                  ) : (
+                    <div className="text-4xl sm:text-6xl">{program.icon}</div>
+                  )}
+                </div>
+                <div className="text-xs font-bold text-emerald-600 tracking-widest bg-emerald-50 px-3 py-1 rounded-full mb-2">
+                  {(program as any).kode ? (program as any).kode.toUpperCase() : program.id.substring(0, 4).toUpperCase()}
+                </div>
               </div>
 
-              <div className="mt-4 flex gap-3 items-center">
-                <Link href="/ppdb" className="inline-block bg-lime-500 hover:bg-lime-600 text-emerald-900 px-5 py-2 rounded-lg font-semibold shadow">Daftar Sekarang</Link>
-                <button onClick={handleClose} className="inline-block bg-white border border-emerald-200 text-emerald-800 px-4 py-2 rounded-lg">Tutup</button>
+              {/* Description Section */}
+              <div className="md:col-span-2">
+                {/* Tujuan Section */}
+                <div className="mb-5 sm:mb-6">
+                  <h3 className="text-xs sm:text-sm font-bold text-emerald-600 uppercase tracking-wider mb-2 sm:mb-3">Tujuan Konsentrasi Keahlian</h3>
+                  <p className="text-emerald-800 leading-relaxed whitespace-pre-line text-xs sm:text-sm md:text-base">
+                    {program.deskripsi || 'Deskripsi tidak tersedia'}
+                  </p>
+                </div>
+
+                {/* Quick Info */}
+                <div className="bg-gradient-to-r from-emerald-50 to-lime-50 rounded-lg p-3 sm:p-4 mb-5 sm:mb-6 border border-emerald-100">
+                  <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2">Ringkas</h4>
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs text-emerald-700">
+                    <div>
+                      <span className="font-semibold text-emerald-900">Jenis:</span> <span className="block sm:inline">Vokasi</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-emerald-900">Durasi:</span> <span className="block sm:inline">3 Tahun</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-emerald-900">Sertifikasi:</span> <span className="block sm:inline">Industri</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-emerald-900">Karir:</span> <span className="block sm:inline">Kerja</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-center">
+                  <button 
+                    onClick={handleClose}
+                    className="w-48 order-2 sm:order-1  sm:flex-1 bg-white border-2 border-emerald-200 text-emerald-800 hover:bg-emerald-50 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base transition duration-200"
+                  >
+                    Tutup
+                  </button>
+                  <Link href="/ppdb" onClick={handleClose} className="order-1 sm:order-2 w-48 sm:flex-1 bg-gradient-to-r from-emerald-600 to-lime-500 hover:from-emerald-700 hover:to-lime-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition duration-200 text-center inline-block">
+                    Daftar Sekarang
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div className="sr-only" aria-live="polite">{visible ? 'Detail jurusan terbuka' : ''}</div>
+      <div className="sr-only" aria-live="polite">{visible ? `Detail jurusan ${program.nama} terbuka` : ''}</div>
     </div>
   );
 

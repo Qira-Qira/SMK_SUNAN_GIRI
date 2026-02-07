@@ -40,6 +40,7 @@ model Jurusan {
   deskripsi String
   kode      String   @unique
   icon      String   @default("🎯")
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -109,7 +110,7 @@ model PPDBEntry {
 
   // Relations
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jurusan1        Jurusan     @relation(fields: [jurusanId1], references: [id])
+  jurusan1        Jurusan     @relation(fields: [jurusanId1], references: [id], onDelete: Cascade)
 }
 
 // AI Recommendation Result
@@ -143,7 +144,7 @@ model AIRecommendationResult {
 
   // Relations
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jurusan        Jurusan  @relation(fields: [recommendation1], references: [id])
+  jurusan        Jurusan  @relation(fields: [recommendation1], references: [id], onDelete: Cascade)
 }
 
 // Tracer Study
@@ -163,7 +164,7 @@ model TracerStudy {
 
   // Relations
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jurusan     Jurusan  @relation(fields: [jurusanId], references: [id])
+  jurusan     Jurusan  @relation(fields: [jurusanId], references: [id], onDelete: Cascade)
 }
 
 // Job Posting
@@ -184,7 +185,7 @@ model JobPosting {
 
   // Relations
   perusahaan      User     @relation(fields: [perusahaanId], references: [id], onDelete: Cascade)
-  jurusan         Jurusan  @relation(fields: [jurusanId], references: [id])
+  jurusan         Jurusan  @relation(fields: [jurusanId], references: [id], onDelete: Cascade)
   applications    JobApplication[]
 }
 

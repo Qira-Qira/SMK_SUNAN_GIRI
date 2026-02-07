@@ -64,6 +64,7 @@ export default function AdminDashboard() {
   const [schoolProfile, setSchoolProfile] = useState<any>(null);
   const [news, setNews] = useState<any[]>([]);
   const [jurusan, setJurusan] = useState<any[]>([]);
+  const [archivedJurusan, setArchivedJurusan] = useState<any[]>([]);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showHeroModal, setShowHeroModal] = useState(false);
   const [showNewsModal, setShowNewsModal] = useState(false);
@@ -251,6 +252,17 @@ export default function AdminDashboard() {
       if (jurusanRes.ok) {
         const jurusanData = await jurusanRes.json();
         setJurusan(jurusanData.jurusan || []);
+      }
+
+      // Fetch archived jurusan (only for ADMIN_UTAMA)
+      if (currentUser?.role === 'ADMIN_UTAMA') {
+        const archivedRes = await fetch('/api/public/jurusan/archived', {
+          credentials: 'include',
+        });
+        if (archivedRes.ok) {
+          const archivedData = await archivedRes.json();
+          setArchivedJurusan(archivedData.archivedJurusan || []);
+        }
       }
 
       // Fetch companies (admin only endpoint)
@@ -666,18 +678,44 @@ export default function AdminDashboard() {
       }
 
       const payload = { ...jurusanForm, icon: iconUrl };
-      const res = await fetch('/api/public/jurusan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        setShowJurusanModal(false);
-        setJurusanForm({ nama: '', deskripsi: '', kode: '', icon: '' });
-        setJurusanLogoFile(null);
-        setRefreshTrigger(prev => prev + 1);
-        toast.success('Jurusan berhasil ditambahkan!');
+      
+      // If editing existing jurusan
+      if (selectedJurusan) {
+        const res = await fetch(`/api/public/jurusan?id=${selectedJurusan.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          setShowJurusanModal(false);
+          setSelectedJurusan(null);
+          setJurusanForm({ nama: '', deskripsi: '', kode: '', icon: '' });
+          setJurusanLogoFile(null);
+          setRefreshTrigger(prev => prev + 1);
+          toast.success('Jurusan berhasil diperbarui!');
+        } else {
+          const error = await res.json();
+          toast.error(error.error || 'Gagal memperbarui jurusan');
+        }
+      } else {
+        // Create new jurusan
+        const res = await fetch('/api/public/jurusan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          setShowJurusanModal(false);
+          setJurusanForm({ nama: '', deskripsi: '', kode: '', icon: '' });
+          setJurusanLogoFile(null);
+          setRefreshTrigger(prev => prev + 1);
+          toast.success('Jurusan berhasil ditambahkan!');
+        } else {
+          const error = await res.json();
+          toast.error(error.error || 'Gagal menyimpan jurusan');
+        }
       }
     } catch (error) {
       console.error('Error saving jurusan:', error);
@@ -686,18 +724,97 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteJurusan = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus jurusan ini?')) return;
+    if (!confirm('Yakin ingin menghapus jurusan ini? Jika ada data PPDB atau lowongan kerja yang terkait, jurusan akan di-archive (non-aktif) saja.')) return;
     try {
       const res = await fetch(`/api/public/jurusan?id=${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
+      
+      const data = await res.json();
+      
       if (res.ok) {
         setRefreshTrigger(prev => prev + 1);
         toast.success('Jurusan berhasil dihapus!');
+      } else if (res.status === 409) {
+        // Conflict - ada data yang terkait
+        const confirmArchive = confirm(
+          `${data.error}\n\nJumlah data terkait: ${data.affectedRecords}\n\nKlik OK untuk archive jurusan ini, atau Cancel untuk membatalkan.`
+        );
+        
+        if (confirmArchive) {
+          // Archive instead
+          const archiveRes = await fetch(`/api/public/jurusan?id=${id}&action=archive`, {
+            method: 'PATCH',
+            credentials: 'include',
+          });
+          
+          if (archiveRes.ok) {
+            setRefreshTrigger(prev => prev + 1);
+            toast.success('Jurusan berhasil di-archive (non-aktif). Data yang terkait tetap aman.');
+          }
+        }
+      } else {
+        toast.error(data.error || 'Gagal menghapus jurusan');
       }
     } catch (error) {
       console.error('Error deleting jurusan:', error);
+      toast.error('Terjadi kesalahan saat menghapus jurusan');
+    }
+  };
+
+  const handleRestoreJurusan = async (id: string) => {
+    if (!confirm('Yakin ingin memulihkan (restore) jurusan ini? Jurusan akan kembali aktif.')) return;
+    try {
+      const res = await fetch(`/api/public/jurusan?id=${id}&action=restore`, {
+        method: 'PATCH',
+        credentials: 'include',
+      });
+      
+      if (res.ok) {
+        setRefreshTrigger(prev => prev + 1);
+        toast.success('Jurusan berhasil dipulihkan (restore)!');
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Gagal memulihkan jurusan');
+      }
+    } catch (error) {
+      console.error('Error restoring jurusan:', error);
+      toast.error('Terjadi kesalahan saat memulihkan jurusan');
+    }
+  };
+
+  const handlePermanentDeleteJurusan = async (id: string) => {
+    const confirmDelete = confirm(
+      '⚠️ PERINGATAN: Anda akan menghapus jurusan ini secara PERMANEN!\n\nHal ini tidak dapat dibatalkan. Pastikan tidak ada data penting yang terkait.\n\nKlik OK untuk melanjutkan, atau Cancel untuk membatalkan.'
+    );
+    
+    if (!confirmDelete) return;
+    
+    // Double confirmation
+    const doubleConfirm = confirm(
+      'Konfirmasi Terakhir: Apakah Anda YAKIN ingin menghapus jurusan ini selamanya?\n\nTindakan ini TIDAK DAPAT DIKEMBALIKAN.'
+    );
+    
+    if (!doubleConfirm) return;
+    
+    try {
+      const res = await fetch(`/api/public/jurusan?id=${id}&force=true`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        setRefreshTrigger(prev => prev + 1);
+        toast.success('✅ Jurusan berhasil dihapus secara permanen!');
+      } else {
+        toast.error(data.error || 'Gagal menghapus jurusan secara permanen');
+      }
+    } catch (error) {
+      console.error('Error permanently deleting jurusan:', error);
+      toast.error('Terjadi kesalahan saat menghapus jurusan secara permanen');
     }
   };
 
@@ -1957,18 +2074,81 @@ export default function AdminDashboard() {
                       <div key={item.id} className="bg-purple-50 p-4 rounded border-l-4 border-purple-500">
                         <h4 className="font-bold text-purple-900">{item.nama}</h4>
                         <p className="text-sm text-emerald-600 mt-2">{item.deskripsi}</p>
-                        <button
-                          onClick={() => handleDeleteJurusan(item.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 mt-3"
-                        >
-                          Hapus
-                        </button>
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={() => {
+                              setSelectedJurusan(item);
+                              setJurusanForm({
+                                nama: item.nama,
+                                deskripsi: item.deskripsi,
+                                kode: item.kode,
+                                icon: item.icon || ''
+                              });
+                              setJurusanLogoFile(null);
+                              setShowJurusanModal(true);
+                            }}
+                            className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 flex-1"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteJurusan(item.id)}
+                            className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 flex-1"
+                          >
+                            Hapus
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <p className="text-emerald-9000 text-center py-4">Belum ada jurusan</p>
                 )}
+              </div>
+            </div>
+            )}
+
+            {/* Archived Jurusan Section - Only for ADMIN_UTAMA */}
+            {currentUser?.role === 'ADMIN_UTAMA' && archivedJurusan.length > 0 && (
+            <div className="mb-8">
+              <div className="bg-white p-6 rounded shadow border-l-4 border-yellow-500">
+                <div className="mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold mb-2 flex items-center">
+                      <span className="text-yellow-600 font-bold mr-2">📦</span> 
+                      Jurusan Arsip (Non-Aktif)
+                    </h3>
+                    <p className="text-yellow-600 mb-4">Jurusan yang telah di-archive dapat dipulihkan kembali</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {archivedJurusan.map((item: any) => (
+                    <div key={item.id} className="bg-yellow-50 p-4 rounded border-l-4 border-yellow-500">
+                      <h4 className="font-bold text-yellow-900">{item.nama}</h4>
+                      <p className="text-sm text-yellow-700 mt-2">{item.deskripsi}</p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        📊 PPDB: {item._count?.ppdbEntries || 0} | 
+                        💼 Job: {item._count?.jobPostings || 0} | 
+                        📈 Tracer: {item._count?.tracerStudy || 0}
+                      </p>
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() => handleRestoreJurusan(item.id)}
+                          className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 flex-1"
+                        >
+                          ↻ Pulihkan
+                        </button>
+                        <button
+                          onClick={() => handlePermanentDeleteJurusan(item.id)}
+                          className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 flex-1"
+                        >
+                          🗑️ Hapus Permanen
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
             )}
@@ -2407,7 +2587,7 @@ export default function AdminDashboard() {
         {showJurusanModal && (
           <div className="fixed inset-0 bg-emerald-50 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded shadow max-w-md w-full">
-              <h3 className="text-lg font-bold mb-4">Tambah Jurusan</h3>
+              <h3 className="text-lg font-bold mb-4">{selectedJurusan ? 'Edit Jurusan' : 'Tambah Jurusan'}</h3>
               <form onSubmit={handleSaveJurusan}>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Nama Jurusan</label>
@@ -2459,8 +2639,15 @@ export default function AdminDashboard() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <button type="submit" className="flex-1 bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Simpan</button>
-                  <button type="button" onClick={() => setShowJurusanModal(false)} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
+                  <button type="submit" className="flex-1 bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                    {selectedJurusan ? 'Perbarui' : 'Simpan'}
+                  </button>
+                  <button type="button" onClick={() => {
+                    setShowJurusanModal(false);
+                    setSelectedJurusan(null);
+                    setJurusanForm({ nama: '', deskripsi: '', kode: '', icon: '' });
+                    setJurusanLogoFile(null);
+                  }} className="flex-1 bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-400">Batal</button>
                 </div>
               </form>
             </div>
