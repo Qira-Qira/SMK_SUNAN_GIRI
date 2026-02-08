@@ -4,33 +4,41 @@ import { getAuthUser } from '@/lib/auth/session';
 
 export async function POST(request: NextRequest) {
   try {
+    // Get authenticated user
     const user = await getAuthUser();
-    if (!user || user.role !== 'ALUMNI') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Please login to apply for jobs' },
+        { status: 401 }
+      );
+    }
+
+    // Verify ALUMNI role
+    if (user.role !== 'ALUMNI') {
+      return NextResponse.json(
+        { error: 'Hanya alumni yang dapat melamar lowongan pekerjaan' },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
     const { jobPostingId, cvFile, coverLetter } = body;
 
-    // Check if already applied
-    const existing = await prisma.jobApplication.findUnique({
+    // Upsert: Check if already applied, if so update, else create
+    const application = await prisma.jobApplication.upsert({
       where: {
         jobPostingId_userId: {
           jobPostingId,
           userId: user.id,
         },
       },
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { error: 'Already applied to this job' },
-        { status: 409 }
-      );
-    }
-
-    const application = await prisma.jobApplication.create({
-      data: {
+      update: {
+        cvFile,
+        coverLetter,
+        updatedAt: new Date(),
+      },
+      create: {
         jobPostingId,
         userId: user.id,
         cvFile,

@@ -1,15 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
-import { getAuthUser } from '@/lib/auth/session';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth/jwt';
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getAuthUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Get token from cookies using async cookies()
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    // only alumni or perusahaan or admin can upload application files
-    if (!['ALUMNI', 'PERUSAHAAN', 'ADMIN', 'ADMIN_UTAMA'].includes(user.role)) {
+    // Verify token (verifyToken is async)
+    const payload = await verifyToken(token);
+    if (!payload) {
+      console.error('[BKK Upload] Invalid or expired token');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    console.log('[BKK Upload] User role:', payload.role);
+
+    // Only ALUMNI or PERUSAHAAN can upload application files
+    if (!['ALUMNI', 'PERUSAHAAN', 'ADMIN', 'ADMIN_UTAMA'].includes(String(payload.role))) {
+      console.error('[BKK Upload] Forbidden - Invalid role:', payload.role);
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

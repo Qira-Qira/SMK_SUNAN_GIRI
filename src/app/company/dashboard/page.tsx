@@ -573,7 +573,7 @@ export default function CompanyDashboard() {
                             value={jobForm.salary}
                             onChange={(e) => setJobForm({ ...jobForm, salary: e.target.value })}
                             className="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Cth:2000000"
+                            placeholder="Contoh: 2000000"
                           />
                           <p className="text-xs text-blue-600 mt-1">Masukkan jumlah nominal</p>
                         </div>
