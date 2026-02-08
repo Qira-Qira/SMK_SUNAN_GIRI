@@ -40,6 +40,8 @@ export default function LoginForm() {
       // Redirect based on user role
       if (data.user?.role === 'ADMIN_UTAMA' || data.user?.role === 'ADMIN_PPDB' || data.user?.role === 'ADMIN_BKK' || data.user?.role === 'ADMIN_BERITA') {
         router.push('/admin');
+      } else if (data.user?.role === 'PERUSAHAAN') {
+        router.push('/company/dashboard');
       } else {
         router.push('/ppdb');
       }

@@ -223,7 +223,73 @@ async function main() {
   }
 }
 
-main()
+// Create test users
+async function createTestUsers() {
+  try {
+    console.log('👥 Creating test users...');
+
+    // Check if admin already exists
+    const adminExists = await prisma.user.findUnique({
+      where: { username: 'admin' },
+    });
+
+    if (!adminExists) {
+      const hashedPassword = await hashPassword('admin123');
+      await prisma.user.create({
+        data: {
+          username: 'admin',
+          email: 'admin@smk.id',
+          password: hashedPassword,
+          fullName: 'Admin Utama',
+          role: 'ADMIN_UTAMA',
+          phone: '08123456789',
+          address: 'Semarang',
+        },
+      });
+      console.log('✅ Created admin user');
+    }
+
+    // Check if company user exists
+    const companyExists = await prisma.user.findUnique({
+      where: { username: 'perusahaan1' },
+    });
+
+    if (!companyExists) {
+      const hashedPassword = await hashPassword('perusahaan123');
+      await prisma.user.create({
+        data: {
+          username: 'perusahaan1',
+          email: 'hr@perusahaan.com',
+          password: hashedPassword,
+          fullName: 'PT Maju Jaya Indonesia',
+          role: 'PERUSAHAAN',
+          phone: '0812-3456-7890',
+          address: 'Jl. Industri No. 123, Jakarta',
+        },
+      });
+      console.log('✅ Created perusahaan user');
+    }
+
+  } catch (error) {
+    console.error('❌ Error creating test users:', error);
+    throw error;
+  }
+}
+
+async function runAll() {
+  try {
+    await main();
+    await createTestUsers();
+    console.log('✨ All seeding completed!');
+  } catch (error) {
+    console.error('Fatal error:', error);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+runAll()
   .catch((e) => {
     console.error('Fatal error:', e);
     process.exit(1);

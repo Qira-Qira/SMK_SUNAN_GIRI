@@ -176,6 +176,7 @@ model JobPosting {
   deskripsi       String
   requirements    String[] // Array of requirements
   salary          Float?
+  salaryPeriod    String   @default("per_bulan") // "per_hari", "per_minggu", "per_bulan"
   lokasi          String
   tipePekerjaan   String   // "Full-time", "Part-time", "Internship"
   deadline        DateTime

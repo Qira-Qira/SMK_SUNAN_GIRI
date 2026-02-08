@@ -112,6 +112,11 @@ export default function Navbar() {
                       Admin
                     </Link>
                   )}
+                  {user.role === 'PERUSAHAAN' && (
+                    <Link href="/company/dashboard" className={`transition duration-200 ${linkHoverClass}`}>
+                      Dashboard Perusahaan
+                    </Link>
+                  )}
                   {user.role === 'ALUMNI' && (
                     <Link href="/tracer-study" className={`transition duration-200 ${linkHoverClass}`}>
                       Tracer Study
@@ -200,6 +205,15 @@ export default function Navbar() {
                           className={`transition duration-200 ${linkHoverClass} font-medium text-sm py-2`}
                         >
                           Admin
+                        </Link>
+                      )}
+                      {user.role === 'PERUSAHAAN' && (
+                        <Link 
+                          href="/company/dashboard" 
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`transition duration-200 ${linkHoverClass} font-medium text-sm py-2`}
+                        >
+                          Dashboard Perusahaan
                         </Link>
                       )}
                       {user.role === 'ALUMNI' && (

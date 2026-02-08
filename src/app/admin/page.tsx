@@ -27,19 +27,27 @@ import { Loader2 } from 'lucide-react';
 import CountUp from '@/components/common/CountUp';
 
 type TabType = 'dashboard' | 'ppdb' | 'bkk' | 'alumni' | 'users' | 'content';
+type BKKSubTab = 'dashboard' | 'lowongan' | 'lamaran' | 'perusahaan';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [bkkSubTab, setBkkSubTab] = useState<BKKSubTab>('dashboard');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [ppdbEntries, setPpdbEntries] = useState<any[]>([]);
   const [showPPDBDetailModal, setShowPPDBDetailModal] = useState(false);
   const [selectedPPDBEntry, setSelectedPPDBEntry] = useState<any>(null);
   const [jobPostings, setJobPostings] = useState<any[]>([]);
+  const [jobApplications, setJobApplications] = useState<any[]>([]);
+  const [bkkCompanies, setBkkCompanies] = useState<any[]>([]);
   const [showJobModal, setShowJobModal] = useState(false);
+  const [selectedJobForEdit, setSelectedJobForEdit] = useState<any>(null);
   const [jobForm, setJobForm] = useState({ perusahaanId: '', jurusanId: '', posisi: '', deskripsi: '', requirements: '', salary: '', lokasi: '', tipePekerjaan: '', deadline: '' });
   const [jobSaving, setJobSaving] = useState(false);
+  const [showApplicationDetailModal, setShowApplicationDetailModal] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [applicationFilterStatus, setApplicationFilterStatus] = useState<string>('');
   const [companies, setCompanies] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -113,10 +121,14 @@ export default function AdminDashboard() {
     fetchStats();
     fetchCurrentUser();
     if (activeTab === 'ppdb') fetchPPDBEntries();
-    if (activeTab === 'bkk') fetchJobPostings();
+    if (activeTab === 'bkk') {
+      fetchJobPostings();
+      fetchJobApplications();
+      fetchBkkCompanies();
+    }
     if (activeTab === 'users') fetchUsers();
     if (activeTab === 'content') fetchContent();
-  }, [activeTab, refreshTrigger]);
+  }, [activeTab, refreshTrigger, bkkSubTab, applicationFilterStatus]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -205,6 +217,34 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error fetching job postings:', error);
+    }
+  };
+
+  const fetchJobApplications = async () => {
+    try {
+      const res = await fetch(`/api/bkk/applications${applicationFilterStatus ? `?status=${applicationFilterStatus}` : ''}`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setJobApplications(data.applications || []);
+      }
+    } catch (error) {
+      console.error('Error fetching job applications:', error);
+    }
+  };
+
+  const fetchBkkCompanies = async () => {
+    try {
+      const res = await fetch('/api/bkk/companies', {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBkkCompanies(data.companies || []);
+      }
+    } catch (error) {
+      console.error('Error fetching BKK companies:', error);
     }
   };
 
@@ -881,22 +921,28 @@ export default function AdminDashboard() {
     e.preventDefault();
     setJobSaving(true);
     try {
-      const res = await fetch('/api/bkk/job-postings', {
-        method: 'POST',
+      const method = selectedJobForEdit ? 'PUT' : 'POST';
+      const url = selectedJobForEdit 
+        ? `/api/bkk/job-postings?id=${selectedJobForEdit.id}`
+        : '/api/bkk/job-postings';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(jobForm),
       });
       if (res.ok) {
         setShowJobModal(false);
+        setSelectedJobForEdit(null);
         setJobForm({ perusahaanId: '', jurusanId: '', posisi: '', deskripsi: '', requirements: '', salary: '', lokasi: '', tipePekerjaan: '', deadline: '' });
         setRefreshTrigger(prev => prev + 1);
-        toast.success('Lowongan berhasil ditambahkan!');
+        toast.success(selectedJobForEdit ? 'Lowongan berhasil diperbarui!' : 'Lowongan berhasil ditambahkan!');
       } else if (res.status === 403) {
         toast.error('Aksi ditolak: akun perlu role PERUSAHAAN untuk menambahkan lowongan.');
       } else {
         const err = await res.json();
-        toast.error(err?.error || 'Gagal menambahkan lowongan');
+        toast.error(err?.error || 'Gagal menyimpan lowongan');
       }
     } catch (error) {
       console.error('Error saving job posting:', error);
@@ -920,6 +966,63 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Error deleting testimonial:', error);
       toast.error('Gagal menghapus testimoni');
+    }
+  };
+
+  const handleEditJob = (job: any) => {
+    setSelectedJobForEdit(job);
+    setJobForm({
+      perusahaanId: job.perusahaanId || '',
+      jurusanId: job.jurusanId || '',
+      posisi: job.posisi || '',
+      deskripsi: job.deskripsi || '',
+      requirements: (job.requirements || []).join(', '),
+      salary: job.salary || '',
+      lokasi: job.lokasi || '',
+      tipePekerjaan: job.tipePekerjaan || '',
+      deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : '',
+    });
+    setShowJobModal(true);
+  };
+
+  const handleDeleteJob = async (id: string) => {
+    if (!confirm('Yakin ingin menghapus lowongan ini?')) return;
+    try {
+      const res = await fetch(`/api/bkk/job-postings?id=${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        setRefreshTrigger(prev => prev + 1);
+        toast.success('Lowongan berhasil dihapus!');
+      } else {
+        const err = await res.json();
+        toast.error(err?.error || 'Gagal menghapus lowongan');
+      }
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      toast.error('Gagal menghapus lowongan');
+    }
+  };
+
+  const handleUpdateApplicationStatus = async (applicationId: string, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/bkk/applications?id=${applicationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        setRefreshTrigger(prev => prev + 1);
+        toast.success('Status lamaran berhasil diperbarui!');
+      } else {
+        const err = await res.json();
+        toast.error(err?.error || 'Gagal mengupdate status');
+      }
+    } catch (error) {
+      console.error('Error updating application status:', error);
+      toast.error('Gagal mengupdate status lamaran');
     }
   };
 
@@ -1330,76 +1433,274 @@ export default function AdminDashboard() {
         {/* BKK Tab */}
         {activeTab === 'bkk' && (
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-emerald-900">Manajemen Lowongan Kerja</h2>
-              <div className="space-x-2">
-                <button
-                  onClick={() => setShowJobModal(true)}
-                  className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 text-sm font-semibold"
-                >
-                  Tambah Lowongan
-                </button>
-                <button
-                  onClick={() => exportJobPostingsToCSV(jobPostings)}
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm font-semibold flex items-center"
-                >
-                  <Download className="w-4 h-4 mr-2" /> Export CSV
-                </button>
-                <button
-                  onClick={() => exportToCSV(jobPostings, 'JobPostings_Export')}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm font-semibold flex items-center"
-                >
-                  <FileText className="w-4 h-4 mr-2" /> Export JSON
-                </button>
+            {/* BKK Sub-Tabs */}
+            <div className="mb-6 flex flex-wrap gap-2 border-b border-emerald-200">
+              <button
+                onClick={() => setBkkSubTab('dashboard')}
+                className={`px-4 py-2 font-semibold transition ${
+                  bkkSubTab === 'dashboard'
+                    ? 'text-lime-600 border-b-2 border-lime-500'
+                    : 'text-emerald-700 hover:text-emerald-900'
+                }`}
+              >
+                <BarChart3 className="inline w-4 h-4 mr-2" /> Dashboard
+              </button>
+              <button
+                onClick={() => setBkkSubTab('lowongan')}
+                className={`px-4 py-2 font-semibold transition ${
+                  bkkSubTab === 'lowongan'
+                    ? 'text-lime-600 border-b-2 border-lime-500'
+                    : 'text-emerald-700 hover:text-emerald-900'
+                }`}
+              >
+                <Briefcase className="inline w-4 h-4 mr-2" /> Lowongan Kerja
+              </button>
+              <button
+                onClick={() => setBkkSubTab('lamaran')}
+                className={`px-4 py-2 font-semibold transition ${
+                  bkkSubTab === 'lamaran'
+                    ? 'text-lime-600 border-b-2 border-lime-500'
+                    : 'text-emerald-700 hover:text-emerald-900'
+                }`}
+              >
+                <FileText className="inline w-4 h-4 mr-2" /> Lamaran ({jobApplications.length})
+              </button>
+              <button
+                onClick={() => setBkkSubTab('perusahaan')}
+                className={`px-4 py-2 font-semibold transition ${
+                  bkkSubTab === 'perusahaan'
+                    ? 'text-lime-600 border-b-2 border-lime-500'
+                    : 'text-emerald-700 hover:text-emerald-900'
+                }`}
+              >
+                <Building2 className="inline w-4 h-4 mr-2" /> Perusahaan Mitra
+              </button>
+            </div>
+
+            {/* Dashboard Sub-Tab */}
+            {bkkSubTab === 'dashboard' && (
+              <div>
+                <h2 className="text-2xl font-bold text-emerald-900 mb-6">Dashboard BKK</h2>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded shadow">
+                    <p className="text-sm text-blue-600 font-semibold mb-2">Total Lowongan</p>
+                    <p className="text-3xl font-bold text-blue-900"><CountUp end={jobPostings.length} /></p>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded shadow">
+                    <p className="text-sm text-green-600 font-semibold mb-2">Total Lamaran</p>
+                    <p className="text-3xl font-bold text-green-900"><CountUp end={jobApplications.length} /></p>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded shadow">
+                    <p className="text-sm text-purple-600 font-semibold mb-2">Perusahaan Mitra</p>
+                    <p className="text-3xl font-bold text-purple-900"><CountUp end={bkkCompanies.length} /></p>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded shadow">
+                    <p className="text-sm text-orange-600 font-semibold mb-2">Lamaran Pending</p>
+                    <p className="text-3xl font-bold text-orange-900"><CountUp end={jobApplications.filter((a: any) => a.status === 'Pending').length} /></p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="bg-white rounded shadow overflow-hidden">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-emerald-100 border-b text-emerald-900">
-                  <tr>
-                    <th className="px-4 py-3">Posisi</th>
-                    <th className="px-4 py-3">Perusahaan</th>
-                    <th className="px-4 py-3">Lokasi</th>
-                    <th className="px-4 py-3">Tanggal Posting</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {jobPostings.length > 0 ? (
-                    jobPostings.map((posting: any) => (
-                      <tr key={posting.id} className="border-t hover:bg-emerald-50">
-                        <td className="px-4 py-3">{posting.position}</td>
-                        <td className="px-4 py-3">{posting.company}</td>
-                        <td className="px-4 py-3">{posting.location}</td>
-                        <td className="px-4 py-3 text-sm">{new Date(posting.createdAt).toLocaleDateString('id-ID')}</td>
-                        <td className="px-4 py-3">
-                          <span className="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800">
-                            Aktif
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => deleteJobPosting(posting.id)}
-                            className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
-                          >
-                            Hapus
-                          </button>
-                        </td>
+            )}
+
+            {/* Lowongan Kerja Sub-Tab */}
+            {bkkSubTab === 'lowongan' && (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold text-emerald-900">Manajemen Lowongan Kerja</h2>
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => {
+                        setSelectedJobForEdit(null);
+                        setJobForm({ perusahaanId: '', jurusanId: '', posisi: '', deskripsi: '', requirements: '', salary: '', lokasi: '', tipePekerjaan: '', deadline: '' });
+                        setShowJobModal(true);
+                      }}
+                      className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 text-sm font-semibold"
+                    >
+                      + Tambah Lowongan
+                    </button>
+                    <button
+                      onClick={() => exportJobPostingsToCSV(jobPostings)}
+                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm font-semibold"
+                    >
+                      <Download className="inline w-4 h-4 mr-2" /> Export CSV
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white rounded shadow overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-emerald-100 border-b text-emerald-900">
+                      <tr>
+                        <th className="px-4 py-3">Posisi</th>
+                        <th className="px-4 py-3">Perusahaan</th>
+                        <th className="px-4 py-3">Lokasi</th>
+                        <th className="px-4 py-3">Deadline</th>
+                        <th className="px-4 py-3">Lamaran</th>
+                        <th className="px-4 py-3">Aksi</th>
                       </tr>
-                    ))
-                  ) : (
-                    <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-700">Tidak ada data</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            {/* Add Job Modal */}
+                    </thead>
+                    <tbody>
+                      {jobPostings.length > 0 ? (
+                        jobPostings.map((posting: any) => (
+                          <tr key={posting.id} className="border-t hover:bg-emerald-50">
+                            <td className="px-4 py-3 font-semibold text-emerald-900">{posting.posisi}</td>
+                            <td className="px-4 py-3">{posting.perusahaan?.fullName || '-'}</td>
+                            <td className="px-4 py-3">{posting.lokasi}</td>
+                            <td className="px-4 py-3 text-sm">{posting.deadline ? new Date(posting.deadline).toLocaleDateString('id-ID') : '-'}</td>
+                            <td className="px-4 py-3">
+                              <span className="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800">
+                                {jobApplications.filter((a: any) => a.jobPostingId === posting.id).length}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 space-x-1">
+                              <button
+                                onClick={() => handleEditJob(posting)}
+                                className="px-2 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteJob(posting.id)}
+                                className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                              >
+                                Hapus
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-700">Tidak ada lowongan kerja</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Lamaran Sub-Tab */}
+            {bkkSubTab === 'lamaran' && (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold text-emerald-900">Manajemen Lamaran Kerja</h2>
+                  <select
+                    value={applicationFilterStatus}
+                    onChange={(e) => setApplicationFilterStatus(e.target.value)}
+                    className="border border-emerald-300 rounded px-3 py-2 text-emerald-900"
+                  >
+                    <option value="">Semua Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Ditinjau">Ditinjau</option>
+                    <option value="Shortlist">Shortlist</option>
+                    <option value="Interview">Interview</option>
+                    <option value="Accepted">Diterima</option>
+                    <option value="Rejected">Ditolak</option>
+                  </select>
+                </div>
+                <div className="bg-white rounded shadow overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-emerald-100 border-b text-emerald-900">
+                      <tr>
+                        <th className="px-4 py-3">Pelamar</th>
+                        <th className="px-4 py-3">Posisi</th>
+                        <th className="px-4 py-3">Perusahaan</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Tanggal</th>
+                        <th className="px-4 py-3">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {jobApplications.length > 0 ? (
+                        jobApplications.map((app: any) => (
+                          <tr key={app.id} className="border-t hover:bg-emerald-50">
+                            <td className="px-4 py-3 font-semibold">{app.user?.fullName}</td>
+                            <td className="px-4 py-3">{app.jobPosting?.posisi}</td>
+                            <td className="px-4 py-3">{app.jobPosting?.perusahaan?.fullName}</td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                app.status === 'Accepted' ? 'bg-green-100 text-green-800' :
+                                app.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                app.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-blue-100 text-blue-800'
+                              }`}>
+                                {app.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm">{new Date(app.appliedAt).toLocaleDateString('id-ID')}</td>
+                            <td className="px-4 py-3">
+                              <button
+                                onClick={() => {
+                                  setSelectedApplication(app);
+                                  setShowApplicationDetailModal(true);
+                                }}
+                                className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                              >
+                                Detail
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-700">Tidak ada lamaran</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Perusahaan Sub-Tab */}
+            {bkkSubTab === 'perusahaan' && (
+              <div>
+                <h2 className="text-2xl font-bold text-emerald-900 mb-4">Perusahaan Mitra</h2>
+                <div className="bg-white rounded shadow overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-emerald-100 border-b text-emerald-900">
+                      <tr>
+                        <th className="px-4 py-3">Nama Perusahaan</th>
+                        <th className="px-4 py-3">Email</th>
+                        <th className="px-4 py-3">Phone</th>
+                        <th className="px-4 py-3">Lowongan</th>
+                        <th className="px-4 py-3">Alamat</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bkkCompanies.length > 0 ? (
+                        bkkCompanies.map((company: any) => (
+                          <tr key={company.id} className="border-t hover:bg-emerald-50">
+                            <td className="px-4 py-3 font-semibold">{company.fullName}</td>
+                            <td className="px-4 py-3">{company.email}</td>
+                            <td className="px-4 py-3">{company.phone || '-'}</td>
+                            <td className="px-4 py-3">
+                              <span className="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800">
+                                {company._count?.jobPostings || 0}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm">{company.address || '-'}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr><td colSpan={5} className="px-4 py-3 text-center text-emerald-700">Tidak ada perusahaan mitra</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+            {/* Add/Edit Job Modal */}
             {showJobModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center">
                 <div onClick={() => setShowJobModal(false)} className="absolute inset-0 bg-emerald-50/40"></div>
-                <form onSubmit={handleSaveJob} className="relative bg-white rounded shadow max-w-2xl w-full p-6 z-50">
-                  <h3 className="text-lg font-bold mb-4 text-emerald-900">Tambah Lowongan Kerja</h3>
+                <form onSubmit={handleSaveJob} className="relative bg-white rounded shadow max-w-2xl w-full p-6 z-50 max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-emerald-900">
+                      {selectedJobForEdit ? '✏️ Edit Lowongan Kerja' : '➕ Tambah Lowongan Kerja'}
+                    </h3>
+                    <button type="button" onClick={() => setShowJobModal(false)} className="text-emerald-500 hover:text-emerald-700">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium mb-1 text-emerald-700">Posisi</label>
@@ -1410,7 +1711,7 @@ export default function AdminDashboard() {
                       <input value={jobForm.lokasi} onChange={(e) => setJobForm({ ...jobForm, lokasi: e.target.value })} placeholder="Contoh: Jakarta" className="w-full border rounded px-3 py-2 text-emerald-700" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Perusahaan (pilih perusahaan jika ingin menugaskan ke perusahaan)</label>
+                      <label className="block text-sm font-medium mb-1">Perusahaan</label>
                       <select value={jobForm.perusahaanId} onChange={(e) => setJobForm({ ...jobForm, perusahaanId: e.target.value })} className="w-full border rounded px-3 py-2">
                         <option value="">-- Pilih Perusahaan (opsional) --</option>
                         {companies.map((c: any) => (
@@ -1447,14 +1748,94 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end gap-2">
-                    <button type="submit" disabled={jobSaving} className={`bg-green-600 text-white px-4 py-2 rounded ${jobSaving ? 'opacity-60 cursor-not-allowed' : ''}`}>{jobSaving ? 'Menyimpan...' : 'Simpan'}</button>
-                    <button type="button" onClick={() => setShowJobModal(false)} className="px-4 py-2 rounded border">Batal</button>
+                    <button type="submit" disabled={jobSaving} className={`bg-green-600 text-white px-4 py-2 rounded font-semibold ${jobSaving ? 'opacity-60 cursor-not-allowed' : 'hover:bg-green-700'}`}>
+                      {jobSaving ? '💾 Menyimpan...' : selectedJobForEdit ? '💾 Perbarui' : '➕ Simpan'}
+                    </button>
+                    <button type="button" onClick={() => setShowJobModal(false)} className="px-4 py-2 rounded border border-emerald-300 text-emerald-700 font-semibold hover:bg-emerald-50">Batal</button>
                   </div>
                 </form>
               </div>
             )}
-          </div>
-        )}
+
+            {/* Application Detail Modal */}
+            {showApplicationDetailModal && selectedApplication && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div onClick={() => setShowApplicationDetailModal(false)} className="absolute inset-0 bg-emerald-50/40"></div>
+                <div className="relative bg-white rounded shadow max-w-2xl w-full p-6 z-50 max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-emerald-900">Detail Lamaran</h3>
+                    <button onClick={() => setShowApplicationDetailModal(false)} className="text-emerald-500 hover:text-emerald-700">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-emerald-600 font-semibold">Nama Pelamar</p>
+                      <p className="text-emerald-900 font-bold">{selectedApplication.user?.fullName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-600 font-semibold">Email</p>
+                      <p className="text-emerald-900">{selectedApplication.user?.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-600 font-semibold">Posisi</p>
+                      <p className="text-emerald-900 font-bold">{selectedApplication.jobPosting?.posisi}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-600 font-semibold">Perusahaan</p>
+                      <p className="text-emerald-900">{selectedApplication.jobPosting?.perusahaan?.fullName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-600 font-semibold">Tanggal Lamar</p>
+                      <p className="text-emerald-900">{new Date(selectedApplication.appliedAt).toLocaleDateString('id-ID')}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-600 font-semibold">Status</p>
+                      <select
+                        value={selectedApplication.status}
+                        onChange={(e) => handleUpdateApplicationStatus(selectedApplication.id, e.target.value)}
+                        className={`w-full px-3 py-2 rounded font-semibold border-2 ${
+                          selectedApplication.status === 'Accepted' ? 'border-green-500 bg-green-50 text-green-800' :
+                          selectedApplication.status === 'Rejected' ? 'border-red-500 bg-red-50 text-red-800' :
+                          'border-yellow-500 bg-yellow-50 text-yellow-800'
+                        }`}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Ditinjau">Ditinjau</option>
+                        <option value="Shortlist">Shortlist</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Accepted">Diterima</option>
+                        <option value="Rejected">Ditolak</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {selectedApplication.cvFile && (
+                    <div className="mb-4">
+                      <p className="text-sm text-emerald-600 font-semibold mb-2">CV</p>
+                      <a href={selectedApplication.cvFile} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">
+                        📄 Lihat CV
+                      </a>
+                    </div>
+                  )}
+
+                  {selectedApplication.coverLetter && (
+                    <div className="mb-4">
+                      <p className="text-sm text-emerald-600 font-semibold mb-2">Surat Lamaran</p>
+                      <p className="text-emerald-900 whitespace-pre-wrap">{selectedApplication.coverLetter}</p>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-2">
+                    <button onClick={() => setShowApplicationDetailModal(false)} className="px-4 py-2 rounded border border-emerald-300 text-emerald-700 font-semibold hover:bg-emerald-50">
+                      Tutup
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+        
 
         {/* Alumni Tab */}
         {activeTab === 'alumni' && (
