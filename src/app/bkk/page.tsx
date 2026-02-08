@@ -16,6 +16,7 @@ export default function BKKPage() {
   const [query, setQuery] = useState('');
   const [queryInput, setQueryInput] = useState('');
   const [selectedJurusan, setSelectedJurusan] = useState<string | null>(null);
+  const [selectedJobType, setSelectedJobType] = useState<string | null>(null);
   const [companyQuery, setCompanyQuery] = useState('');
   const [companyQueryInput, setCompanyQueryInput] = useState('');
   const [companySelectedJurusan, setCompanySelectedJurusan] = useState<string | null>(null);
@@ -58,6 +59,7 @@ export default function BKKPage() {
         params.set('page', String(page));
         params.set('limit', String(pageSize));
         if (selectedJurusan) params.set('jurusanId', String(selectedJurusan));
+        if (selectedJobType) params.set('tipePekerjaan', String(selectedJobType));
         if (query.trim()) params.set('q', query.trim());
 
         const res = await fetch(`/api/bkk/job-postings?${params.toString()}`);
@@ -74,7 +76,7 @@ export default function BKKPage() {
     };
 
     if (activeTab === 'lowongan') fetchJobs();
-  }, [page, selectedJurusan, query, activeTab]);
+  }, [page, selectedJurusan, selectedJobType, query, activeTab]);
 
   // fetch companies from server when company filters change
   
@@ -114,12 +116,15 @@ export default function BKKPage() {
     if (selectedJurusan) {
       list = list.filter((j) => String(j.jurusanId) === String(selectedJurusan));
     }
+    if (selectedJobType) {
+      list = list.filter((j) => j.tipePekerjaan === selectedJobType);
+    }
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter((j) => (j.posisi || '').toLowerCase().includes(q) || (j.perusahaan?.fullName || '').toLowerCase().includes(q));
     }
     return list;
-  }, [jobPostings, selectedJurusan, query]);
+  }, [jobPostings, selectedJurusan, selectedJobType, query]);
 
   const companies = useMemo(() => {
     const map = new Map<string, any>();
@@ -218,13 +223,21 @@ export default function BKKPage() {
             <div className="md:col-span-2">
               {activeTab === 'lowongan' && (
                 <div>
-                  <div className="mb-4 flex gap-2 items-center">
-                    <input value={queryInput} onChange={(e) => setQueryInput(e.target.value)} placeholder="Cari posisi atau perusahaan" className="flex-1 border border-emerald-300 rounded px-3 py-2 text-emerald-900 placeholder-emerald-500" />
+                  <div className="mb-4 flex gap-2 items-center flex-wrap">
+                    <input value={queryInput} onChange={(e) => setQueryInput(e.target.value)} placeholder="Cari posisi atau perusahaan" className="flex-1 min-w-48 border border-emerald-300 rounded px-3 py-2 text-emerald-900 placeholder-emerald-500" />
                     <select value={selectedJurusan || ''} onChange={(e) => { setSelectedJurusan(e.target.value || null); setPage(1); }} className="border border-emerald-300 rounded px-3 py-2 text-emerald-900">
                       <option value="">Semua Jurusan</option>
                       {jurusanList.map((j) => (
                         <option key={j.id} value={j.id}>{j.nama}</option>
                       ))}
+                    </select>
+                    <select value={selectedJobType || ''} onChange={(e) => { setSelectedJobType(e.target.value || null); setPage(1); }} className="border border-emerald-300 rounded px-3 py-2 text-emerald-900">
+                      <option value="">Semua Tipe</option>
+                      <option value="Full-time">Full-time</option>
+                      <option value="Part-time">Part-time</option>
+                      <option value="Contract">Contract</option>
+                      <option value="Internship">Internship</option>
+                      <option value="Freelance">Freelance</option>
                     </select>
                   </div>
 
@@ -232,22 +245,36 @@ export default function BKKPage() {
                     <div className="bg-amber-50 border border-amber-300 p-4 rounded text-amber-900">Belum ada lowongan sesuai filter.</div>
                   ) : (
                     <div className="space-y-4">
-                      {(jobPostings || []).map((job) => (
+                      {(filteredJobs || []).map((job) => (
                         <div key={job.id} className="bg-white p-6 rounded shadow">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="text-lg font-bold text-emerald-900">{job.posisi}</h3>
-                              <p className="text-sm text-emerald-600">{job.perusahaan?.fullName} • {job.lokasi}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm text-emerald-9000">{new Date(job.createdAt).toLocaleDateString('id-ID')}</p>
-                              <div className="mt-2 flex gap-2">
-                                <button onClick={() => { setSelectedJob(job); setShowApplyModal(true); }} className="bg-lime-500 text-emerald-900 px-3 py-1 rounded text-sm font-semibold">Lamar</button>
-                                <button onClick={() => openDetail(job)} className="bg-emerald-600 text-white px-3 py-1 rounded text-sm">Detail</button>
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-bold text-emerald-900 mb-2">{job.posisi}</h3>
+                              <p className="text-sm text-emerald-600 mb-3">{job.perusahaan?.fullName} • {job.lokasi}</p>
+                              <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <p className="text-xs font-semibold text-emerald-700 uppercase">Gaji</p>
+                                  <p className="text-emerald-900 font-semibold">{job.salary ? `Rp ${Number(job.salary).toLocaleString('id-ID')}` : 'Negotiable'} / {job.salaryPeriod === 'per_hari' ? 'Hari' : job.salaryPeriod === 'per_minggu' ? 'Minggu' : 'Bulan'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-emerald-700 uppercase">Tipe Kerja</p>
+                                  <p className="text-emerald-900 font-semibold">{job.tipePekerjaan}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-emerald-700 uppercase">Diposting</p>
+                                  <p className="text-emerald-900 font-semibold">{new Date(job.createdAt).toLocaleDateString('id-ID')}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-emerald-700 uppercase">Deadline</p>
+                                  <p className="text-emerald-900 font-semibold">{job.deadline ? new Date(job.deadline).toLocaleDateString('id-ID') : 'Tidak ada'}</p>
+                                </div>
                               </div>
                             </div>
                           </div>
-                          <p className="mt-3 text-emerald-700">{(job.deskripsi || '').substring(0, 300)}{(job.deskripsi||'').length > 300 ? '...' : ''}</p>
+                          <div className="flex gap-2">
+                            <button onClick={() => { setSelectedJob(job); setShowApplyModal(true); }} className="bg-lime-500 text-emerald-900 px-3 py-1 rounded text-sm font-semibold">Lamar</button>
+                            <button onClick={() => openDetail(job)} className="bg-emerald-600 text-white px-3 py-1 rounded text-sm">Detail</button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -332,17 +359,123 @@ export default function BKKPage() {
 
         {/* Detail Drawer / Modal */}
         {selectedJob && (
-          <div className="fixed inset-0 z-40 flex items-center justify-center" style={{ display: selectedJob ? 'flex' : 'none' }}>
-            <div onClick={() => setSelectedJob(null)} className="absolute inset-0 bg-emerald-50/40"></div>
-            <div className="relative bg-white rounded shadow max-w-2xl w-full p-6 z-50">
-              <h3 className="text-xl font-bold text-emerald-900">{selectedJob.posisi}</h3>
-              <p className="text-sm text-emerald-600">{selectedJob.perusahaan?.fullName} • {selectedJob.lokasi}</p>
-              <div className="mt-4 text-emerald-700">
-                <p>{selectedJob.deskripsi}</p>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div onClick={() => setSelectedJob(null)} className="absolute inset-0 bg-black/50"></div>
+            <div className="relative bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[95vh] overflow-y-auto">
+              {/* Header */}
+              <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 rounded-t-lg">
+                <h3 className="text-2xl font-bold mb-2">{selectedJob.posisi}</h3>
+                <p className="text-emerald-100 text-sm">{selectedJob.perusahaan?.fullName}</p>
               </div>
-              <div className="mt-4 flex justify-end gap-2">
-                <button onClick={() => { setShowApplyModal(true); }} className="bg-lime-500 text-emerald-900 px-4 py-2 rounded font-semibold">Lamar Sekarang</button>
-                <button onClick={() => setSelectedJob(null)} className="px-4 py-2 rounded border border-emerald-300 text-emerald-700">Tutup</button>
+
+              {/* Body */}
+              <div className="p-6 space-y-6">
+                {/* Section 1: Informasi Dasar */}
+                <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                  <h4 className="text-sm font-bold text-emerald-900 mb-4 flex items-center">
+                    <span className="w-2 h-2 bg-emerald-600 rounded-full mr-2"></span>
+                    Informasi Dasar
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-emerald-600 font-semibold uppercase tracking-wide">Lokasi Kerja</p>
+                      <p className="text-base font-semibold text-emerald-900 mt-1">{selectedJob.lokasi || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-emerald-600 font-semibold uppercase tracking-wide">Tipe Pekerjaan</p>
+                      <p className="text-base font-semibold text-emerald-900 mt-1">{selectedJob.tipePekerjaan}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 2: Kompensasi */}
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="text-sm font-bold text-blue-900 mb-4 flex items-center">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
+                    Kompensasi
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-blue-600 font-semibold uppercase tracking-wide">Gaji</p>
+                      <p className="text-base font-semibold text-blue-900 mt-1">
+                        {selectedJob.salary ? `Rp ${Number(selectedJob.salary).toLocaleString('id-ID')}` : 'Negotiable'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-blue-600 font-semibold uppercase tracking-wide">Periode</p>
+                      <p className="text-base font-semibold text-blue-900 mt-1">
+                        {selectedJob.salaryPeriod === 'per_hari' ? 'Per Hari' : selectedJob.salaryPeriod === 'per_minggu' ? 'Per Minggu' : 'Per Bulan'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 3: Deskripsi Posisi */}
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                  <h4 className="text-sm font-bold text-orange-900 mb-4 flex items-center">
+                    <span className="w-2 h-2 bg-orange-600 rounded-full mr-2"></span>
+                    Deskripsi Posisi
+                  </h4>
+                  <p className="text-sm text-orange-900 leading-relaxed whitespace-pre-wrap">
+                    {selectedJob.deskripsi}
+                  </p>
+                </div>
+
+                {/* Section 4: Persyaratan & Kualifikasi */}
+                {selectedJob.requirements && selectedJob.requirements.length > 0 && (
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <h4 className="text-sm font-bold text-purple-900 mb-4 flex items-center">
+                      <span className="w-2 h-2 bg-purple-600 rounded-full mr-2"></span>
+                      Persyaratan & Kualifikasi
+                    </h4>
+                    <ul className="space-y-2">
+                      {(Array.isArray(selectedJob.requirements) ? selectedJob.requirements : selectedJob.requirements.split(',')).map((req: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2 text-purple-900">
+                          <span className="text-purple-600 font-bold mt-1">✓</span>
+                          <span className="text-sm">{req.trim()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Section 5: Jadwal Penting */}
+                <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
+                  <h4 className="text-sm font-bold text-cyan-900 mb-4 flex items-center">
+                    <span className="w-2 h-2 bg-cyan-600 rounded-full mr-2"></span>
+                    Jadwal Penting
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-cyan-600 font-semibold uppercase tracking-wide">Diposting Pada</p>
+                      <p className="text-base font-semibold text-cyan-900 mt-1">
+                        {new Date(selectedJob.createdAt).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-cyan-600 font-semibold uppercase tracking-wide">Deadline Lamaran</p>
+                      <p className={`text-base font-semibold mt-1 ${selectedJob.deadline && new Date(selectedJob.deadline) < new Date() ? 'text-red-600' : 'text-cyan-900'}`}>
+                        {selectedJob.deadline ? new Date(selectedJob.deadline).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Tidak ada'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="sticky bottom-0 bg-gray-50 border-t p-6 flex justify-end gap-2 rounded-b-lg">
+                <button
+                  onClick={() => setSelectedJob(null)}
+                  className="px-6 py-2 rounded-lg border border-emerald-300 text-emerald-700 font-semibold hover:bg-emerald-50 transition"
+                >
+                  Tutup
+                </button>
+                <button
+                  onClick={() => { setShowApplyModal(true); }}
+                  className="px-6 py-2 rounded-lg bg-lime-500 text-emerald-900 font-semibold hover:bg-lime-600 transition"
+                >
+                  Lamar Sekarang
+                </button>
               </div>
             </div>
           </div>
