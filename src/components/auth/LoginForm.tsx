@@ -42,6 +42,8 @@ export default function LoginForm() {
         router.push('/admin');
       } else if (data.user?.role === 'PERUSAHAAN') {
         router.push('/company/dashboard');
+      } else if (data.user?.role === 'ALUMNI') {
+        router.push('/tracer-study');
       } else {
         router.push('/ppdb');
       }
