@@ -46,11 +46,9 @@ export default function CompanyDashboard() {
   useEffect(() => {
     if (currentUser?.role === 'PERUSAHAAN') {
       fetchJobPostings();
-      if (activeSubTab === 'lamaran') {
-        fetchJobApplications();
-      }
+      fetchJobApplications();
     }
-  }, [activeSubTab, applicationFilterStatus, currentUser]);
+  }, [applicationFilterStatus, currentUser]);
 
   useEffect(() => {
     fetchJurusan();
@@ -372,7 +370,7 @@ export default function CompanyDashboard() {
                         </td>
                         <td className="px-4 py-3">
                           <span className="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800">
-                            {posting._count?.jobApplications || 0}
+                            {posting._count?.applications || 0}
                           </span>
                         </td>
                         <td className="px-4 py-3 space-x-1">
