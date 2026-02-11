@@ -15,30 +15,65 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch all users
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        fullName: true,
-        role: true,
-        phone: true,
-        address: true,
-        photoUrl: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    // Get query parameters
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1');
+    const pageSize = parseInt(searchParams.get('pageSize') || '10');
+    const search = searchParams.get('search') || '';
+    const roleFilter = searchParams.get('role') || '';
+
+    const skip = (page - 1) * pageSize;
+
+    // Build where conditions
+    const where: any = {};
+    
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { username: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (roleFilter && roleFilter !== 'ALL') {
+      where.role = roleFilter;
+    }
+
+    // Fetch users with pagination
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          fullName: true,
+          role: true,
+          phone: true,
+          address: true,
+          photoUrl: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip,
+        take: pageSize,
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / pageSize);
 
     return NextResponse.json({
       success: true,
       users,
-      total: users.length,
+      total,
+      page,
+      pageSize,
+      totalPages,
     });
   } catch (error) {
     console.error('Error fetching users:', error);

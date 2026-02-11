@@ -29,6 +29,32 @@ export async function GET(request: NextRequest) {
       _count: true,
     });
 
+    // Get alumni status breakdown
+    const alumniStatuses = await prisma.tracerStudy.groupBy({
+      by: ['status'],
+      _count: true,
+    });
+
+    // Map alumni statuses to readable format
+    const alumniStats = {
+      working: 0,
+      studying: 0,
+      entrepreneur: 0,
+      searching: 0,
+    };
+
+    alumniStatuses.forEach((item: any) => {
+      if (item.status === 'Bekerja') {
+        alumniStats.working = item._count;
+      } else if (item.status === 'Kuliah') {
+        alumniStats.studying = item._count;
+      } else if (item.status === 'Wirausaha') {
+        alumniStats.entrepreneur = item._count;
+      } else if (item.status === 'Mencari Kerja') {
+        alumniStats.searching = item._count;
+      }
+    });
+
     return NextResponse.json(
       {
         totalStats: {
@@ -39,6 +65,7 @@ export async function GET(request: NextRequest) {
           usersCount,
         },
         ppdbDistribution: ppdbStatuses,
+        alumniStats,
       },
       { status: 200 }
     );

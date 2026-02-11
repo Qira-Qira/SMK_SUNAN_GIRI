@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import CountUp from '@/components/common/CountUp';
+import TestimonialSection from '@/components/common/TestimonialSection';
 
 type TabType = 'dashboard' | 'ppdb' | 'bkk' | 'alumni' | 'users' | 'content';
 type BKKSubTab = 'dashboard' | 'lowongan' | 'lamaran' | 'perusahaan';
@@ -57,6 +58,12 @@ export default function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [userFormError, setUserFormError] = useState('');
   const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('ALL');
+  const [userPage, setUserPage] = useState(1);
+  const [userPageSize] = useState(10);
+  const [userTotal, setUserTotal] = useState(0);
+  const [userTotalPages, setUserTotalPages] = useState(0);
+  const [userLoading, setUserLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [userForm, setUserForm] = useState({
     username: '',
@@ -117,6 +124,14 @@ export default function AdminDashboard() {
     rating: 5,
   });
 
+  // Tracer Study states
+  const [tracerStudyData, setTracerStudyData] = useState<any[]>([]);
+  const [tracerStudyLoading, setTracerStudyLoading] = useState(false);
+  const [tracerStudyPage, setTracerStudyPage] = useState(1);
+  const [tracerStudyTotal, setTracerStudyTotal] = useState(0);
+  const [tracerStudyFilterStatus, setTracerStudyFilterStatus] = useState<string>('');
+  const [tracerStudySearchQuery, setTracerStudySearchQuery] = useState<string>('');
+
   useEffect(() => {
     fetchStats();
     fetchCurrentUser();
@@ -126,9 +141,13 @@ export default function AdminDashboard() {
       fetchJobApplications();
       fetchBkkCompanies();
     }
-    if (activeTab === 'users') fetchUsers();
+    if (activeTab === 'users') fetchUsers(1, '', 'ALL');
+    if (activeTab === 'alumni') {
+      fetchTracerStudyData();
+      fetchTestimonials();
+    }
     if (activeTab === 'content') fetchContent();
-  }, [activeTab, refreshTrigger, bkkSubTab, applicationFilterStatus]);
+  }, [activeTab, refreshTrigger, bkkSubTab, applicationFilterStatus, tracerStudyPage, tracerStudyFilterStatus, tracerStudySearchQuery]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -248,20 +267,72 @@ export default function AdminDashboard() {
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (page: number = 1, search: string = '', role: string = 'ALL') => {
     try {
-      const res = await fetch('/api/admin/users', {
+      setUserLoading(true);
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      params.append('pageSize', userPageSize.toString());
+      if (search) params.append('search', search);
+      if (role !== 'ALL') params.append('role', role);
+
+      const res = await fetch(`/api/admin/users?${params.toString()}`, {
         credentials: 'include',
       });
       if (res.ok) {
         const data = await res.json();
         setUsers(data.users || []);
+        setUserTotal(data.total || 0);
+        setUserTotalPages(data.totalPages || 0);
+        setUserPage(data.page || 1);
       } else if (res.status === 403 || res.status === 401) {
         // Not authenticated, redirect to login
         window.location.href = '/login';
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+    } finally {
+      setUserLoading(false);
+    }
+  };
+
+  const fetchTracerStudyData = async () => {
+    setTracerStudyLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: tracerStudyPage.toString(),
+        limit: '10',
+        ...(tracerStudyFilterStatus && { status: tracerStudyFilterStatus }),
+        ...(tracerStudySearchQuery && { search: tracerStudySearchQuery }),
+      });
+
+      const res = await fetch(`/api/tracer-study/all?${params}`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTracerStudyData(data.data || []);
+        setTracerStudyTotal(data.pagination?.total || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching tracer study data:', error);
+      toast.error('Gagal mengambil data tracer study');
+    } finally {
+      setTracerStudyLoading(false);
+    }
+  };
+
+  const fetchTestimonials = async () => {
+    try {
+      const res = await fetch('/api/public/testimonials', {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTestimonials(data.testimonials || []);
+      }
+    } catch (error) {
+      console.error('Error fetching testimonials:', error);
     }
   };
 
@@ -317,13 +388,7 @@ export default function AdminDashboard() {
       }
 
       // Fetch testimonials
-      const testimonialRes = await fetch('/api/public/testimonials', {
-        credentials: 'include',
-      });
-      if (testimonialRes.ok) {
-        const testimonialData = await testimonialRes.json();
-        setTestimonials(testimonialData.testimonials || []);
-      }
+      // (moved to separate fetchTestimonials function called from alumni tab)
 
       // Fetch videos
       const videosRes = await fetch('/api/public/videos', { credentials: 'include' });
@@ -1837,38 +1902,153 @@ export default function AdminDashboard() {
             )}
         
 
-        {/* Alumni Tab */}
+        {/* Alumni Tab with Tracer Study */}
         {activeTab === 'alumni' && (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Statistik Alumni</h2>
-            <div className="grid md:grid-cols-3 gap-4">
+            {/* Summary Stats */}
+            <h2 className="text-2xl font-bold mb-6 text-emerald-900">Tracer Study Alumni</h2>
+            <div className="grid md:grid-cols-4 gap-4 mb-8">
               <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded">
-                <h3 className="font-bold text-blue-900">Bekerja</h3>
+                <h3 className="font-semibold text-blue-900 text-sm">Bekerja</h3>
                 <p className="text-3xl font-bold text-blue-600">{stats?.alumniStats?.working || 0}</p>
               </div>
               <div className="bg-green-50 border-l-4 border-green-500 p-6 rounded">
-                <h3 className="font-bold text-green-900">Melanjutkan Kuliah</h3>
+                <h3 className="font-semibold text-green-900 text-sm">Melanjutkan Kuliah</h3>
                 <p className="text-3xl font-bold text-green-600">{stats?.alumniStats?.studying || 0}</p>
               </div>
               <div className="bg-purple-50 border-l-4 border-purple-500 p-6 rounded">
-                <h3 className="font-bold text-purple-900">Wirausaha</h3>
+                <h3 className="font-semibold text-purple-900 text-sm">Wirausaha</h3>
                 <p className="text-3xl font-bold text-purple-600">{stats?.alumniStats?.entrepreneur || 0}</p>
               </div>
-            </div>
-            <div className="mt-6 bg-white p-6 rounded shadow">
-              <h3 className="text-lg font-bold mb-4">Peluang Kerja Terbanyak</h3>
-              <div className="space-y-2">
-                {stats?.topCompanies?.slice(0, 5).map((item: any) => (
-                  <div key={item.company} className="flex justify-between items-center py-2 border-b">
-                    <span>{item.company}</span>
-                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded">{item.count} alumni</span>
-                  </div>
-                ))}
+              <div className="bg-orange-50 border-l-4 border-orange-500 p-6 rounded">
+                <h3 className="font-semibold text-orange-900 text-sm">Mencari Kerja</h3>
+                <p className="text-3xl font-bold text-orange-600">{stats?.alumniStats?.searching || 0}</p>
               </div>
             </div>
 
+            {/* Filter & Search */}
+            <div className="bg-white p-6 rounded shadow mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-2">Cari Alumni</label>
+                  <input
+                    type="text"
+                    placeholder="Nama, email, perusahaan..."
+                    value={tracerStudySearchQuery}
+                    onChange={(e) => {
+                      setTracerStudySearchQuery(e.target.value);
+                      setTracerStudyPage(1);
+                    }}
+                    className="w-full px-3 py-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-2">Filter Status</label>
+                  <select
+                    value={tracerStudyFilterStatus}
+                    onChange={(e) => {
+                      setTracerStudyFilterStatus(e.target.value);
+                      setTracerStudyPage(1);
+                    }}
+                    className="w-full px-3 py-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900"
+                  >
+                    <option value="">Semua Status</option>
+                    <option value="Bekerja">Bekerja</option>
+                    <option value="Kuliah">Kuliah</option>
+                    <option value="Wirausaha">Wirausaha</option>
+                    <option value="Mencari Kerja">Mencari Kerja</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={() => {
+                      setTracerStudySearchQuery('');
+                      setTracerStudyFilterStatus('');
+                      setTracerStudyPage(1);
+                    }}
+                    className="w-full px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-semibold"
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Data Table */}
+            <div className="bg-white rounded shadow overflow-x-auto">
+              {tracerStudyLoading ? (
+                <div className="p-6 flex items-center justify-center">
+                  <Loader2 className="animate-spin w-6 h-6 text-emerald-600" />
+                </div>
+              ) : tracerStudyData.length > 0 ? (
+                <>
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-emerald-100 border-b text-emerald-900">
+                      <tr>
+                        <th className="px-4 py-3">Nama Alumni</th>
+                        <th className="px-4 py-3">Jurusan</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Perusahaan/Info</th>
+                        <th className="px-4 py-3">Jabatan/Posisi</th>
+                        <th className="px-4 py-3">Relevansi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tracerStudyData.map((item: any) => (
+                        <tr key={item.id} className="border-t hover:bg-emerald-50">
+                          <td className="px-4 py-3 font-semibold">{item.user?.fullName}</td>
+                          <td className="px-4 py-3">{item.jurusan?.nama || '-'}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                              item.status === 'Bekerja' ? 'bg-green-100 text-green-800' :
+                              item.status === 'Kuliah' ? 'bg-blue-100 text-blue-800' :
+                              item.status === 'Wirausaha' ? 'bg-purple-100 text-purple-800' :
+                              'bg-orange-100 text-orange-800'
+                            }`}>
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm">{item.namaPerusahaan || '-'}</td>
+                          <td className="px-4 py-3 text-sm">{item.jabatan || '-'}</td>
+                          <td className="px-4 py-3 text-xs">{item.relevansi || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  {/* Pagination */}
+                  <div className="px-4 py-3 border-t flex items-center justify-between">
+                    <p className="text-sm text-emerald-600">
+                      Total: <span className="font-semibold">{tracerStudyTotal}</span> alumni
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setTracerStudyPage(prev => Math.max(prev - 1, 1))}
+                        disabled={tracerStudyPage === 1}
+                        className="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:bg-gray-400 text-sm"
+                      >
+                        Prev
+                      </button>
+                      <span className="px-3 py-1 text-sm font-semibold">{tracerStudyPage}</span>
+                      <button
+                        onClick={() => setTracerStudyPage(prev => prev + 1)}
+                        disabled={tracerStudyData.length < 10}
+                        className="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:bg-gray-400 text-sm"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="p-6 text-center text-emerald-700">
+                  Tidak ada data tracer study alumni
+                </div>
+              )}
+            </div>
+
             {/* Testimonial Section */}
-            <div className="mb-8">
+            <div className="mt-8">
               <div className="bg-white p-6 rounded shadow">
                 <div className="flex justify-between items-center mb-4">
                   <div>
@@ -1890,7 +2070,7 @@ export default function AdminDashboard() {
                           <div className="flex-1">
                             <h4 className="font-bold">{t.nama}</h4>
                             <p className="text-sm text-emerald-600 mt-1">{t.posisi} at {t.perusahaan}</p>
-                            <p className="text-xs text-emerald-9000 mt-2">{t.tahunLulus}</p>
+                            <p className="text-xs text-emerald-900 mt-2">{t.tahunLulus}</p>
                             <p className="text-emerald-700 mt-3">"{(t.testimoni || '').substring(0, 150)}..."</p>
                           </div>
                           <div className="flex flex-col gap-2 ml-4">
@@ -1902,7 +2082,7 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-emerald-9000 text-center py-4">Belum ada testimoni</p>
+                  <p className="text-emerald-900 text-center py-4">Belum ada testimoni</p>
                 )}
               </div>
             </div>
@@ -1915,7 +2095,7 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-emerald-900 mb-2">Manajemen Pengguna</h2>
-                <p className="text-emerald-600">Total: <span className="font-semibold text-lg">{users.length}</span> pengguna terdaftar</p>
+                <p className="text-emerald-600">Total: <span className="font-semibold text-lg">{userTotal}</span> pengguna terdaftar</p>
               </div>
               {currentUser?.role === 'ADMIN_UTAMA' && (
                 <button
@@ -1933,15 +2113,59 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* Search Box */}
-            <div className="mb-6">
-              <input
-                type="text"
-                placeholder="Cari user berdasarkan nama, username, atau email..."
-                value={userSearchQuery}
-                onChange={(e) => setUserSearchQuery(e.target.value)}
-                className="w-full px-4 py-3 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900 placeholder-emerald-500"
-              />
+            {/* Search & Filter Box */}
+            <div className="mb-6 bg-white p-4 rounded shadow">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-2">Cari User</label>
+                  <input
+                    type="text"
+                    placeholder="Nama, username, atau email..."
+                    value={userSearchQuery}
+                    onChange={(e) => {
+                      setUserSearchQuery(e.target.value);
+                      setUserPage(1);
+                      fetchUsers(1, e.target.value, userRoleFilter);
+                    }}
+                    className="w-full px-3 py-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-2">Filter Role</label>
+                  <select
+                    value={userRoleFilter}
+                    onChange={(e) => {
+                      setUserRoleFilter(e.target.value);
+                      setUserPage(1);
+                      fetchUsers(1, userSearchQuery, e.target.value);
+                    }}
+                    className="w-full px-3 py-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900"
+                  >
+                    <option value="ALL">Semua Role</option>
+                    <option value="CALON_SISWA">Calon Siswa</option>
+                    <option value="SISWA_AKTIF">Siswa Aktif</option>
+                    <option value="ALUMNI">Alumni</option>
+                    <option value="PERUSAHAAN">Perusahaan</option>
+                    <option value="ADMIN_PPDB">Admin PPDB</option>
+                    <option value="ADMIN_BKK">Admin BKK</option>
+                    <option value="ADMIN_BERITA">Admin Berita</option>
+                    <option value="ADMIN_UTAMA">Admin Utama</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={() => {
+                      setUserSearchQuery('');
+                      setUserRoleFilter('ALL');
+                      setUserPage(1);
+                      fetchUsers(1, '', 'ALL');
+                    }}
+                    className="w-full px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-semibold"
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="bg-white rounded shadow overflow-x-auto">
@@ -1958,22 +2182,16 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.filter((user: any) => {
-                    const query = userSearchQuery.toLowerCase();
-                    return (
-                      user.fullName?.toLowerCase().includes(query) ||
-                      user.username?.toLowerCase().includes(query) ||
-                      user.email?.toLowerCase().includes(query)
-                    );
-                  }).length > 0 ? (
-                    users.filter((user: any) => {
-                      const query = userSearchQuery.toLowerCase();
-                      return (
-                        user.fullName?.toLowerCase().includes(query) ||
-                        user.username?.toLowerCase().includes(query) ||
-                        user.email?.toLowerCase().includes(query)
-                      );
-                    }).map((user: any) => (
+                  {userLoading ? (
+                    <tr>
+                      <td colSpan={currentUser?.role === 'ADMIN_UTAMA' ? 7 : 6} className="px-4 py-6 text-center">
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : users.length > 0 ? (
+                    users.map((user: any) => (
                       <tr key={user.id} className="border-t hover:bg-emerald-50">
                         <td className="px-2 sm:px-4 py-2 sm:py-3 font-semibold text-emerald-900">{user.fullName || '-'}</td>
                         <td className="px-2 sm:px-4 py-2 sm:py-3 text-emerald-800 hidden sm:table-cell">{user.username || '-'}</td>
@@ -2035,6 +2253,37 @@ export default function AdminDashboard() {
                   )}
                 </tbody>
               </table>
+              
+              {users.length > 0 && (
+                <div className="px-4 py-3 border-t flex items-center justify-between bg-gray-50">
+                  <p className="text-sm text-emerald-600">
+                    Menampilkan <span className="font-semibold">{(userPage - 1) * userPageSize + 1}</span> - <span className="font-semibold">{Math.min(userPage * userPageSize, userTotal)}</span> dari <span className="font-semibold">{userTotal}</span> pengguna
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setUserPage(userPage - 1);
+                        fetchUsers(userPage - 1, userSearchQuery, userRoleFilter);
+                      }}
+                      disabled={userPage === 1}
+                      className="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:bg-gray-400 text-sm font-semibold"
+                    >
+                      Prev
+                    </button>
+                    <span className="px-3 py-1 text-sm font-semibold border border-emerald-300 rounded">{userPage} / {userTotalPages}</span>
+                    <button
+                      onClick={() => {
+                        setUserPage(userPage + 1);
+                        fetchUsers(userPage + 1, userSearchQuery, userRoleFilter);
+                      }}
+                      disabled={userPage >= userTotalPages}
+                      className="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:bg-gray-400 text-sm font-semibold"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Add/Edit User Modal */}

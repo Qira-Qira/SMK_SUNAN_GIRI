@@ -1,14 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth/session';
+import { prisma } from '@/lib/db/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getAuthUser();
+    const tokenUser = await getAuthUser();
     
-    if (!user) {
+    if (!tokenUser) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
+      );
+    }
+
+    // Fetch full user data from database
+    const user = await prisma.user.findUnique({
+      where: { id: tokenUser.id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        fullName: true,
+        role: true,
+        phone: true,
+        address: true,
+        photoUrl: true,
+        isActive: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
       );
     }
 

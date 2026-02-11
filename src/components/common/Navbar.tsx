@@ -106,7 +106,6 @@ export default function Navbar() {
             <>
               {user ? (
                 <div className="flex items-center gap-4">
-                  <span className={`text-sm ${scrolled ? 'text-emerald-900' : 'text-emerald-50'}`}>{user.fullName}</span>
                   {user.role.includes('ADMIN') && (
                     <Link href="/admin" className={`transition duration-200 ${linkHoverClass}`}>
                       Admin
@@ -195,9 +194,7 @@ export default function Navbar() {
                 <>
                   {user ? (
                     <div className="flex flex-col gap-2">
-                      <span className={`text-xs sm:text-sm font-semibold py-1 ${scrolled ? 'text-emerald-900' : 'text-emerald-50'}`}>
-                        {user.fullName}
-                      </span>
+
                       {user.role.includes('ADMIN') && (
                         <Link 
                           href="/admin" 

@@ -153,11 +153,13 @@ model TracerStudy {
   userId      String   @unique
   jurusanId   String
   tahunLulus  Int
-  status      String   // "Bekerja", "Kuliah", "Wirausaha"
+  status      String   // "Bekerja", "Kuliah", "Wirausaha", "Mencari Kerja"
   namaPerusahaan String?
   jabatan     String?
   gaji        Float?
-  relevansi   String?  // "Relevan", "Tidak Relevan"
+  relevansi   String?  // "Sangat Relevan", "Relevan", "Tidak Relevan"
+  namaInstitusi String? // Untuk status "Kuliah"
+  namaUsaha   String?   // Untuk status "Wirausaha"
   notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
