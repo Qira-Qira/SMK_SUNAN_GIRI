@@ -137,6 +137,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchStats();
     fetchCurrentUser();
+    if (activeTab === 'dashboard') fetchAllUsersForDashboard();
     if (activeTab === 'ppdb') fetchPPDBEntries();
     if (activeTab === 'bkk') {
       fetchJobPostings();
@@ -150,6 +151,20 @@ export default function AdminDashboard() {
     }
     if (activeTab === 'content') fetchContent();
   }, [activeTab, refreshTrigger, bkkSubTab, applicationFilterStatus, tracerStudyPage, tracerStudyFilterStatus, tracerStudySearchQuery, ppdbSearchQuery, ppdbJurusanFilter]);
+
+  // Debug: Log users data
+  useEffect(() => {
+    if (activeTab === 'dashboard' && users && users.length > 0) {
+      const siswaCount = users.filter((u: any) => u.role === 'SISWA_AKTIF').length;
+      const roleBreakdown: {[key: string]: number} = {};
+      users.forEach((u: any) => {
+        roleBreakdown[u.role] = (roleBreakdown[u.role] || 0) + 1;
+      });
+      console.log('Dashboard - Total Users:', users.length);
+      console.log('Dashboard - Siswa Aktif:', siswaCount);
+      console.log('Dashboard - Role Breakdown:', roleBreakdown);
+    }
+  }, [users, activeTab]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -266,6 +281,24 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error fetching BKK companies:', error);
+    }
+  };
+
+  // Fetch ALL users for dashboard (no pagination)
+  const fetchAllUsersForDashboard = async () => {
+    try {
+      const params = new URLSearchParams();
+      params.append('page', '1');
+      params.append('pageSize', '9999'); // Fetch semua
+      const res = await fetch(`/api/admin/users?${params.toString()}`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data.users || []);
+      }
+    } catch (error) {
+      console.error('Error fetching all users for dashboard:', error);
     }
   };
 
@@ -419,7 +452,7 @@ export default function AdminDashboard() {
         credentials: 'include',
       });
       if (res.ok) {
-        // If status is "LULUS" (Approved), update the user's role from CALON_SISWA to SISWA
+        // If status is "LULUS" (Approved), update the user's role from CALON_SISWA to SISWA_AKTIF
         if (status === 'LULUS') {
           const entry = ppdbEntries.find(e => e.id === id);
           if (entry && entry.userId) {
@@ -427,9 +460,9 @@ export default function AdminDashboard() {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',
-              body: JSON.stringify({ userId: entry.userId, role: 'SISWA' }),
+              body: JSON.stringify({ userId: entry.userId, role: 'SISWA_AKTIF' }),
             });
-            toast.success('PPDB Disetujui! Role pengguna diubah menjadi Siswa');
+            toast.success('PPDB Disetujui! Role pengguna diubah menjadi Siswa Aktif');
           }
         }
         setRefreshTrigger(prev => prev + 1);
@@ -1227,9 +1260,16 @@ export default function AdminDashboard() {
                 <h3 className="text-sm sm:text-lg font-bold mb-2">Total Pendaftar PPDB</h3>
                 <p className="text-2xl sm:text-3xl font-bold">{stats?.totalStats?.ppdbCount || 0}</p>
               </div>
-              <div className="bg-lime-500 text-white p-6 rounded shadow font-semibold">
-                <h3 className="text-lg font-bold mb-2">Lamaran Kerja</h3>
-                <p className="text-3xl font-bold">{stats?.totalStats?.applicationsCount || 0}</p>
+              <div className="bg-blue-600 text-white p-6 rounded shadow font-semibold">
+                <h3 className="text-lg font-bold mb-2">Siswa Aktif</h3>
+                {users && users.length > 0 ? (
+                  <>
+                    <p className="text-3xl font-bold">{users.filter((u: any) => u.role === 'SISWA_AKTIF').length || 0}</p>
+                    <p className="text-xs opacity-70 mt-1">(dari {users.length} pengguna)</p>
+                  </>
+                ) : (
+                  <p className="text-3xl font-bold">-</p>
+                )}
               </div>
               <div className="bg-amber-500 text-white p-6 rounded shadow">
                 <h3 className="text-lg font-bold mb-2">Alumni</h3>
