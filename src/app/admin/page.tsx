@@ -39,6 +39,8 @@ export default function AdminDashboard() {
   const [ppdbEntries, setPpdbEntries] = useState<any[]>([]);
   const [showPPDBDetailModal, setShowPPDBDetailModal] = useState(false);
   const [selectedPPDBEntry, setSelectedPPDBEntry] = useState<any>(null);
+  const [ppdbSearchQuery, setPpdbSearchQuery] = useState<string>('');
+  const [ppdbJurusanFilter, setPpdbJurusanFilter] = useState<string>('');
   const [jobPostings, setJobPostings] = useState<any[]>([]);
   const [jobApplications, setJobApplications] = useState<any[]>([]);
   const [bkkCompanies, setBkkCompanies] = useState<any[]>([]);
@@ -147,7 +149,7 @@ export default function AdminDashboard() {
       fetchTestimonials();
     }
     if (activeTab === 'content') fetchContent();
-  }, [activeTab, refreshTrigger, bkkSubTab, applicationFilterStatus, tracerStudyPage, tracerStudyFilterStatus, tracerStudySearchQuery]);
+  }, [activeTab, refreshTrigger, bkkSubTab, applicationFilterStatus, tracerStudyPage, tracerStudyFilterStatus, tracerStudySearchQuery, ppdbSearchQuery, ppdbJurusanFilter]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -417,10 +419,24 @@ export default function AdminDashboard() {
         credentials: 'include',
       });
       if (res.ok) {
+        // If status is "LULUS" (Approved), update the user's role from CALON_SISWA to SISWA
+        if (status === 'LULUS') {
+          const entry = ppdbEntries.find(e => e.id === id);
+          if (entry && entry.userId) {
+            await fetch('/api/admin/users', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ userId: entry.userId, role: 'SISWA' }),
+            });
+            toast.success('PPDB Disetujui! Role pengguna diubah menjadi Siswa');
+          }
+        }
         setRefreshTrigger(prev => prev + 1);
       }
     } catch (error) {
       console.error('Error updating PPDB status:', error);
+      toast.error('Gagal mengupdate status PPDB');
     }
   };
 
@@ -1271,6 +1287,47 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </div>
+
+            {/* Filter Section */}
+            <div className="bg-white p-4 rounded shadow mb-4 border border-emerald-200">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-2">Cari PPDB</label>
+                  <input
+                    type="text"
+                    placeholder="Nama, email, NISN..."
+                    value={ppdbSearchQuery}
+                    onChange={(e) => setPpdbSearchQuery(e.target.value)}
+                    className="w-full px-3 py-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-emerald-900 mb-2">Filter Jurusan</label>
+                  <select
+                    value={ppdbJurusanFilter}
+                    onChange={(e) => setPpdbJurusanFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-900"
+                  >
+                    <option value="">Semua Jurusan</option>
+                    {jurusan.map((j: any) => (
+                      <option key={j.id} value={j.id}>{j.nama}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={() => {
+                      setPpdbSearchQuery('');
+                      setPpdbJurusanFilter('');
+                    }}
+                    className="w-full px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-semibold"
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white rounded shadow overflow-hidden">
               <table className="w-full text-left text-sm">
                 <thead className="bg-emerald-100 border-b text-emerald-900 text-xs sm:text-sm">
@@ -1284,43 +1341,63 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {ppdbEntries.length > 0 ? (
-                    ppdbEntries.map((entry: any) => (
-                      <tr key={entry.id} className="border-t hover:bg-emerald-50 text-xs sm:text-sm">
-                        <td className="px-2 sm:px-4 py-2 sm:py-3">{entry.registrationNumber}</td>
-                        <td className="px-2 sm:px-4 py-2 sm:py-3">{entry.fullName}</td>
-                        <td className="px-2 sm:px-4 py-2 sm:py-3 hidden md:table-cell">{entry.email}</td>
-                        <td className="px-2 sm:px-4 py-2 sm:py-3">{entry.majorChoice1}</td>
-                        <td className="px-2 sm:px-4 py-2 sm:py-3 hidden lg:table-cell">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${entry.status === 'LULUS' ? 'bg-green-100 text-green-800' :
-                            entry.status === 'DITOLAK' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
-                            {entry.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 space-x-2 flex items-center gap-2">
-                          
-                          <select
-                            onChange={(e) => updatePPDBStatus(entry.id, e.target.value)}
-                            className="px-2 py-1 text-xs border rounded min-w-max"
-                          >
-                            <option value="">Update Status</option>
-                            <option value="PENDING_VERIFIKASI">Pending</option>
-                            <option value="VERIFIKASI_LANJUT">Verifikasi Lanjut</option>
-                            <option value="LULUS">Lulus</option>
-                            <option value="CADANGAN">Cadangan</option>
-                            <option value="DITOLAK">Ditolak</option>
-                          </select>
-                          <button
-                            onClick={() => { setSelectedPPDBEntry(entry); setShowPPDBDetailModal(true); }}
-                            className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
-                          >
-                            Lihat Detail
-                          </button>
-                        </td>
-                      </tr>
-                    ))
+                  {ppdbEntries
+                    .filter((entry: any) => {
+                      const matchesSearch = ppdbSearchQuery === '' || 
+                        entry.fullName?.toLowerCase().includes(ppdbSearchQuery.toLowerCase()) ||
+                        entry.email?.toLowerCase().includes(ppdbSearchQuery.toLowerCase()) ||
+                        entry.NISN?.includes(ppdbSearchQuery);
+                      const matchesJurusan = ppdbJurusanFilter === '' || 
+                        entry.majorChoice1 === ppdbJurusanFilter;
+                      return matchesSearch && matchesJurusan;
+                    })
+                    .length > 0 ? (
+                    ppdbEntries
+                      .filter((entry: any) => {
+                        const matchesSearch = ppdbSearchQuery === '' || 
+                          entry.fullName?.toLowerCase().includes(ppdbSearchQuery.toLowerCase()) ||
+                          entry.email?.toLowerCase().includes(ppdbSearchQuery.toLowerCase()) ||
+                          entry.NISN?.includes(ppdbSearchQuery);
+                        const matchesJurusan = ppdbJurusanFilter === '' || 
+                          entry.majorChoice1 === ppdbJurusanFilter;
+                        return matchesSearch && matchesJurusan;
+                      })
+                      .map((entry: any) => (
+                        <tr key={entry.id} className="border-t hover:bg-emerald-50 text-xs sm:text-sm">
+                          <td className="px-2 sm:px-4 py-2 sm:py-3">{entry.registrationNumber}</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3">{entry.fullName}</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 hidden md:table-cell">{entry.email}</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3">{entry.majorChoice1}</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 hidden lg:table-cell">
+                            <span className={`px-2 py-1 rounded text-xs font-semibold ${entry.status === 'LULUS' ? 'bg-green-100 text-green-800' :
+                              entry.status === 'DITOLAK' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                              {entry.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 space-x-2 flex items-center gap-2">
+                            
+                            <select
+                              onChange={(e) => updatePPDBStatus(entry.id, e.target.value)}
+                              className="px-2 py-1 text-xs border rounded min-w-max"
+                            >
+                              <option value="">Update Status</option>
+                              <option value="PENDING_VERIFIKASI">Pending</option>
+                              <option value="VERIFIKASI_LANJUT">Verifikasi Lanjut</option>
+                              <option value="LULUS">Lulus ✓</option>
+                              <option value="CADANGAN">Cadangan</option>
+                              <option value="DITOLAK">Ditolak</option>
+                            </select>
+                            <button
+                              onClick={() => { setSelectedPPDBEntry(entry); setShowPPDBDetailModal(true); }}
+                              className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
+                            >
+                              Lihat Detail
+                            </button>
+                          </td>
+                        </tr>
+                      ))
                   ) : (
                     <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-700">Tidak ada data</td></tr>
                   )}
