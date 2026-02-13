@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { getAuthUser } from '@/lib/auth/session';
+import { generateRegistrationNumber, parseRegistrationNumber } from '@/lib/ppdb-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,8 +62,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create PPDB entry
+    const registrationNo = await generateRegistrationNumber();
+    const parsed = parseRegistrationNumber(registrationNo);
+    
     const ppdbEntry = await prisma.pPDBEntry.create({
       data: {
+        registrationNo,
+        registrationYear: parsed!.year,
+        registrationSeq: parsed!.seq,
         userId: user.id,
         nisn,
         nik,
@@ -125,6 +132,8 @@ export async function GET(request: NextRequest) {
           },
         },
         jurusan1: true,
+        jurusan2: true,
+        jurusan3: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -137,13 +146,13 @@ export async function GET(request: NextRequest) {
       registrationNumber: entry.registrationNo,
       email: entry.user?.email || 'N/A',
       fullName: entry.user?.fullName || 'N/A',
-      majorChoice1: entry.jurusan1?.nama || 'N/A',
-      majorChoice2: null,
-      majorChoice3: null,
-      status: entry.status,
-      createdAt: entry.createdAt,
       nisn: entry.nisn,
       nik: entry.nik,
+      majorChoice1: entry.jurusan1?.nama || 'N/A',
+      majorChoice2: entry.jurusan2?.nama || '-',
+      majorChoice3: entry.jurusan3?.nama || '-',
+      status: entry.status,
+      createdAt: entry.createdAt,
       birthDate: entry.birthDate,
       birthPlace: entry.birthPlace,
       parentName: entry.parentName,
@@ -151,6 +160,12 @@ export async function GET(request: NextRequest) {
       parentAddress: entry.parentAddress,
       previousSchool: entry.previousSchool,
       averageScore: entry.averageScore,
+      kkFile: entry.kkFile,
+      aktaFile: entry.aktaFile,
+      raportFile: entry.raportFile,
+      ijazahFile: entry.ijazahFile,
+      fotoCalonFile: entry.fotoCalonFile,
+      userId: entry.userId,
     }));
 
     return NextResponse.json(

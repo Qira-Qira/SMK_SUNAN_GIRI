@@ -161,8 +161,9 @@ export default function PPDBPage() {
             const fileFormData = new FormData();
             fileFormData.append('file', fileData.file);
             
-            const uploadRes = await fetch('/api/public/uploads', {
+            const uploadRes = await fetch('/api/ppdb/upload', {
               method: 'POST',
+              credentials: 'include',
               body: fileFormData,
             });
 

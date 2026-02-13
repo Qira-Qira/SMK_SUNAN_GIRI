@@ -453,10 +453,10 @@ export default function AdminDashboard() {
         credentials: 'include',
       });
       if (res.ok) {
-        // If status is "LULUS" (Approved), update the user's role from CALON_SISWA to SISWA_AKTIF
-        if (status === 'LULUS') {
-          const entry = ppdbEntries.find(e => e.id === id);
-          if (entry && entry.userId) {
+        const entry = ppdbEntries.find(e => e.id === id);
+        if (entry && entry.userId) {
+          // If status is "LULUS" (Approved), update the user's role from CALON_SISWA to SISWA_AKTIF
+          if (status === 'LULUS') {
             await fetch('/api/admin/users', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
@@ -464,6 +464,18 @@ export default function AdminDashboard() {
               body: JSON.stringify({ userId: entry.userId, role: 'SISWA_AKTIF' }),
             });
             toast.success('PPDB Disetujui! Role pengguna diubah menjadi Siswa Aktif');
+          }
+          // If status changes from "LULUS" to any other status, revert role back to CALON_SISWA
+          else if (entry.status === 'LULUS' && status !== 'LULUS') {
+            await fetch('/api/admin/users', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ userId: entry.userId, role: 'CALON_SISWA' }),
+            });
+            toast.success(`Status diubah menjadi ${status}. Role pengguna di-revert menjadi Calon Siswa`);
+          } else {
+            toast.success(`Status diubah menjadi ${status}`);
           }
         }
         setRefreshTrigger(prev => prev + 1);
@@ -1552,11 +1564,11 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-blue-700">NISN</p>
-                      <p className="text-blue-900">{selectedPPDBEntry.NISN || '-'}</p>
+                      <p className="text-blue-900">{selectedPPDBEntry.nisn || '-'}</p>
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-blue-700">NIK</p>
-                      <p className="text-blue-900">{selectedPPDBEntry.NIK || '-'}</p>
+                      <p className="text-blue-900">{selectedPPDBEntry.nik || '-'}</p>
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-blue-700">Tanggal Lahir</p>
@@ -1607,6 +1619,10 @@ export default function AdminDashboard() {
                     <div>
                       <p className="text-sm font-semibold text-orange-700">Pilihan Jurusan 2</p>
                       <p className="text-orange-900">{selectedPPDBEntry.majorChoice2 || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-orange-700">Pilihan Jurusan 3</p>
+                      <p className="text-orange-900">{selectedPPDBEntry.majorChoice3 || '-'}</p>
                     </div>
                   </div>
                 </div>
