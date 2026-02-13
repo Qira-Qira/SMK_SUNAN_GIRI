@@ -1,6 +1,7 @@
 'use client';
 
 import Navbar from '@/components/common/Navbar';
+import StatisticChart from '@/components/common/StatisticChart';
 import { useEffect, useState } from 'react';
 import { toast } from '@/lib/toast';
 import { exportToCSV, exportPPDBToCSV, exportJobPostingsToCSV, exportStatisticsReport } from '@/lib/utils/export';
@@ -1282,6 +1283,78 @@ export default function AdminDashboard() {
               <div className="bg-emerald-500 text-white p-6 rounded shadow">
                 <h3 className="text-lg font-bold mb-2">Total Pengguna</h3>
                 <p className="text-3xl font-bold">{stats?.totalStats?.usersCount || 0}</p>
+              </div>
+            </div>
+
+            {/* Yearly Statistics Charts */}
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold mb-6 text-emerald-900">📊 Statistik Tahunan</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* PPDB Chart */}
+                {stats?.yearlyStats?.ppdbYearly && (
+                  <StatisticChart
+                    title="Pendaftar PPDB (Per Tahun)"
+                    data={stats.yearlyStats.ppdbYearly}
+                    borderColor="rgb(34, 197, 94)"
+                    backgroundColor="rgba(34, 197, 94, 0.1)"
+                    chartType="bar"
+                  />
+                )}
+
+                {/* Siswa Aktif Chart */}
+                {stats?.yearlyStats?.siswaAktifYearly && (
+                  <StatisticChart
+                    title="Siswa Aktif (Per Tahun)"
+                    data={stats.yearlyStats.siswaAktifYearly}
+                    borderColor="rgb(59, 130, 246)"
+                    backgroundColor="rgba(59, 130, 246, 0.1)"
+                    chartType="line"
+                  />
+                )}
+
+                {/* Alumni Chart */}
+                {stats?.yearlyStats?.alumniYearly && (
+                  <StatisticChart
+                    title="Alumni / Tracer Study (Per Tahun)"
+                    data={stats.yearlyStats.alumniYearly}
+                    borderColor="rgb(245, 158, 11)"
+                    backgroundColor="rgba(245, 158, 11, 0.1)"
+                    chartType="bar"
+                  />
+                )}
+
+                {/* Lowongan Kerja Chart */}
+                {stats?.yearlyStats?.jobPostingsYearly && (
+                  <StatisticChart
+                    title="Lowongan Kerja (Per Tahun)"
+                    data={stats.yearlyStats.jobPostingsYearly}
+                    borderColor="rgb(168, 85, 247)"
+                    backgroundColor="rgba(168, 85, 247, 0.1)"
+                    chartType="line"
+                  />
+                )}
+
+                {/* Total Users Chart */}
+                {stats?.yearlyStats?.usersYearly && (
+                  <StatisticChart
+                    title="Total Pengguna (Per Tahun)"
+                    data={stats.yearlyStats.usersYearly}
+                    borderColor="rgb(249, 115, 22)"
+                    backgroundColor="rgba(249, 115, 22, 0.1)"
+                    chartType="bar"
+                  />
+                )}
+
+                {/* Job Applications Chart */}
+                {stats?.yearlyStats?.jobApplicationsYearly && (
+                  <StatisticChart
+                    title="Lamaran Kerja (Per Tahun)"
+                    data={stats.yearlyStats.jobApplicationsYearly}
+                    borderColor="rgb(236, 72, 153)"
+                    backgroundColor="rgba(236, 72, 153, 0.1)"
+                    chartType="line"
+                  />
+                )}
               </div>
             </div>
 

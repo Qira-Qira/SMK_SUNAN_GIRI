@@ -2,6 +2,108 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { getAuthUser } from '@/lib/auth/session';
 
+// Helper function to get year-wise data
+const getYearlyStats = async () => {
+  const currentYear = new Date().getFullYear();
+  const startYear = currentYear - 4; // Get last 5 years
+  const years = Array.from({ length: 5 }, (_, i) => startYear + i);
+
+  const ppdbYearly = await Promise.all(
+    years.map(async (year) => ({
+      year,
+      count: await prisma.pPDBEntry.count({
+        where: {
+          createdAt: {
+            gte: new Date(`${year}-01-01`),
+            lt: new Date(`${year + 1}-01-01`),
+          },
+        },
+      }),
+    }))
+  );
+
+  const usersYearly = await Promise.all(
+    years.map(async (year) => ({
+      year,
+      count: await prisma.user.count({
+        where: {
+          createdAt: {
+            gte: new Date(`${year}-01-01`),
+            lt: new Date(`${year + 1}-01-01`),
+          },
+        },
+      }),
+    }))
+  );
+
+  const jobPostingsYearly = await Promise.all(
+    years.map(async (year) => ({
+      year,
+      count: await prisma.jobPosting.count({
+        where: {
+          isActive: true,
+          createdAt: {
+            gte: new Date(`${year}-01-01`),
+            lt: new Date(`${year + 1}-01-01`),
+          },
+        },
+      }),
+    }))
+  );
+
+  const jobApplicationsYearly = await Promise.all(
+    years.map(async (year) => ({
+      year,
+      count: await prisma.jobApplication.count({
+        where: {
+          appliedAt: {
+            gte: new Date(`${year}-01-01`),
+            lt: new Date(`${year + 1}-01-01`),
+          },
+        },
+      }),
+    }))
+  );
+
+  const alumniYearly = await Promise.all(
+    years.map(async (year) => ({
+      year,
+      count: await prisma.tracerStudy.count({
+        where: {
+          createdAt: {
+            gte: new Date(`${year}-01-01`),
+            lt: new Date(`${year + 1}-01-01`),
+          },
+        },
+      }),
+    }))
+  );
+
+  const siswaAktifYearly = await Promise.all(
+    years.map(async (year) => ({
+      year,
+      count: await prisma.user.count({
+        where: {
+          role: 'SISWA_AKTIF',
+          createdAt: {
+            gte: new Date(`${year}-01-01`),
+            lt: new Date(`${year + 1}-01-01`),
+          },
+        },
+      }),
+    }))
+  );
+
+  return {
+    ppdbYearly,
+    usersYearly,
+    jobPostingsYearly,
+    jobApplicationsYearly,
+    alumniYearly,
+    siswaAktifYearly,
+  };
+};
+
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser();
@@ -55,6 +157,9 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // Get yearly statistics
+    const yearlyStats = await getYearlyStats();
+
     return NextResponse.json(
       {
         totalStats: {
@@ -66,6 +171,7 @@ export async function GET(request: NextRequest) {
         },
         ppdbDistribution: ppdbStatuses,
         alumniStats,
+        yearlyStats,
       },
       { status: 200 }
     );
