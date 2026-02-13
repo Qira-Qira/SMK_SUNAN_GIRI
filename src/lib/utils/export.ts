@@ -192,3 +192,69 @@ export const openPrintView = (html: string, title: string) => {
     printWindow.document.close();
   }
 };
+
+/**
+ * Export BKK Analytics Report
+ */
+export const exportBKKAnalyticsReport = (jobPostings: any[], jobApplications: any[], bkkCompanies: any[]) => {
+  const date = new Date().toLocaleDateString('id-ID');
+  const topJobs = jobPostings
+    .map((job: any) => ({
+      ...job,
+      applicationCount: jobApplications.filter((a: any) => a.jobPostingId === job.id).length
+    }))
+    .sort((a: any, b: any) => b.applicationCount - a.applicationCount)
+    .slice(0, 5);
+
+  const statusDistribution = ['Pending', 'Ditinjau', 'Shortlist', 'Interview', 'Accepted', 'Rejected']
+    .map(status => ({
+      status,
+      count: jobApplications.filter((a: any) => a.status === status).length
+    }));
+
+  const reportData = [
+    `Laporan Analytics BKK - ${date}`,
+    '=====================================',
+    '',
+    'RINGKASAN',
+    `Total Lowongan Kerja: ${jobPostings.length}`,
+    `Total Lamaran: ${jobApplications.length}`,
+    `Perusahaan Mitra: ${bkkCompanies.length}`,
+    '',
+    'TOP 5 LOWONGAN PALING BANYAK LAMARAN',
+    ...topJobs.map((job: any, idx: number) => 
+      `${idx + 1}. ${job.posisi} (${job.perusahaan?.fullName || 'N/A'}) - ${job.applicationCount} aplikasi`
+    ),
+    '',
+    'DISTRIBUSI STATUS LAMARAN',
+    ...statusDistribution.map((item: any) => 
+      `${item.status}: ${item.count} (${jobApplications.length > 0 ? ((item.count / jobApplications.length) * 100).toFixed(1) : 0}%)`
+    ),
+    '',
+    'KINERJA PERUSAHAAN MITRA',
+    ...bkkCompanies
+      .map((c: any) => ({
+        ...c,
+        jobCount: jobPostings.filter((j: any) => j.perusahaanId === c.id).length,
+        appCount: jobApplications.filter((a: any) => a.jobPosting?.perusahaanId === c.id).length
+      }))
+      .sort((a: any, b: any) => b.appCount - a.appCount)
+      .slice(0, 10)
+      .map((company: any) => `${company.fullName} - ${company.jobCount} lowongan, ${company.appCount} aplikasi`),
+  ];
+
+  const report = generateReport('LAPORAN ANALYTICS BKK - SMK SUNAN GIRI', reportData);
+  
+  // Download as text file
+  const blob = new Blob([report], { type: 'text/plain;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  
+  link.setAttribute('href', url);
+  link.setAttribute('download', `BKK_Analytics_${new Date().toISOString().split('T')[0]}.txt`);
+  link.style.visibility = 'hidden';
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};

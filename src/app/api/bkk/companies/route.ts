@@ -14,13 +14,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Get all companies that have job postings
+    // Get all companies (including those without job postings)
     const companies = await prisma.user.findMany({
       where: {
-        role: 'PERUSAHAAN',
-        jobPostings: {
-          some: {}
-        }
+        role: 'PERUSAHAAN'
       },
       select: {
         id: true,

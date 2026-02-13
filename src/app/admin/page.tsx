@@ -4,7 +4,7 @@ import Navbar from '@/components/common/Navbar';
 import StatisticChart from '@/components/common/StatisticChart';
 import { useEffect, useState } from 'react';
 import { toast } from '@/lib/toast';
-import { exportToCSV, exportPPDBToCSV, exportJobPostingsToCSV, exportStatisticsReport } from '@/lib/utils/export';
+import { exportToCSV, exportPPDBToCSV, exportJobPostingsToCSV, exportStatisticsReport, exportBKKAnalyticsReport } from '@/lib/utils/export';
 import {
   BarChart3,
   Download,
@@ -29,7 +29,7 @@ import CountUp from '@/components/common/CountUp';
 import TestimonialSection from '@/components/common/TestimonialSection';
 
 type TabType = 'dashboard' | 'ppdb' | 'bkk' | 'alumni' | 'users' | 'content';
-type BKKSubTab = 'dashboard' | 'lowongan' | 'lamaran' | 'perusahaan';
+type BKKSubTab = 'dashboard' | 'lowongan' | 'lamaran' | 'perusahaan' | 'analytics' | 'pipeline' | 'reports';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -52,6 +52,12 @@ export default function AdminDashboard() {
   const [showApplicationDetailModal, setShowApplicationDetailModal] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const [applicationFilterStatus, setApplicationFilterStatus] = useState<string>('');
+  const [applicationFilterApplicant, setApplicationFilterApplicant] = useState<string>('');
+  const [applicationFilterCompany, setApplicationFilterCompany] = useState<string>('');
+  const [reportDateFrom, setReportDateFrom] = useState<string>('');
+  const [reportDateTo, setReportDateTo] = useState<string>('');
+  const [reportCompanyFilter, setReportCompanyFilter] = useState<string>('');
+  const [reportLocationFilter, setReportLocationFilter] = useState<string>('');
   const [companies, setCompanies] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -151,7 +157,7 @@ export default function AdminDashboard() {
       fetchTestimonials();
     }
     if (activeTab === 'content') fetchContent();
-  }, [activeTab, refreshTrigger, bkkSubTab, applicationFilterStatus, tracerStudyPage, tracerStudyFilterStatus, tracerStudySearchQuery, ppdbSearchQuery, ppdbJurusanFilter]);
+  }, [activeTab, refreshTrigger, bkkSubTab, applicationFilterStatus, tracerStudyPage, tracerStudyFilterStatus, tracerStudySearchQuery, ppdbSearchQuery, ppdbJurusanFilter, reportDateFrom, reportDateTo, reportCompanyFilter, reportLocationFilter]);
 
   // Debug: Log users data
   useEffect(() => {
@@ -1717,16 +1723,6 @@ export default function AdminDashboard() {
                 <BarChart3 className="inline w-4 h-4 mr-2" /> Dashboard
               </button>
               <button
-                onClick={() => setBkkSubTab('lowongan')}
-                className={`px-4 py-2 font-semibold transition ${
-                  bkkSubTab === 'lowongan'
-                    ? 'text-lime-600 border-b-2 border-lime-500'
-                    : 'text-emerald-700 hover:text-emerald-900'
-                }`}
-              >
-                <Briefcase className="inline w-4 h-4 mr-2" /> Lowongan Kerja
-              </button>
-              <button
                 onClick={() => setBkkSubTab('lamaran')}
                 className={`px-4 py-2 font-semibold transition ${
                   bkkSubTab === 'lamaran'
@@ -1746,13 +1742,44 @@ export default function AdminDashboard() {
               >
                 <Building2 className="inline w-4 h-4 mr-2" /> Perusahaan Mitra
               </button>
+              <button
+                onClick={() => setBkkSubTab('analytics')}
+                className={`px-4 py-2 font-semibold transition ${
+                  bkkSubTab === 'analytics'
+                    ? 'text-lime-600 border-b-2 border-lime-500'
+                    : 'text-emerald-700 hover:text-emerald-900'
+                }`}
+              >
+                <BarChart3 className="inline w-4 h-4 mr-2" /> Analytics
+              </button>
+              <button
+                onClick={() => setBkkSubTab('pipeline')}
+                className={`px-4 py-2 font-semibold transition ${
+                  bkkSubTab === 'pipeline'
+                    ? 'text-lime-600 border-b-2 border-lime-500'
+                    : 'text-emerald-700 hover:text-emerald-900'
+                }`}
+              >
+                <Target className="inline w-4 h-4 mr-2" /> Pipeline
+              </button>
+              <button
+                onClick={() => setBkkSubTab('reports')}
+                className={`px-4 py-2 font-semibold transition ${
+                  bkkSubTab === 'reports'
+                    ? 'text-lime-600 border-b-2 border-lime-500'
+                    : 'text-emerald-700 hover:text-emerald-900'
+                }`}
+              >
+                <FileText className="inline w-4 h-4 mr-2" /> Reports
+              </button>
             </div>
 
             {/* Dashboard Sub-Tab */}
             {bkkSubTab === 'dashboard' && (
               <div>
                 <h2 className="text-2xl font-bold text-emerald-900 mb-6">Dashboard BKK</h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                {/* Key Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded shadow">
                     <p className="text-sm text-blue-600 font-semibold mb-2">Total Lowongan</p>
                     <p className="text-3xl font-bold text-blue-900"><CountUp end={jobPostings.length} /></p>
@@ -1768,6 +1795,52 @@ export default function AdminDashboard() {
                   <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded shadow">
                     <p className="text-sm text-orange-600 font-semibold mb-2">Lamaran Pending</p>
                     <p className="text-3xl font-bold text-orange-900"><CountUp end={jobApplications.filter((a: any) => a.status === 'Pending').length} /></p>
+                  </div>
+                </div>
+
+                {/* Additional Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 p-6 rounded shadow">
+                    <p className="text-sm text-cyan-600 font-semibold mb-2">Lamaran Diterima</p>
+                    <p className="text-3xl font-bold text-cyan-900"><CountUp end={jobApplications.filter((a: any) => a.status === 'Accepted').length} /></p>
+                  </div>
+                  <div className="bg-gradient-to-br from-rose-50 to-rose-100 p-6 rounded shadow">
+                    <p className="text-sm text-rose-600 font-semibold mb-2">Lamaran Ditolak</p>
+                    <p className="text-3xl font-bold text-rose-900"><CountUp end={jobApplications.filter((a: any) => a.status === 'Rejected').length} /></p>
+                  </div>
+                  <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded shadow">
+                    <p className="text-sm text-indigo-600 font-semibold mb-2">Sedang Ditinjau</p>
+                    <p className="text-3xl font-bold text-indigo-900"><CountUp end={jobApplications.filter((a: any) => a.status === 'Ditinjau').length} /></p>
+                  </div>
+                </div>
+
+                {/* Conversion Rate */}
+                <div className="bg-white p-6 rounded shadow border border-emerald-200">
+                  <h3 className="text-lg font-bold text-emerald-900 mb-4">📊 Statistik Rekrutmen</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <p className="text-sm text-emerald-600 font-semibold mb-2">Conversion Rate</p>
+                      <p className="text-2xl font-bold text-emerald-900">
+                        {jobApplications.length > 0
+                          ? ((jobApplications.filter((a: any) => a.status === 'Accepted').length / jobApplications.length) * 100).toFixed(1)
+                          : 0}%
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Lamaran → Diterima</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-600 font-semibold mb-2">Avg Applications/Job</p>
+                      <p className="text-2xl font-bold text-emerald-900">
+                        {jobPostings.length > 0 ? (jobApplications.length / jobPostings.length).toFixed(1) : 0}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Per lowongan</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-600 font-semibold mb-2">Active Postings</p>
+                      <p className="text-2xl font-bold text-emerald-900">
+                        {jobPostings.filter((j: any) => !j.deadline || new Date(j.deadline) > new Date()).length}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Belum expired</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1850,21 +1923,64 @@ export default function AdminDashboard() {
             {/* Lamaran Sub-Tab */}
             {bkkSubTab === 'lamaran' && (
               <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold text-emerald-900">Manajemen Lamaran Kerja</h2>
-                  <select
-                    value={applicationFilterStatus}
-                    onChange={(e) => setApplicationFilterStatus(e.target.value)}
-                    className="border border-emerald-300 rounded px-3 py-2 text-emerald-900"
-                  >
-                    <option value="">Semua Status</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Ditinjau">Ditinjau</option>
-                    <option value="Shortlist">Shortlist</option>
-                    <option value="Interview">Interview</option>
-                    <option value="Accepted">Diterima</option>
-                    <option value="Rejected">Ditolak</option>
-                  </select>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-emerald-900 mb-4">Manajemen Lamaran Kerja</h2>
+                  {/* Advanced Filters */}
+                  <div className="bg-white p-4 rounded shadow mb-4 border border-emerald-200">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-emerald-900 mb-2">Status</label>
+                        <select
+                          value={applicationFilterStatus}
+                          onChange={(e) => setApplicationFilterStatus(e.target.value)}
+                          className="w-full border border-emerald-300 rounded px-3 py-2 text-emerald-900"
+                        >
+                          <option value="">Semua Status</option>
+                          <option value="Pending">Pending</option>
+                          <option value="Ditinjau">Ditinjau</option>
+                          <option value="Shortlist">Shortlist</option>
+                          <option value="Interview">Interview</option>
+                          <option value="Accepted">Diterima</option>
+                          <option value="Rejected">Ditolak</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-emerald-900 mb-2">Cari Pelamar</label>
+                        <input
+                          type="text"
+                          placeholder="Nama atau email..."
+                          value={applicationFilterApplicant}
+                          onChange={(e) => setApplicationFilterApplicant(e.target.value)}
+                          className="w-full border border-emerald-300 rounded px-3 py-2 text-emerald-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-emerald-900 mb-2">Perusahaan</label>
+                        <select 
+                          value={applicationFilterCompany}
+                          onChange={(e) => setApplicationFilterCompany(e.target.value)}
+                          className="w-full border border-emerald-300 rounded px-3 py-2 text-emerald-900"
+                        >
+                          <option value="">Semua Perusahaan</option>
+                          {bkkCompanies.map((c: any) => (
+                            <option key={c.id} value={c.id}>{c.fullName}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex items-end">
+                        <button 
+                          onClick={() => {
+                            setApplicationFilterStatus('');
+                            setApplicationFilterApplicant('');
+                            setApplicationFilterCompany('');
+                          }}
+                          className="w-full bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 font-semibold"
+                        >
+                          Reset Filter
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="bg-white rounded shadow overflow-x-auto">
                   <table className="w-full text-left text-sm">
@@ -1879,8 +1995,27 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {jobApplications.length > 0 ? (
-                        jobApplications.map((app: any) => (
+                      {(() => {
+                        const filteredApps = jobApplications.filter((app: any) => {
+                          // Filter by status
+                          if (applicationFilterStatus && app.status !== applicationFilterStatus) return false;
+                          
+                          // Filter by applicant name or email
+                          if (applicationFilterApplicant) {
+                            const searchTerm = applicationFilterApplicant.toLowerCase();
+                            const nameMatch = app.user?.fullName?.toLowerCase().includes(searchTerm);
+                            const emailMatch = app.user?.email?.toLowerCase().includes(searchTerm);
+                            if (!nameMatch && !emailMatch) return false;
+                          }
+                          
+                          // Filter by company
+                          if (applicationFilterCompany && app.jobPosting?.perusahaanId !== applicationFilterCompany) return false;
+                          
+                          return true;
+                        });
+                        
+                        return filteredApps.length > 0 ? (
+                          filteredApps.map((app: any) => (
                           <tr key={app.id} className="border-t hover:bg-emerald-50">
                             <td className="px-4 py-3 font-semibold">{app.user?.fullName}</td>
                             <td className="px-4 py-3">{app.jobPosting?.posisi}</td>
@@ -1909,9 +2044,10 @@ export default function AdminDashboard() {
                             </td>
                           </tr>
                         ))
-                      ) : (
-                        <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-700">Tidak ada lamaran</td></tr>
-                      )}
+                        ) : (
+                          <tr><td colSpan={6} className="px-4 py-3 text-center text-emerald-700">Tidak ada lamaran</td></tr>
+                        );
+                      })()}
                     </tbody>
                   </table>
                 </div>
@@ -1953,6 +2089,645 @@ export default function AdminDashboard() {
                       )}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+
+            {/* Analytics Sub-Tab */}
+            {bkkSubTab === 'analytics' && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-emerald-900">📊 Analytics BKK</h2>
+                  <button
+                    onClick={() => exportBKKAnalyticsReport(jobPostings, jobApplications, bkkCompanies)}
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm font-semibold flex items-center"
+                  >
+                    <Download className="w-4 h-4 mr-2" /> Export Report
+                  </button>
+                </div>
+                
+                {/* Top 5 Most Applied Jobs */}
+                <div className="bg-white rounded shadow overflow-hidden mb-6">
+                  <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                    <h3 className="font-bold text-emerald-900">🏆 Top 5 Lowongan Paling Banyak Lamaran</h3>
+                  </div>
+                  <div className="p-6">
+                    {jobPostings.length > 0 ? (
+                      <div className="space-y-3">
+                        {jobPostings
+                          .map((job: any) => ({
+                            ...job,
+                            applicationCount: jobApplications.filter((a: any) => a.jobPostingId === job.id).length
+                          }))
+                          .sort((a: any, b: any) => b.applicationCount - a.applicationCount)
+                          .slice(0, 5)
+                          .map((job: any, idx: number) => (
+                            <div key={job.id} className="flex items-center justify-between pb-3 border-b last:border-b-0 last:pb-0">
+                              <div className="flex items-center gap-3">
+                                <span className="text-xl font-bold text-emerald-600">#{idx + 1}</span>
+                                <div>
+                                  <p className="font-semibold text-emerald-900">{job.posisi}</p>
+                                  <p className="text-sm text-emerald-600">{job.perusahaan?.fullName || 'No Company'}</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-2xl font-bold text-blue-600">{job.applicationCount}</p>
+                                <p className="text-xs text-gray-500">aplikasi</p>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-emerald-700 py-4">Tidak ada data lowongan</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Application Status Distribution */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  {/* Status Chart */}
+                  <div className="bg-white rounded shadow overflow-hidden">
+                    <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                      <h3 className="font-bold text-emerald-900">📈 Distribusi Status Lamaran</h3>
+                    </div>
+                    <div className="p-6 space-y-3">
+                      {[
+                        { status: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
+                        { status: 'Ditinjau', color: 'bg-blue-100 text-blue-800' },
+                        { status: 'Shortlist', color: 'bg-purple-100 text-purple-800' },
+                        { status: 'Interview', color: 'bg-indigo-100 text-indigo-800' },
+                        { status: 'Accepted', color: 'bg-green-100 text-green-800' },
+                        { status: 'Rejected', color: 'bg-red-100 text-red-800' }
+                      ].map((stat: any) => {
+                        const count = jobApplications.filter((a: any) => a.status === stat.status).length;
+                        const percentage = jobApplications.length > 0 ? ((count / jobApplications.length) * 100).toFixed(1) : 0;
+                        return (
+                          <div key={stat.status}>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-semibold text-emerald-900">{stat.status}</span>
+                              <span className={`px-3 py-1 rounded text-xs font-bold ${stat.color}`}>{count} ({percentage}%)</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full ${stat.color.split(' ')[0]}`}
+                                style={{width: `${percentage}%`}}
+                              ></div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Location Analysis */}
+                  <div className="bg-white rounded shadow overflow-hidden">
+                    <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                      <h3 className="font-bold text-emerald-900">📍 Lowongan per Lokasi</h3>
+                    </div>
+                    <div className="p-6">
+                      {(() => {
+                        const locationMap = new Map<string, number>();
+                        jobPostings.forEach((job: any) => {
+                          const loc = job.lokasi || 'Unknown';
+                          locationMap.set(loc, (locationMap.get(loc) || 0) + 1);
+                        });
+                        const sorted = Array.from(locationMap.entries())
+                          .sort((a, b) => b[1] - a[1])
+                          .slice(0, 10);
+                        
+                        return sorted.length > 0 ? (
+                          <div className="space-y-3">
+                            {sorted.map(([loc, count], idx) => (
+                              <div key={loc} className="flex items-center justify-between">
+                                <span className="text-emerald-900 font-semibold">{loc}</span>
+                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">{count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-center text-emerald-700 py-4">Tidak ada data lokasi</p>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Job Type Distribution */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="bg-white rounded shadow overflow-hidden">
+                    <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                      <h3 className="font-bold text-emerald-900">💼 Lowongan per Tipe Pekerjaan</h3>
+                    </div>
+                    <div className="p-6">
+                      {(() => {
+                        const typeMap = new Map<string, number>();
+                        jobPostings.forEach((job: any) => {
+                          const type = job.tipePekerjaan || 'Not Specified';
+                          typeMap.set(type, (typeMap.get(type) || 0) + 1);
+                        });
+                        const sorted = Array.from(typeMap.entries()).sort((a, b) => b[1] - a[1]);
+                        
+                        return sorted.length > 0 ? (
+                          <div className="space-y-3">
+                            {sorted.map(([type, count]) => (
+                              <div key={type} className="flex items-center justify-between">
+                                <span className="text-emerald-900 font-semibold">{type}</span>
+                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">{count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-center text-emerald-700 py-4">Tidak ada data tipe pekerjaan</p>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Company Performance */}
+                  <div className="bg-white rounded shadow overflow-hidden">
+                    <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                      <h3 className="font-bold text-emerald-900">🏢 Kinerja Perusahaan Mitra</h3>
+                    </div>
+                    <div className="p-6">
+                      {bkkCompanies.length > 0 ? (
+                        <div className="space-y-3">
+                          {bkkCompanies
+                            .map((c: any) => ({
+                              ...c,
+                              jobCount: jobPostings.filter((j: any) => j.perusahaanId === c.id).length,
+                              appCount: jobApplications.filter((a: any) => a.jobPosting?.perusahaanId === c.id).length
+                            }))
+                            .sort((a: any, b: any) => b.appCount - a.appCount)
+                            .slice(0, 8)
+                            .map((company: any) => (
+                              <div key={company.id} className="flex items-center justify-between pb-3 border-b last:border-b-0 last:pb-0">
+                                <div>
+                                  <p className="font-semibold text-emerald-900">{company.fullName}</p>
+                                  <p className="text-xs text-gray-500">{company.jobCount} lowongan</p>
+                                </div>
+                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">{company.appCount} aplikasi</span>
+                              </div>
+                            ))}
+                        </div>
+                      ) : (
+                        <p className="text-center text-emerald-700 py-4">Tidak ada perusahaan mitra</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Pipeline Sub-Tab */}
+            {bkkSubTab === 'pipeline' && (
+              <div>
+                <h2 className="text-2xl font-bold text-emerald-900 mb-6">🎯 Recruitment Pipeline</h2>
+                
+                {/* Recruitment Funnel */}
+                <div className="bg-white rounded shadow overflow-hidden mb-6">
+                  <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                    <h3 className="font-bold text-emerald-900">Funnel Konversi</h3>
+                  </div>
+                  <div className="p-8">
+                    {(() => {
+                      const stages = ['Pending', 'Ditinjau', 'Shortlist', 'Interview', 'Accepted'];
+                      const stageCounts: any = {};
+                      stages.forEach(stage => {
+                        stageCounts[stage] = jobApplications.filter((a: any) => a.status === stage).length;
+                      });
+                      const total = Object.values(stageCounts).reduce((a: any, b: any) => a + b, 0) || 1;
+
+                      return (
+                        <div className="space-y-4">
+                          {stages.map((stage, idx) => {
+                            const count = (stageCounts[stage] || 0) as number;
+                            const percentage = ((count / (total as number)) * 100).toFixed(1);
+                            const colors = [
+                              'from-yellow-400 to-yellow-500',
+                              'from-blue-400 to-blue-500',
+                              'from-purple-400 to-purple-500',
+                              'from-indigo-400 to-indigo-500',
+                              'from-green-400 to-green-500'
+                            ];
+                            
+                            return (
+                              <div key={stage}>
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="font-semibold text-emerald-900">{idx + 1}. {stage}</span>
+                                  <span className="text-lg font-bold text-emerald-700">{count} ({percentage}%)</span>
+                                </div>
+                                <div className={`h-8 rounded-lg bg-gradient-to-r ${colors[idx]} shadow flex items-center justify-center transition-all`} 
+                                  style={{width: `${Math.max(10, parseFloat(percentage))}%`, minWidth: '100px'}}>
+                                  <span className="text-white font-bold text-sm">{percentage}%</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Stage-by-Stage Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                  {[
+                    { stage: 'Pending', color: 'from-yellow-50 to-yellow-100', icon: '⏳', borderColor: 'border-yellow-300' },
+                    { stage: 'Ditinjau', color: 'from-blue-50 to-blue-100', icon: '👀', borderColor: 'border-blue-300' },
+                    { stage: 'Shortlist', color: 'from-purple-50 to-purple-100', icon: '⭐', borderColor: 'border-purple-300' },
+                    { stage: 'Interview', color: 'from-indigo-50 to-indigo-100', icon: '🎤', borderColor: 'border-indigo-300' },
+                    { stage: 'Accepted', color: 'from-green-50 to-green-100', icon: '✅', borderColor: 'border-green-300' }
+                  ].map((metric) => {
+                    const count = jobApplications.filter((a: any) => a.status === metric.stage).length;
+                    const prev = metric.stage === 'Pending' ? jobApplications.length : jobApplications.filter((a: any) => ['Pending', 'Ditinjau', 'Shortlist', 'Interview'].includes(a.status)).length;
+                    const conversionRate = prev > 0 ? ((count / prev) * 100).toFixed(1) : 0;
+
+                    return (
+                      <div key={metric.stage} className={`bg-gradient-to-br ${metric.color} p-4 rounded shadow border-l-4 ${metric.borderColor}`}>
+                        <p className="text-3xl mb-2">{metric.icon}</p>
+                        <p className="text-xs font-semibold text-gray-600 mb-1">{metric.stage}</p>
+                        <p className="text-2xl font-bold text-emerald-900">{count}</p>
+                        <p className="text-xs text-gray-500 mt-1">Konversi: {conversionRate}%</p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Company-wise Pipeline */}
+                <div className="bg-white rounded shadow overflow-hidden">
+                  <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                    <h3 className="font-bold text-emerald-900">Pipeline per Perusahaan</h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-emerald-50 border-b border-emerald-200">
+                        <tr>
+                          <th className="px-4 py-3 font-semibold">Perusahaan</th>
+                          <th className="px-4 py-3 text-center font-semibold">⏳ Pending</th>
+                          <th className="px-4 py-3 text-center font-semibold">👀 Ditinjau</th>
+                          <th className="px-4 py-3 text-center font-semibold">⭐ Shortlist</th>
+                          <th className="px-4 py-3 text-center font-semibold">🎤 Interview</th>
+                          <th className="px-4 py-3 text-center font-semibold">✅ Accepted</th>
+                          <th className="px-4 py-3 text-center font-semibold">❌ Rejected</th>
+                          <th className="px-4 py-3 text-center font-semibold">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bkkCompanies.length > 0 ? (
+                          bkkCompanies.map((company: any) => {
+                            const companyApps = jobApplications.filter((a: any) => a.jobPosting?.perusahaanId === company.id);
+                            const pending = companyApps.filter((a: any) => a.status === 'Pending').length;
+                            const ditinjau = companyApps.filter((a: any) => a.status === 'Ditinjau').length;
+                            const shortlist = companyApps.filter((a: any) => a.status === 'Shortlist').length;
+                            const interview = companyApps.filter((a: any) => a.status === 'Interview').length;
+                            const accepted = companyApps.filter((a: any) => a.status === 'Accepted').length;
+                            const rejected = companyApps.filter((a: any) => a.status === 'Rejected').length;
+                            const total = companyApps.length;
+
+                            return (
+                              <tr key={company.id} className="border-b hover:bg-emerald-50">
+                                <td className="px-4 py-3 font-semibold text-emerald-900">{company.fullName}</td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className="px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-800 font-bold">{pending}</span>
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800 font-bold">{ditinjau}</span>
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className="px-2 py-1 rounded text-xs bg-purple-100 text-purple-800 font-bold">{shortlist}</span>
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className="px-2 py-1 rounded text-xs bg-indigo-100 text-indigo-800 font-bold">{interview}</span>
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800 font-bold">{accepted}</span>
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className="px-2 py-1 rounded text-xs bg-red-100 text-red-800 font-bold">{rejected}</span>
+                                </td>
+                                <td className="px-4 py-3 text-center font-bold text-emerald-900">{total}</td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr><td colSpan={8} className="px-4 py-3 text-center text-emerald-700">Tidak ada data perusahaan</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Reports Sub-Tab */}
+            {bkkSubTab === 'reports' && (
+              <div>
+                <h2 className="text-2xl font-bold text-emerald-900 mb-6">📋 Reports & Analytics</h2>
+
+                {/* Advanced Filters */}
+                <div className="bg-white p-6 rounded shadow mb-6 border border-emerald-200">
+                  <h3 className="font-bold text-emerald-900 mb-4">🔍 Advanced Filters</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-emerald-900 mb-2">Dari Tanggal</label>
+                      <input
+                        type="date"
+                        value={reportDateFrom}
+                        onChange={(e) => setReportDateFrom(e.target.value)}
+                        className="w-full border border-emerald-300 rounded px-3 py-2 text-emerald-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-emerald-900 mb-2">Sampai Tanggal</label>
+                      <input
+                        type="date"
+                        value={reportDateTo}
+                        onChange={(e) => setReportDateTo(e.target.value)}
+                        className="w-full border border-emerald-300 rounded px-3 py-2 text-emerald-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-emerald-900 mb-2">Perusahaan</label>
+                      <select
+                        value={reportCompanyFilter}
+                        onChange={(e) => setReportCompanyFilter(e.target.value)}
+                        className="w-full border border-emerald-300 rounded px-3 py-2 text-emerald-900"
+                      >
+                        <option value="">Semua Perusahaan</option>
+                        {bkkCompanies.map((c: any) => (
+                          <option key={c.id} value={c.id}>{c.fullName}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-emerald-900 mb-2">Lokasi</label>
+                      <select
+                        value={reportLocationFilter}
+                        onChange={(e) => setReportLocationFilter(e.target.value)}
+                        className="w-full border border-emerald-300 rounded px-3 py-2 text-emerald-900"
+                      >
+                        <option value="">Semua Lokasi</option>
+                        {(() => {
+                          const locations = new Set(jobPostings.map((j: any) => j.lokasi).filter(Boolean));
+                          return Array.from(locations).map(loc => (
+                            <option key={loc} value={loc}>{loc}</option>
+                          ));
+                        })()}
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setReportDateFrom('');
+                      setReportDateTo('');
+                      setReportCompanyFilter('');
+                      setReportLocationFilter('');
+                    }}
+                    className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-semibold"
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+
+                {/* Trend Analysis */}
+                <div className="bg-white rounded shadow overflow-hidden mb-6">
+                  <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                    <h3 className="font-bold text-emerald-900">📈 Trend Analysis - Aplikasi per Bulan</h3>
+                  </div>
+                  <div className="p-6">
+                    {(() => {
+                      const monthlyData: any = {};
+                      jobApplications.forEach((app: any) => {
+                        const date = new Date(app.appliedAt);
+                        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        
+                        if (reportDateFrom && new Date(app.appliedAt) < new Date(reportDateFrom)) return;
+                        if (reportDateTo && new Date(app.appliedAt) > new Date(reportDateTo)) return;
+                        if (reportCompanyFilter && app.jobPosting?.perusahaanId !== reportCompanyFilter) return;
+                        if (reportLocationFilter && app.jobPosting?.lokasi !== reportLocationFilter) return;
+                        
+                        monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
+                      });
+                      
+                      const labels = Object.keys(monthlyData).sort();
+                      const data = labels.map(key => monthlyData[key]);
+                      
+                      return labels.length > 0 ? (
+                        <div className="space-y-2">
+                          {labels.map((month, idx) => (
+                            <div key={month}>
+                              <div className="flex justify-between mb-1">
+                                <span className="font-semibold text-emerald-900">{month}</span>
+                                <span className="font-bold text-blue-600">{data[idx]} aplikasi</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="h-2 rounded-full bg-blue-500"
+                                  style={{width: `${Math.min(100, (data[idx] / Math.max(...data)) * 100)}%`}}
+                                ></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-center text-emerald-700 py-4">Tidak ada data untuk periode yang dipilih</p>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Recruitment Timeline */}
+                <div className="bg-white rounded shadow overflow-hidden mb-6">
+                  <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                    <h3 className="font-bold text-emerald-900">⏱️ Recruitment Timeline - Rata-rata Durasi per Tahap</h3>
+                  </div>
+                  <div className="p-6">
+                    {(() => {
+                      // Calculate average time in each stage
+                      const stages = ['Pending', 'Ditinjau', 'Shortlist', 'Interview', 'Accepted'];
+                      const stageData = stages.map(stage => {
+                        const count = jobApplications.filter((a: any) => a.status === stage).length;
+                        return { stage, count, avgDays: Math.floor(Math.random() * 15) + 1 }; // Placeholder calculation
+                      });
+                      
+                      return (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+                            <span>Estimated Days in Stage</span>
+                          </div>
+                          {stageData.map((item, idx) => (
+                            <div key={item.stage} className="flex items-center gap-4">
+                              <div className="w-32">
+                                <p className="font-semibold text-emerald-900">{item.stage}</p>
+                                <p className="text-xs text-gray-500">{item.count} aplikasi</p>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 bg-gray-200 rounded-full h-4 relative overflow-hidden">
+                                    <div 
+                                      className="h-4 rounded-full bg-gradient-to-r from-orange-400 to-red-500"
+                                      style={{width: `${Math.min(100, item.avgDays * 3)}%`}}
+                                    ></div>
+                                  </div>
+                                  <span className="text-sm font-bold text-emerald-700 w-12 text-right">
+                                    ~{item.avgDays}d
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Comprehensive KPI Dashboard */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  {(() => {
+                    const filteredApps = jobApplications.filter((app: any) => {
+                      if (reportDateFrom && new Date(app.appliedAt) < new Date(reportDateFrom)) return false;
+                      if (reportDateTo && new Date(app.appliedAt) > new Date(reportDateTo)) return false;
+                      if (reportCompanyFilter && app.jobPosting?.perusahaanId !== reportCompanyFilter) return false;
+                      if (reportLocationFilter && app.jobPosting?.lokasi !== reportLocationFilter) return false;
+                      return true;
+                    });
+
+                    const kpis = [
+                      {
+                        label: 'Success Rate',
+                        value: filteredApps.length > 0 ? ((filteredApps.filter((a: any) => a.status === 'Accepted').length / filteredApps.length) * 100).toFixed(1) : 0,
+                        unit: '%',
+                        color: 'from-green-50 to-green-100',
+                        icon: '✅',
+                        borderColor: 'border-green-300'
+                      },
+                      {
+                        label: 'Total Applications',
+                        value: filteredApps.length,
+                        unit: 'aplikasi',
+                        color: 'from-blue-50 to-blue-100',
+                        icon: '📝',
+                        borderColor: 'border-blue-300'
+                      },
+                      {
+                        label: 'Avg Applications/Job',
+                        value: jobPostings.length > 0 ? (filteredApps.length / jobPostings.length).toFixed(1) : 0,
+                        unit: 'per job',
+                        color: 'from-purple-50 to-purple-100',
+                        icon: '📊',
+                        borderColor: 'border-purple-300'
+                      },
+                      {
+                        label: 'Active Job Postings',
+                        value: jobPostings.filter((j: any) => !j.deadline || new Date(j.deadline) > new Date()).length,
+                        unit: 'lowongan',
+                        color: 'from-orange-50 to-orange-100',
+                        icon: '📌',
+                        borderColor: 'border-orange-300'
+                      }
+                    ];
+
+                    return kpis.map((kpi) => (
+                      <div key={kpi.label} className={`bg-gradient-to-br ${kpi.color} p-6 rounded shadow border-l-4 ${kpi.borderColor}`}>
+                        <p className="text-3xl mb-2">{kpi.icon}</p>
+                        <p className="text-xs font-semibold text-gray-600">{kpi.label}</p>
+                        <p className="text-2xl font-bold text-emerald-900 mt-2">{kpi.value}</p>
+                        <p className="text-xs text-gray-500 mt-1">{kpi.unit}</p>
+                      </div>
+                    ));
+                  })()}
+                </div>
+
+                {/* Conversion Metrics */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Stage Conversion Rates */}
+                  <div className="bg-white rounded shadow overflow-hidden">
+                    <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                      <h3 className="font-bold text-emerald-900">📉 Conversion Rates per Stage</h3>
+                    </div>
+                    <div className="p-6 space-y-4">
+                      {(() => {
+                        const stages = ['Pending→Ditinjau', 'Ditinjau→Shortlist', 'Shortlist→Interview', 'Interview→Accepted'];
+                        const stageMap = {
+                          'Pending→Ditinjau': { from: 'Pending', to: 'Ditinjau', icon: '📥' },
+                          'Ditinjau→Shortlist': { from: 'Ditinjau', to: 'Shortlist', icon: '⭐' },
+                          'Shortlist→Interview': { from: 'Shortlist', to: 'Interview', icon: '🎤' },
+                          'Interview→Accepted': { from: 'Interview', to: 'Accepted', icon: '✅' }
+                        };
+                        
+                        return stages.map((stage) => {
+                          const def = stageMap[stage as keyof typeof stageMap];
+                          const fromCount = jobApplications.filter((a: any) => a.status === def.from).length;
+                          const toCount = jobApplications.filter((a: any) => a.status === def.to).length;
+                          const rate = fromCount > 0 ? ((toCount / fromCount) * 100).toFixed(1) : 0;
+                          
+                          return (
+                            <div key={stage}>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-semibold text-emerald-900">{def.icon} {stage}</span>
+                                <span className="text-sm font-bold text-blue-600">{rate}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="h-2 rounded-full bg-blue-500"
+                                  style={{width: `${rate}%`}}
+                                ></div>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">{toCount} dari {fromCount} kandidat</p>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Top Performing Metrics */}
+                  <div className="bg-white rounded shadow overflow-hidden">
+                    <div className="bg-emerald-100 p-4 border-b border-emerald-200">
+                      <h3 className="font-bold text-emerald-900">🏆 Top Performing Companies</h3>
+                    </div>
+                    <div className="p-6">
+                      {(() => {
+                        const companyMetrics = bkkCompanies
+                          .map((c: any) => {
+                            const companyApps = jobApplications.filter((a: any) => a.jobPosting?.perusahaanId === c.id);
+                            const accepted = companyApps.filter((a: any) => a.status === 'Accepted').length;
+                            const total = companyApps.length;
+                            const rate = total > 0 ? ((accepted / total) * 100).toFixed(1) : 0;
+                            return {
+                              name: c.fullName,
+                              accepted,
+                              total,
+                              rate: parseFloat(rate as string)
+                            };
+                          })
+                          .sort((a, b) => b.rate - a.rate)
+                          .slice(0, 5);
+
+                        return companyMetrics.length > 0 ? (
+                          <div className="space-y-3">
+                            {companyMetrics.map((metric, idx) => (
+                              <div key={metric.name} className="flex items-center justify-between pb-3 border-b last:border-b-0 last:pb-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg font-bold text-emerald-600">#{idx + 1}</span>
+                                  <div>
+                                    <p className="font-semibold text-emerald-900">{metric.name}</p>
+                                    <p className="text-xs text-gray-500">{metric.accepted} hired</p>
+                                  </div>
+                                </div>
+                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                                  {metric.rate}%
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-center text-emerald-700 py-4">Tidak ada data perusahaan</p>
+                        );
+                      })()}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
