@@ -1234,11 +1234,26 @@ export default function AdminDashboard() {
     }
   };
 
-  if (isLoading) return (
-    <div className="p-4 flex items-center justify-center">
+  if (isLoading || !currentUser) return (
+    <div className="p-4 flex items-center justify-center min-h-screen">
       <Loader2 className="animate-spin w-6 h-6" />
     </div>
   );
+
+  // Extra security check: ensure user has at least one allowed tab
+  if (allowedTabs.length === 0) {
+    return (
+      <>
+        <Navbar />
+        <main className="container mx-auto py-12 px-4">
+          <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded">
+            <h2 className="text-2xl font-bold text-red-900 mb-2">Akses Ditolak</h2>
+            <p className="text-red-700">Anda tidak memiliki akses ke halaman ini. Silahkan hubungi administrator.</p>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>

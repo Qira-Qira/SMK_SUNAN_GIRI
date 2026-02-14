@@ -247,13 +247,34 @@ export default function CompanyDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p className="text-emerald-600 text-lg">Loading...</p>
+        <div className="text-emerald-600 text-lg flex items-center gap-2">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
+          Loading...
+        </div>
       </div>
     );
   }
 
-  if (!currentUser || currentUser.role !== 'PERUSAHAAN') {
-    return null;
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-red-600 text-lg">Authenticating...</div>
+      </div>
+    );
+  }
+
+  if (currentUser.role !== 'PERUSAHAAN') {
+    return (
+      <>
+        <Navbar />
+        <main className="container mx-auto py-12 px-4">
+          <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded">
+            <h2 className="text-2xl font-bold text-red-900 mb-2">Akses Ditolak</h2>
+            <p className="text-red-700">Anda tidak memiliki akses ke dashboard perusahaan. Silahkan login dengan akun perusahaan.</p>
+          </div>
+        </main>
+      </>
+    );
   }
 
   return (

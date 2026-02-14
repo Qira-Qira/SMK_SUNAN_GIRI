@@ -286,7 +286,17 @@ export default function PPDBPage() {
   }
 
   if (!isAuthorized) {
-    return null;
+    return (
+      <>
+        <Navbar />
+        <main className="container mx-auto py-12 px-4">
+          <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded">
+            <h2 className="text-2xl font-bold text-red-900 mb-2">Akses Ditolak</h2>
+            <p className="text-red-700">Silahkan login terlebih dahulu untuk mendaftar PPDB.</p>
+          </div>
+        </main>
+      </>
+    );
   }
 
   return (
