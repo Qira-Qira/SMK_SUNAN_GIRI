@@ -1,0 +1,31 @@
+# Robots.txt for SMK Sunan Giri
+# Allow all search engines to crawl and index the site
+
+User-agent: *
+Allow: /
+Disallow: /api
+Disallow: /admin
+Disallow: /company/dashboard
+Disallow: /*.json$
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+
+# Specific rules for Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Specific rules for Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://smksunangiri.sch.id/sitemap.xml
