@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SMK Sunan Giri - Website Resmi",
+  title: "SMK Sunan Giri Mengannti",
   description: "Website resmi SMK Sunan Giri dengan fitur PPDB Online, AI Recommendation System, Tracer Study Alumni, dan BKK Online",
 };
 
