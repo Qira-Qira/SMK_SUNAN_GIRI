@@ -4,13 +4,32 @@ import { verifyToken } from '@/lib/auth/jwt';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[DEBUG] GET /api/public/school-profile called');
+    
     const profile = await prisma.schoolProfile.findFirst();
+    console.log('[DEBUG] Profile from DB:', profile ? 'Found' : 'Not found');
 
     if (!profile) {
-      return NextResponse.json(
-        { error: 'School profile not found' },
-        { status: 404 }
-      );
+      console.log('[DEBUG] Creating default profile');
+      // Create default profile if not exists
+      const defaultProfile = await prisma.schoolProfile.create({
+        data: {
+          nama: 'SMK Unggulan Digital',
+          sejarah: 'Sejarah sekolah',
+          visi: 'Visi sekolah',
+          misi: 'Misi sekolah',
+          tujuan: 'Tujuan sekolah',
+          fasilitas: [],
+          guruJumlah: 0,
+          siswaJumlah: 0,
+          photoGaleri: [],
+          phoneNumber: '0274-xxx-xxxx',
+          emailSchool: 'info@smk.ac.id',
+          address: 'Jln. Pendidikan No. 1',
+        }
+      });
+      
+      return NextResponse.json({ profile: defaultProfile }, { status: 200 });
     }
 
     // Map database fields to frontend field names
@@ -25,7 +44,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('School profile error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: String(error) },
       { status: 500 }
     );
   }
