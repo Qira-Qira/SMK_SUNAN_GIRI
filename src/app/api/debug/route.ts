@@ -1,34 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // 1. Cek apakah Env terdeteksi oleh server Vercel
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.json({
+      success: false,
+      error: "Variabel Environment tidak terbaca di Server!",
+      details: {
+        url_exists: !!supabaseUrl,
+        key_exists: !!supabaseKey
+      }
+    }, { status: 500 });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
   try {
-    // Check environment variables
-    const databaseUrl = process.env.DATABASE_URL;
-    const directUrl = process.env.DIRECT_URL;
-    const nodeEnv = process.env.NODE_ENV;
+    // 2. Cek koneksi dengan fetch sederhana
+    const { data, error } = await supabase.from('users').select('count').limit(1);
 
-    // Check if DATABASE_URL contains the ampersand
-    const hasAmpersand = databaseUrl?.includes('&') || false;
-    const hasPercentEncoded = databaseUrl?.includes('%26') || false;
+    if (error) throw error;
 
     return NextResponse.json({
-      status: 'ok',
-      environment: nodeEnv,
-      env_vars: {
-        DATABASE_URL_exists: !!databaseUrl,
-        DATABASE_URL_length: databaseUrl?.length || 0,
-        DATABASE_URL_has_ampersand: hasAmpersand,
-        DATABASE_URL_has_percent_encoded: hasPercentEncoded,
-        DATABASE_URL_sample: databaseUrl ? databaseUrl.substring(0, 80) + '...' : 'NOT SET',
-        DIRECT_URL_exists: !!directUrl,
-        DIRECT_URL_sample: directUrl ? directUrl.substring(0, 80) + '...' : 'NOT SET',
-      },
-      timestamp: new Date().toISOString(),
+      success: true,
+      message: "Koneksi Supabase Berhasil!",
+      data: data
     });
-  } catch (error) {
+  } catch (err: any) {
     return NextResponse.json({
-      status: 'error',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      success: false,
+      error: "Gagal Fetch ke Supabase",
+      details: err.message, // Ini akan memunculkan alasan RLS atau error lainnya
+      hint: err.hint || "Cek kebijakan RLS di dashboard Supabase"
     }, { status: 500 });
   }
 }
