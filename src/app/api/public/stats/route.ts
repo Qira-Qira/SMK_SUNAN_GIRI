@@ -4,13 +4,30 @@ import { verifyToken } from '@/lib/auth/jwt';
 
 export async function GET(request: NextRequest) {
   try {
-    const profile = await prisma.schoolProfile.findFirst();
+    console.log('[DEBUG] GET /api/public/stats called');
+    
+    let profile = await prisma.schoolProfile.findFirst();
+    console.log('[DEBUG] Profile from DB:', profile ? 'Found' : 'Not found');
     
     if (!profile) {
-      return NextResponse.json(
-        { error: 'School profile not found' },
-        { status: 404 }
-      );
+      console.log('[DEBUG] Creating default profile');
+      // Create default profile if not exists
+      profile = await prisma.schoolProfile.create({
+        data: {
+          nama: 'SMK Unggulan Digital',
+          sejarah: 'Sejarah sekolah',
+          visi: 'Visi sekolah',
+          misi: 'Misi sekolah',
+          tujuan: 'Tujuan sekolah',
+          fasilitas: [],
+          guruJumlah: 0,
+          siswaJumlah: 0,
+          photoGaleri: [],
+          phoneNumber: '0274-xxx-xxxx',
+          emailSchool: 'info@smk.ac.id',
+          address: 'Jln. Pendidikan No. 1',
+        }
+      });
     }
 
     return NextResponse.json({
@@ -28,7 +45,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching stats:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch stats' },
+      { error: 'Failed to fetch stats', details: String(error) },
       { status: 500 }
     );
   }
