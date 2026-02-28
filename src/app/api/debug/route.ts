@@ -21,7 +21,7 @@ export async function GET() {
 
   try {
     // 2. Cek koneksi dengan fetch sederhana
-    const { data, error } = await supabase.from('users').select('count').limit(1);
+    const { data, error } = await supabase.from('User').select('count').limit(1);
 
     if (error) throw error;
 
